@@ -39,7 +39,7 @@
 <script>
 export default {
   name: 'StandardTable',
-  props: ['bordered', 'loading', 'columns', 'dataSource', 'rowKey', 'pagination', 'selectedRows','subName'],
+  props: ['bordered', 'loading', 'columns', 'dataSource', 'rowKey', 'pagination', 'selectedRows','subName','subPath'],
   data () {
     return {
       needTotalList: [],
@@ -83,7 +83,10 @@ export default {
       console.log(text,record);
     },
     subItem(text,record){
-      console.log(text,record);
+      if(this.subPath)
+      this.$router.push(this.subPath)
+      else
+      this.$emit('showModal',true)
     }
   },
   created () {

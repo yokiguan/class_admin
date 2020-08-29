@@ -1,7 +1,6 @@
 <template>
   <a-card>
-    <div>
-      <div class="operator">
+      <div class="member">
         <a-button @click="addNew" type="primary">新建</a-button>
         <a-button >批量操作</a-button>
         <a-dropdown>
@@ -15,15 +14,12 @@
         </a-dropdown>
       </div>
       <standard-table
-        :rowKey="'key'"
+      :rowKey="'no'"
         :columns="columns"
-        :subName="'查看课程'"
-        :subPath="'/basic/grade/subject'"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
         @change="onchange"
       />
-    </div>
   </a-card>
 </template>
 
@@ -31,50 +27,35 @@
 import StandardTable from '../../../components/table/StandardTable'
 const columns = [
   {
-    title: '年级编号',
+    title: '序号',
     dataIndex: 'no'
   },
   {
-    title: '名称',
+    title: '姓名',
     dataIndex: 'name'
   },
   {
-    title: '级部',
-    dataIndex: 'grade',
-  },
-  {
-    title: '课程',
-    dataIndex: 'subjects',
-  },
-  {
-    title: '操作',
-    dataIndex: 'operation',
-    scopedSlots: { customRender: 'operation' },
+    title: '角色',
+    dataIndex: 'character',
   }
 ]
 
 const dataSource = [{
-    key:1,
     no:1,
-    name:'高一',
-    grade:'高中部',
-    subjects:'语数英'
+    name:'车东明',
+   character:'班主任'
 },{
-    key:2,
     no:2,
-    name:'高二（理）',
-    grade:'高中部',
-    type:'物化生'
+    name:'车西明',
+    character:'学生'
 },{
-    key:3,
     no:3,
-    name:'高二（文）',
-    grade:'高中部',
-    type:'政史地'
+    name:'车南明',
+    character:'学生'
 }]
 
 export default {
-  name: 'grade',
+  name: 'member',
   components: {StandardTable},
   data () {
     return {
@@ -90,16 +71,16 @@ export default {
       this.selectedRows = selectedRows
     },
     remove () {
-      this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+      this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.no) < 0)
+      this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.no) < 0)
     },
     addNew () {
       this.dataSource.unshift({
-    key:4,
-    no:4,
-    name:'物理选修',
-    grade:'高二文;高二理',
-    type:'走班课'
+    key:2,
+    no:2,
+    name:'高三2',
+    grade:'高三',
+    number:41
 })
     },
     handleMenuClick (e) {
@@ -112,19 +93,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .search{
-    margin-bottom: 54px;
-  }
-  .fold{
-    width: calc(100% - 216px);
-    display: inline-block
-  }
-  .operator{
+  .member{
     margin-bottom: 18px;
-  }
-  @media screen and (max-width: 900px) {
-    .fold {
-      width: 100%;
-    }
   }
 </style>

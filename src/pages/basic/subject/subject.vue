@@ -18,6 +18,7 @@
         :rowKey="'key'"
         :columns="columns"
         :subName="'子课程'"
+        :subPath="'/basic/subject/subsubject'"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
         @change="onchange"

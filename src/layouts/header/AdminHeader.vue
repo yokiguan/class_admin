@@ -1,81 +1,89 @@
 <template>
   <a-layout-header :class="[headerTheme, 'admin-header']">
     <div :class="['admin-header-wide', layout]">
-      <router-link v-if="isMobile || layout === 'head'" to="/" :class="['logo', isMobile ? null : 'pc', headerTheme]">
+      <router-link
+        v-if="isMobile || layout === 'head'"
+        to="/"
+        :class="['logo', isMobile ? null : 'pc', headerTheme]"
+      >
         <img width="32" src="@/assets/img/logo.png" />
         <h1 v-if="!isMobile">{{systemName}}</h1>
       </router-link>
       <a-divider v-if="isMobile" type="vertical" />
-      <a-icon v-if="layout === 'side'" class="trigger" :type="collapsed ? 'menu-unfold' : 'menu-fold'" @click="toggleCollapse"/>
+      <a-icon
+        v-if="layout === 'side'"
+        class="trigger"
+        :type="collapsed ? 'menu-unfold' : 'menu-fold'"
+        @click="toggleCollapse"
+      />
       <div v-if="layout == 'head' && !isMobile" class="admin-header-menu">
-        <i-menu class="head-menu" style="height: 64px; line-height: 64px;box-shadow: none" @i18nComplete="setRoutesI18n" :i18n="menuI18n" :theme="headerTheme" mode="horizontal" :options="menuData" @select="onSelect"/>
+        <i-menu
+          class="head-menu"
+          style="height: 64px; line-height: 64px;box-shadow: none"
+          @i18nComplete="setRoutesI18n"
+          :i18n="menuI18n"
+          :theme="headerTheme"
+          mode="horizontal"
+          :options="menuData"
+          @select="onSelect"
+        />
       </div>
       <div :class="['admin-header-right', headerTheme]">
-          <header-search class="header-item" />
-          <a-tooltip class="header-item" title="帮助文档" placement="bottom" >
-            <a>
-              <a-icon type="question-circle-o" />
-            </a>
-          </a-tooltip>
-          <header-notice class="header-item"/>
-          <header-avatar class="header-item"/>
-          <!-- <a-dropdown class="lang header-item">
-            <div>
-              <a-icon type="global"/> {{langAlias}}
-            </div>
-            <a-menu @click="val => setLang(val.key)" :selected-keys="[lang]" slot="overlay">
-              <a-menu-item v-for=" lang in langList" :key="lang.key">{{lang.key.toLowerCase() + ' ' + lang.name}}</a-menu-item>
-            </a-menu>
-          </a-dropdown> -->
+        <header-search class="header-item" />
+        <a-tooltip class="header-item" title="帮助文档" placement="bottom">
+          <a>
+            <a-icon type="question-circle-o" />
+          </a>
+        </a-tooltip>
+        <header-avatar class="header-item" />
       </div>
     </div>
   </a-layout-header>
 </template>
 
 <script>
-import HeaderSearch from './HeaderSearch'
-import HeaderNotice from './HeaderNotice'
-import HeaderAvatar from './HeaderlAvatar'
-import IMenu from '@/components/menu/menu'
-import {mapState, mapMutations} from 'vuex'
+import HeaderSearch from "./HeaderSearch";
+import HeaderAvatar from "./HeaderlAvatar";
+import IMenu from "@/components/menu/menu";
+import { mapState, mapMutations } from "vuex";
 
 export default {
-  name: 'AdminHeader',
-  components: {IMenu, HeaderAvatar, HeaderNotice, HeaderSearch},
-  props: ['collapsed', 'menuData'],
-  inject: ['menuI18n'],
+  name: "AdminHeader",
+  components: { IMenu, HeaderAvatar, HeaderSearch },
+  props: ["collapsed", "menuData"],
+  inject: ["menuI18n"],
   data() {
-    return {
-      langList: [
-        {key: 'CN', name: '简体中文', alias: '简体'},
-        {key: 'HK', name: '繁體中文', alias: '繁體'},
-        {key: 'US', name: 'English', alias: 'English'}
-      ]
-    }
+    return {};
   },
   computed: {
-    ...mapState('setting', ['theme', 'isMobile', 'layout', 'systemName', 'lang']),
-    headerTheme () {
-      if (this.layout == 'side' && this.theme.mode == 'dark' && !this.isMobile) {
-        return 'light'
+    ...mapState("setting", [
+      "theme",
+      "isMobile",
+      "layout",
+      "systemName",
+      "lang",
+    ]),
+    headerTheme() {
+      if (
+        this.layout == "side" &&
+        this.theme.mode == "dark" &&
+        !this.isMobile
+      ) {
+        return "light";
       }
-      return this.theme.mode
+      return this.theme.mode;
     },
-    langAlias() {
-      let lang = this.langList.find(item => item.key == this.lang)
-      return lang.alias
-    }
   },
   methods: {
-    toggleCollapse () {
-      this.$emit('toggleCollapse')
+    toggleCollapse() {
+      this.$emit("toggleCollapse");
     },
-    onSelect (obj) {
-      this.$emit('menuSelect', obj)
+    onSelect(obj) {
+      this.$emit("menuSelect", obj);
     },
-    ...mapMutations('setting', ['setLang', 'setRoutesI18n'])
-  }
-}
+    ...mapMutations("setting", ["setLang", "setRoutesI18n"]),
+  },
+};
 </script>
 
 <style lang="less" scoped>

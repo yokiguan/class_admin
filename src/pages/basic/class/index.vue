@@ -1,8 +1,6 @@
 <template>
   <a-card>
-    <div :class="advanced ? 'search' : null">
       <a-form layout="horizontal">
-        <div :class="advanced ? null: 'fold'">
           <a-row >
           <a-col :md="8" :sm="24" >
             <a-form-item
@@ -29,13 +27,11 @@
             </a-form-item>
           </a-col>
         </a-row>
-        </div>
         <span style="float: right; margin-top: 3px;">
           <a-button type="primary">查询</a-button>
           <a-button style="margin-left: 8px">重置</a-button>
         </span>
       </a-form>
-    </div>
     <div>
       <div class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
@@ -54,6 +50,7 @@
         :columns="columns"
         :dataSource="dataSource"
         :subName="'人员管理'"
+        :subPath="'/basic/class/member'"
         :selectedRows="selectedRows"
         @change="onchange"
       />

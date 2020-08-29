@@ -18,6 +18,7 @@
         :rowKey="'key'"
         :columns="columns"
         :subName="'查看'"
+        :subPath="'/basic/rule/detail'"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
         @change="onchange"
