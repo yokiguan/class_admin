@@ -78,11 +78,13 @@ export default {
     },
     edit(text,record){
       console.log(text,record);
+      this.$router.push(this.subPath)
+
     },
     deleteItem(text,record){
       console.log(text,record);
     },
-    subItem(text,record){
+    subItem(){
       if(this.subPath)
       this.$router.push(this.subPath)
       else

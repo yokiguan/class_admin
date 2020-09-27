@@ -54,7 +54,8 @@ export default new Router({
               },
                 {
                   path: '/basic/classroom/rule',
-                  name: '教室时间规则'
+                  name: '教室时间规则',
+                  component:() => import('@/pages/basic/classroom/rule')
                 }
               ]
             },
@@ -88,7 +89,19 @@ export default new Router({
             {
               path: '/basic/grade',
               name: '年级',
-              component: () => import('@/pages/basic/grade/index'),
+              component:BlankView,
+              redirect:'/basic/grade/admin',
+              children: [{
+                path: '/basic/grade/admin',
+                name: '年级管理',
+                component: () => import('@/pages/basic/grade/index'),
+              },
+                {
+                  path: '/basic/grade/subject',
+                  name: '课程管理',
+                  component: () => import('@/pages/basic/grade/subject'),
+                }
+              ]
             },
             {
               path: '/basic/class',
@@ -124,6 +137,7 @@ export default new Router({
                 {
                   path: '/basic/teacher/rule',
                   name: '教师规则',
+                component:() => import('@/pages/basic/teacher/rule')
                 }
               ]
             }, {
@@ -147,109 +161,101 @@ export default new Router({
           path: '/schedule',
           component: BlankView,
           redirect: '/schedule/template',
-          name: '排课计划',
+          name: '排课',
           meta: { icon: 'profile' },
           children: [
             {
               path: '/schedule/template',
-              name: '排课计划中心',
+              name: '排课计划',
               component: () => import('@/pages/schedule/board/index'),
-              // children: [
-              //   {
-              //     path: '/schedule/detail',
-              //     name: '详情页面',
-              //     component: () => import('@/pages/schedule/detail/index'),
-              //     // children: [{
-              //     //   path: '/schedule/detail/index',
-              //     //   name: '详情页面',
-              //     //   component: () => import('@/pages/schedule/detail/index'),
-              //     // },
-              //     //   {
-              //     //     path: '/schedule/detail/setting',
-              //     //     name: '选课设置',
-              //     //     component: () => import('@/pages/schedule/detail/settings'),
-              //     //   }, {
-              //     //     path: '/schedule/detail/statistics',
-              //     //     name: '选课统计',
-              //     //     component: () => import('@/pages/schedule/detail/statistics'),
-              //     //     children: [
-              //     //       {
-              //     //         path: '/schedule/detail/setting/edit',
-              //     //         name: '修改选课结果',
-              //     //         component: () => import('@/pages/schedule/detail/statistics/edit'),
-              //     //       }
-              //     //     ]
-              //     //   }, {
-              //     //     path: '/schedule/detail/sort_class',
-              //     //     name: '选课分班',
-              //     //     component: () => import('@/pages/schedule/detail/sort_class'),
-              //     //     children: [
-              //     //       {
-              //     //         path: '/schedule/detail/sort_class/admin',
-              //     //         name: '选课分班管理',
-              //     //         component: () => import('@/pages/schedule/detail/sort_class'),
-              //     //       }, {
-              //     //         path: '/schedule/detail/sort_class/auto',
-              //     //         name: '自动分班',
-              //     //         component: () => import('@/pages/schedule/detail/sort_class/auto'),
-              //     //       }, {
-              //     //         path: '/schedule/detail/sort_class/manual',
-              //     //         name: '手动分班',
-              //     //         component: () => import('@/pages/schedule/detail/sort_class/manual'),
-              //     //       }
-              //     //     ]
-              //     //   }, {
-              //     //     path: '/schedule/detail/sort_course',
-              //     //     name: '选课排课',
-              //     //     component: () => import('@/pages/schedule/detail/sort_course'),
-              //     //     children: [
-              //     //       {
-              //     //         path: '/schedule/detail/sort_course/time',
-              //     //         name: '课节设置',
-              //     //         component: () => import('@/pages/schedule/detail/sort_course/time'),
-              //     //       }, {
-              //     //         path: '/schedule/detail/sort_course/place',
-              //     //         name: '教室设置',
-              //     //         component: () => import('@/pages/schedule/detail/sort_course/place'),
-              //     //       }, {
-              //     //         path: '/schedule/detail/sort_course/course',
-              //     //         name: '课程设置',
-              //     //         component: () => import('@/pages/schedule/detail/sort_course/course'),
-              //     //       }
-              //     //     ]
-              //     //   }, {
-              //     //     path: '/schedule/detail/class_admin',
-              //     //     name: '行政班排课',
-              //     //     component: () => import('@/pages/schedule/detail/class_admin/index'),
-              //     //     children: [{
-              //     //       path: '/schedule/detail/class_admin/course',
-              //     //       name: '学科设置',
-              //     //       component: () => import('@/pages/schedule/detail/class_admin/course/index'),
-              //     //     }, {
-              //     //       path: '/schedule/detail/class_admin/class',
-              //     //       name: '班级设置',
-              //     //       component: () => import('@/pages/schedule/detail/class_admin/class/index'),
-              //     //     }, {
-              //     //       path: '/schedule/detail/class_admin/rule',
-              //     //       name: '规则设置',
-              //     //       component: () => import('@/pages/schedule/detail/class_admin/rule/index'),
-              //     //     }]
-              //     //   }, {
-              //     //     path: '/schedule/detail/task_mobile',
-              //     //     name: '走班排课任务',
-              //     //     component: () => import('@/pages/schedule/detail/task_mobile'),
-              //     //   }, {
-              //     //     path: '/schedule/detail/task_admin',
-              //     //     name: '行政班排课任务',
-              //     //     component: () => import('@/pages/schedule/detail/task_admin'),
-              //     //   }
-              //     // ]
-              //   }
-              // ]
             },{
               path: '/schedule/detail',
-              name: '详情页面',
-              component: () => import('@/pages/schedule/detail/index'),
+              name: '排课操作',
+              component: BlankView,
+                  children: [
+                    { path: '/schedule/detail/index',
+                  name: '操作面板',
+                  component: () => import('@/pages/schedule/detail/index')},
+                    {
+                      path: '/schedule/detail/setting',
+                      name: '选课设置',
+                      component: () => import('@/pages/schedule/detail/settings'),
+                    }, {
+                      path: '/schedule/detail/statistics',
+                      name: '选课统计',
+                      component: () => import('@/pages/schedule/detail/statistics'),
+                      children: [
+                        {
+                          path: '/schedule/detail/setting/edit',
+                          name: '修改选课结果',
+                          component: () => import('@/pages/schedule/detail/statistics/edit'),
+                        }
+                      ]
+                    }, {
+                      path: '/schedule/detail/sort_class',
+                      name: '选课分班',
+                      component: () => import('@/pages/schedule/detail/sort_class'),
+                      children: [
+                        {
+                          path: '/schedule/detail/sort_class/admin',
+                          name: '选课分班管理',
+                          component: () => import('@/pages/schedule/detail/sort_class'),
+                        }, {
+                          path: '/schedule/detail/sort_class/auto',
+                          name: '自动分班',
+                          component: () => import('@/pages/schedule/detail/sort_class/auto'),
+                        }, {
+                          path: '/schedule/detail/sort_class/manual',
+                          name: '手动分班',
+                          component: () => import('@/pages/schedule/detail/sort_class/manual'),
+                        }
+                      ]
+                    }, {
+                      path: '/schedule/detail/sort_course',
+                      name: '选课排课',
+                      component: () => import('@/pages/schedule/detail/sort_course'),
+                      children: [
+                        {
+                          path: '/schedule/detail/sort_course/time',
+                          name: '课节设置',
+                          component: () => import('@/pages/schedule/detail/sort_course/time'),
+                        }, {
+                          path: '/schedule/detail/sort_course/place',
+                          name: '教室设置',
+                          component: () => import('@/pages/schedule/detail/sort_course/place'),
+                        }, {
+                          path: '/schedule/detail/sort_course/course',
+                          name: '课程设置',
+                          component: () => import('@/pages/schedule/detail/sort_course/course'),
+                        }
+                      ]
+                    }, {
+                      path: '/schedule/detail/class_admin',
+                      name: '行政班排课',
+                      component: () => import('@/pages/schedule/detail/class_admin/index'),
+                      children: [{
+                        path: '/schedule/detail/class_admin/course',
+                        name: '学科设置',
+                        component: () => import('@/pages/schedule/detail/class_admin/course/index'),
+                      }, {
+                        path: '/schedule/detail/class_admin/class',
+                        name: '班级设置',
+                        component: () => import('@/pages/schedule/detail/class_admin/class/index'),
+                      }, {
+                        path: '/schedule/detail/class_admin/rule',
+                        name: '规则设置',
+                        component: () => import('@/pages/schedule/detail/class_admin/rule/index'),
+                      }]
+                    }, {
+                      path: '/schedule/detail/task_mobile',
+                      name: '走班排课任务',
+                      component: () => import('@/pages/schedule/detail/task_mobile'),
+                    }, {
+                      path: '/schedule/detail/task_admin',
+                      name: '行政班排课任务',
+                      component: () => import('@/pages/schedule/detail/task_admin'),
+                    }
+              ]
             }
           ]
         }

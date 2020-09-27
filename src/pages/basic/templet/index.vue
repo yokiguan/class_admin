@@ -2,7 +2,7 @@
   <a-card>
     <div>
       <div class="operator">
-        <a-button @click="addNew" type="primary">新建</a-button>
+        <a-button @click="gotoNew" type="primary">新建</a-button>
         <a-button>批量操作</a-button>
         <a-dropdown>
           <a-menu @click="handleMenuClick" slot="overlay">
@@ -20,6 +20,7 @@
         :columns="columns"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
+        subPath='/basic/template/detail'
         @change="onchange"
       />
     </div>
@@ -102,14 +103,8 @@ export default {
         (item) => this.selectedRowKeys.indexOf(item.key) < 0
       );
     },
-    addNew() {
-      this.dataSource.unshift({
-        key: 3,
-        no: 3,
-        name: "高三组课表模板",
-        workDay: 6.5,
-        restDay: 0.5,
-      });
+    gotoNew() {
+      this.$router.push('/basic/template/detail')
     },
     handleMenuClick(e) {
       if (e.key === "delete") {

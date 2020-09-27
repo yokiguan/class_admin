@@ -59,18 +59,45 @@
         </a-col>
       </a-row>
       <a-row style="float: right;">
-        <a-button type="primary" style="margin-left: 8px">公共时段设置</a-button>
-        <a-button type="primary" style="margin-left: 8px">节次时间设置</a-button>
-        <a-button @click="searchInfo" type="primary" style="margin-left: 8px">查询</a-button>
-        <a-button @click="clearInfo" style="margin-left: 8px">重置</a-button>
+        <a-button type="primary" style="margin-left: 8px" @click='saveInfo'>设置</a-button>
+        <a-button @click="clearInfo" style="margin-left: 8px">清空</a-button>
+
+        <a-button type="primary" style="margin-left: 8px" @click='showPublicModal'>公共时段设置</a-button>
+        <a-button type="primary" style="margin-left: 8px" @click='showTimeModal'>节次时间设置</a-button> 
       </a-row>
     </a-form-model>
-    <simple-schedule :columns="columns" :dataSource="dataSource" :rowKey="`activity`" />
+    <simple-table :columns="columns" :dataSource="dataSource" :rowKey="`activity`" />
+    <a-row>
+      <a-button @click="saveInfo" type="primary" style="margin-left: 8px">保存</a-button>
+        <a-button @click="goBackAdmin" style="margin-left: 8px">返回</a-button>
+    </a-row> 
+    <a-modal
+    :visible='timeModal'
+      title="节次时间设置"
+      @ok="handleOkTime"
+      @cancel="handleCancelTime"
+    >
+    <a-table :columns='timeColumns' :dataSource='timeData' rowKey='value' :pagination='false'>
+      <span slot='time' slot-scope="time">
+    <a-time-picker v-model='time[0]' format="hh:mm"/> - 
+    <a-time-picker v-model='time[1]' @change='changeTime' format="hh:mm"/>
+    </span>
+    </a-table>
+    </a-modal>
+    <a-modal
+    :visible='publicModal'
+      title="公共时段设置"
+      @ok="handleOkPublic"
+      @cancel="handleCancelPublic"
+    >
+    </a-modal>
   </a-card>
+ 
 </template>
 
 <script>
-import SimpleSchedule from "../../../components/schedule/SimpleSchedule";
+import SimpleTable from "../../../components/table/SimpleTable";
+import moment from 'moment'
 const columns = [
   {
     title: "",
@@ -106,39 +133,6 @@ const columns = [
   },
 ];
 
-const dataSource = [
-  {
-    activity: "早读1",
-  },
-  {
-    activity: "上午1",
-  },
-  {
-    activity: "上午2",
-  },
-  {
-    activity: "上午3",
-  },
-  {
-    activity: "上午4",
-  },
-  {
-    activity: "下午1",
-  },
-  {
-    activity: "下午2",
-  },
-  {
-    activity: "下午3",
-  },
-  {
-    activity: "下午4",
-  },
-  {
-    activity: "晚自习1",
-  },
-];
-
 const activity = [
   {
     name: "早读",
@@ -167,14 +161,30 @@ const activity = [
   },
 ];
 
+const timeColumns=[
+  {
+    title:'时间段名',
+    dataIndex:'activity'
+  },
+  {
+    title:'时间设置',
+    dataIndex:'time',
+    scopedSlots: { customRender: "time" },
+  }
+]
+
 export default {
   name: "QueryList",
-  components: { SimpleSchedule },
+  components: { SimpleTable },
   data() {
     return {
-      columns: columns,
-      dataSource: dataSource,
-      activity: activity,
+      columns,
+      timeColumns,
+      timeData:[],
+      dataSource:[],
+      activity,
+      publicModal:false,
+      timeModal:false,
       form: {
         templet_name: undefined,
         workday: undefined,
@@ -246,23 +256,57 @@ export default {
     };
   },
   methods: {
-    searchInfo() {
+   changeTime(){
+     console.log(this.timeData)
+   },
+    saveInfo() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           let activities = [];
+          let timeDatas=[];
           let list = [...this.activity];
           list.forEach((item) => {
-            for (let i = 1; i <= this.form[item.value]; i++)
-              activities.push({
+            for (let i = 1; i <= this.form[item.value]; i++){
+activities.push({
                 activity: item.name + i,
+                value:item.value+i
               });
+timeDatas.push({
+                activity: item.name + i,
+                value:item.value+i,
+                time:[moment(undefined),moment(undefined)]
+              });
+            }
+              
           });
           this.dataSource = activities;
+          this.timeData=timeDatas;
         } else return false;
       });
     },
     clearInfo() {
       this.$refs.ruleForm.resetFields();
+    },
+    goBackAdmin(){
+      this.$router.push('/basic/template/admin')
+    },
+    showPublicModal(){
+      this.publicModal=true
+    },
+    handleOkPublic(){
+      this.publicModal=false
+    },
+    handleCancelPublic(){
+      this.publicModal=false
+    },
+    showTimeModal(){
+      this.timeModal=true
+    },
+    handleOkTime(){
+      this.timeModal=false
+    },
+    handleCancelTime(){
+      this.timeModal=false
     },
   },
 };

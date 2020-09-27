@@ -2,33 +2,24 @@
   <a-card>
     <div>
       <div class="operator">
-        <a-button @click="addNew" type="primary">新建</a-button>
-        <a-button >批量操作</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="audit">批量导入</a-menu-item>
-          </a-menu>
-          <a-button>
-            更多操作 <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
+        <a-button @click="gotoNew" type="primary">新建</a-button>
       </div>
-      <standard-table
+      <a-table
         :rowKey="'key'"
         :columns="columns"
-        :subName="'查看'"
-        :subPath="'/basic/rule/detail'"
         :dataSource="dataSource"
-        :selectedRows="selectedRows"
-        @change="onchange"
-      />
+      >
+      <span slot='operation' slot-scope="text,value"><a @click="showModal(value)">编辑</a> | <a @click="gotoNew">查看</a> | <a @click="remove(value)">删除</a></span>
+      </a-table>
     </div>
+    <a-modal title="修改规则名字" :visible='visible' @ok='editSubmit' @cancel='cancelSubmit'>
+      <a-input label='规则初始名' disabled placeholder="请输入" v-model='name'></a-input>
+      <a-input label='规则修改名' placeholder="请输入" v-model='changeName'></a-input>
+    </a-modal>
   </a-card>
 </template>
 
 <script>
-import StandardTable from '../../../components/table/StandardTable'
 const columns = [
   {
     title: '序号',
@@ -40,7 +31,7 @@ const columns = [
   },
   {
     title: '选课规则',
-    dataIndex: 'operation',
+    dataIndex: 'text,value',
     scopedSlots: { customRender: 'operation' },
   }
 ]
@@ -61,35 +52,38 @@ const dataSource = [{
 
 export default {
   name: '选课规则',
-  components: {StandardTable},
   data () {
     return {
-      columns: columns,
-      dataSource: dataSource,
-      selectedRowKeys: [],
-      selectedRows: []
+      columns,
+      dataSource,
+      visible:false,
+      name:'',
+      changeName:'',
+      clickItem:null,
     }
   },
   methods: {
-    onchange (selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys
-      this.selectedRows = selectedRows
+    remove (value) {
+      this.dataSource = this.dataSource.filter(item => item.key==value.key)
     },
-    remove () {
-      this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+    gotoNew () {
+      this.$router.push('/basic/rule/detail')
     },
-    addNew () {
-      this.dataSource.unshift({
-    key:4,
-    no:4,
-    name:'高三选课规则（理）',
-    })
+    showModal(value){
+      this.visible=true
+      this.clickItem=value
+      this.name=value.name
     },
-    handleMenuClick (e) {
-      if (e.key === 'delete') {
-        this.remove()
-      }
+    editSubmit(){
+      this.dataSource.forEach(item=>{
+        if(item.key==this.clickItem.key)
+        item.name=this.changeName
+      })
+      this.visible=false
+    },
+    cancelSubmit(){
+      this.changeName=''
+      this.visible=false
     }
   }
 }

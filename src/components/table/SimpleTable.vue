@@ -15,7 +15,7 @@
 <script>
 export default {
   name: 'SimpleTable',
-  props: ['bordered', 'loading', 'columns', 'dataSource', 'rowKey', 'pagination'],
+  props: ['bordered', 'loading', 'columns', 'dataSource', 'rowKey', 'pagination',],
   data () {
     return {
       needTotalList: [],
@@ -24,6 +24,7 @@ export default {
   methods: {
     initTotalList (columns) {
       const totalList = []
+      console.log(columns);
       columns.forEach(column => {
         if (column.needTotal) {
           totalList.push({...column, total: 0})
