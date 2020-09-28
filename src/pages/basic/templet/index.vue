@@ -90,6 +90,9 @@ export default {
       selectedRows: [],
     };
   },
+  created(){
+    this.$api.basic.template.fetchList().then(res=>{console.log(res);})
+  },
   methods: {
     onchange(selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys;

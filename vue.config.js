@@ -20,6 +20,20 @@ module.exports = {
       })
     )
   },
+  devServer: {
+    host:'localhost',
+    port:8080,
+    proxy: {
+      '/api': {
+        target: 'http://zbpk.tgk12.cn/',
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': ''
+        }
+      },
+    }
+  },
   chainWebpack: config => {
     // 生产环境下关闭css压缩的 colormin 项，因为此项优化与主题色替换功能冲突
     if (process.env.NODE_ENV === 'production') {

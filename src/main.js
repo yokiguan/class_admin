@@ -5,6 +5,7 @@ import './theme/index.less'
 import Antd, { FormModel } from 'ant-design-vue'
 import Viser from 'viser-vue'
 import axios from 'axios'
+import api from './services/api/index'
 import '@/mock'
 import store from './store'
 import PouchDB from 'pouchdb'
@@ -13,6 +14,8 @@ import VueI18n from 'vue-i18n'
 import Plugins from '@/plugins'
 
 Vue.prototype.$axios = axios
+Vue.prototype.$api = api
+
 Vue.config.productionTip = false
 Vue.use(Viser)
 Vue.use(Antd)
