@@ -24,19 +24,22 @@
         </div>
         <!--        创建弹窗-->
         <create-modal
+                width="760px"
                 :visible="visible"
                 :loading="loading"
+                :close="false"
                 @modalClosed="closed"
                 @modalSubmit="handleSubmit">
             <div slot="content">
-                <a-form v-bind="formItemLayout" @submit="handleSubmit" ref="createForm">
-                    <a-form-item label="选课开始时间：">
-                        <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                        <a-input placeholder="点击选择"/>
+                <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit">
+                    <a-form-item label="选课开始时间：" style="margin-top: 50px">
+                            <a-input  placeholder="点击选择"  style="width: 500px;
+                            height: 35px;"></a-input>
                     </a-form-item>
-                    <a-form-item label="选课结束时间：">
+                    <a-form-item label="选课结束时间：" style="margin-bottom: 100px">
                         <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                        <a-input placeholder="点击选择"/>
+                        <a-input placeholder="点击选择" style="width: 500px;
+                            height: 35px;"/>
                     </a-form-item>
                 </a-form>
             </div>

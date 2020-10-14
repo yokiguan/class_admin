@@ -60,8 +60,7 @@
                         border-radius: 5px;
                         margin-top: 30px;
                         width: 150px"
-                    @click="add"
-            >
+                    @click="add">
                 添加
             </a-button>
             <router-link to="/schedule/detail/sort_course/course">
@@ -71,30 +70,32 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        margin-top: 50px;
+                        margin-top: 150px;
                         margin-bottom: 20px;
-                        width: 100px">
+                        width: 150px">
                     下一步</button>
             </router-link>
 
             <!--        编辑弹窗-->
             <create-modal class="edit"
+                          :close="false"
+                          width="700px"
                           :visible="visible"
                           :loading="loading"
                           @modalClosed="closed"
                           @modalSubmit="handleSubmit1">
                 <div slot="content">
-                    <div style="height: 52px;
+                    <div style="height: 65px;
                          border-radius: 5px;
                          margin-top: -23px;
                          margin-left: -24px;
-                         width: 520px;background-color: #e4e4e4">
-                        <span style="margin: 0px 0px 50px 0px;
+                         width:700px;background-color: #e4e4e4">
+                        <h3 style="margin-left: 10px;
                               padding: 20px 25px;
                               vertical-align: top;
-                              font-size: 1.2rem">设置上课天数</span>
+                              font-size: 1.2rem">设置上课天数</h3>
                     </div>
-                    <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
+                    <a-form style="margin-top: 30px;"  :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
                         <a-form-item label="类型">
                             <a-select
                                 v-decorator="[
@@ -121,26 +122,28 @@
             </create-modal>
 <!--            添加弹窗-->
             <create-modal class="add"
+                          width="700px"
+                          :close="false"
                           :visible="visib"
                           :loading="load"
                           @modalClosed="close"
                           @modalSubmit="handleSubmit2">
                 <div slot="content">
-                    <div style="height: 52px;
+                    <div style="height: 65px;
                          border-radius: 5px;
                          margin-top: -23px;
                          margin-left: -24px;
-                         width: 520px;background-color: #e4e4e4">
-                        <span style="margin: 0px 0px 50px 0px;
+                         width:700px;background-color: #e4e4e4">
+                        <h3 style="margin: 0px 0px 50px 0px;
                               padding: 20px 25px;
                               vertical-align: top;
-                              font-size: 1.2rem">添加课程</span>
+                              font-size: 1.2rem">添加课程</h3>
                     </div>
-                    <a-form :form="form" :label-col="{ span: 5}" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
-                        <a-form-item label="添加课程：">
+                    <a-form style="margin-top: 30px" :form="form"  @submit="handleSubmit1">
+                        <a-form-item label="添加课程：" :label-col="{ span: 5}" :wrapper-col="{ span: 18}">
                             <a-input-search placeholder="请输入"/>
                         </a-form-item>
-                        <a-form-item >
+                        <a-form-item :wrapper-col="{ span: 33}">
                             <div style="margin-left: 90px">
                                 <a-tree
                                         :show-line="showLine"
@@ -290,7 +293,6 @@
                 load:false,
                 loading: false,
                 showLine: true,
-                showIcon: false,
             };
         },
         methods: {
@@ -378,6 +380,7 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
+        height: 700px;
     }
     .buttons{
         margin:5px 5px 20px 5px;

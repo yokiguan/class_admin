@@ -38,13 +38,19 @@
             </a-row>
             <a-row class="buttons-sub">
                 <a-col :span="3">
-                    <a-button type="danger" style="color:white">禁选</a-button>
+                    <a-button type="danger" style="color:white;
+                          width: 100px;
+                         height: 30px;">禁选</a-button>
                 </a-col>
                 <a-col :span="3">
-                    <a-button style="background-color:grey;color:white">普通</a-button>
+                    <a-button style="background-color:grey;
+                      width: 100px;
+                        height: 30px;color:white">普通</a-button>
                 </a-col>
                 <a-col :span="3">
-                    <a-button type="primary" style="color:white">优先</a-button>
+                    <a-button type="primary" style="color:white;
+                              width: 100px;
+                              height: 30px;">优先</a-button>
                 </a-col>
                 <a-col :span="12">
                 </a-col>
@@ -53,67 +59,61 @@
                             style="height:40px;background-color:#0099ff;color:white" @click="maxTime">最大课时数设置</a-button>
                 </a-col>
             </a-row>
-            <!--        <div>-->
-            <!--          <a-table-->
-            <!--                  :columns="columns"-->
-            <!--                  :data-source="tableData1"-->
-            <!--                  :pagination="false"-->
-            <!--                  :bordered="true">-->
-            <!--          </a-table>-->
-            <!--          <div class="time1" >-->
-            <!--            <p>课间操10：00~10：30</p>-->
-            <!--          </div>-->
-            <!--          <a-table-->
-            <!--                  :columns="columns"-->
-            <!--                  :data-source="tableData2"-->
-            <!--                  :pagination="false"-->
-            <!--                  :bordered="true">-->
-            <!--          </a-table>-->
-            <!--          <div class="time1" >-->
-            <!--            <p>午休 12：30~1:30</p>-->
-            <!--          </div>-->
-            <!--          <a-table-->
-            <!--                  :columns="columns"-->
-            <!--                  :data-source="tableData3"-->
-            <!--                  :pagination="false"-->
-            <!--                  :bordered="true">-->
-            <!--          </a-table>-->
-            <a-table
+            <a-table id="kebiaoTable"
                     :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true">
             </a-table>
             <router-link to="/schedule/detail/sort_course/place">
-                <a-button
-                        style="color:white;background-color:blue;margin:30px 0px 20px 0px;">
-                    下一步
-                </a-button>
+                <button style="background-color: blue;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        margin-top: 50px;
+                        width: 100px">
+                    下一步</button>
             </router-link>
             <create-modal
+                    width="900px"
+                    :close="false"
                     :visible="visible"
                     :loading="loading"
                     @modalClosed="closed"
-                    @modalSubmit="handleSubmit"
-                    style="width: 500px">
+                    @modalSubmit="handleSubmit">
                 <div slot="content">
                     <a-form @submit="handleSubmit" ref="createForm">
                         <a-form-item>
-                            <p style="height:100%;
+                            <p style="height:80px;
                   background-color: #0099ff;
-                  margin-top: 20px;
+                  margin-top: -15px;
                   color: white;
-                  line-height: 50px;
-                  font-size: 20px;">
+                  margin-right: -10px;
+                  line-height: 70px;
+                  padding-left: 5px;
+                  padding-top: 10px;
+                  margin-left: -18px;
+                  font-size: 23px;">
                                 设置每个老师使用某个课时的最大数量</p>
                             <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
                         </a-form-item>
                         <a-form-item>
-                            <a-table :columns="column4"
+                            <a-table id="modalTable"
+                                    :columns="column4"
                                      :data-source="tableData4"
                                      :pagination="false"
                                      :bordered="true">
-                                <span slot="add" icon="plus" style="color: blue">添加一项</span>
+                                <div slot="addName" icon="plus" style="color: blue">
+
+                                    <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;
+                                            color: blue;">
+                                        <a-icon type="plus" />
+                                        <span>
+                                            添加一项
+                                        </span>
+                                    </div>
+                                </div>
                                 <a-select slot="buildingType"
                                           slot-scope="type"
                                           :default-value="type"
@@ -135,17 +135,13 @@
     </div>
 </template>
 <script>
-    // import echarts from 'echarts'
-
     import CreateModal from "../../../../components/modal/CreateModal";
-    // eslint-disable-next-line no-unused-vars
-    import { Table } from 'antd';
     const renderContext=(value,row,index)=>{
         const obj={
             children: value,
             attrs:{},
         };
-        if(index===3){
+        if(index===3 || index === 6){
             obj.attrs.colSpan=0;
         }
         return obj;
@@ -220,7 +216,8 @@
         },
         {
             key: '上午2',
-        },{
+        },
+        {
             key: '课间操10：00-10:30',
         },
         {
@@ -228,7 +225,8 @@
         },
         {
             key: '上午4',
-        },{
+        },
+        {
             key: '午休12：30-1:30',
         },
         {
@@ -253,6 +251,7 @@
             title: '课节',
             dataIndex: 'times',
             key: 'times',
+            scopedSlots: { customRender: 'addName' }
         },
         {
             title: '最大使用数',
@@ -276,50 +275,13 @@
             opt: '删除',
         },
         {
-            scopedSlots: { customRender: 'add' }
-        },]
-    // let tableData1 = [
-    //   [{
-    //     key: '早读1',
-    //   },
-    //   {
-    //     key: '上午1',
-    //   },
-    //   {
-    //     key: '上午2',
-    //   },]
-    // ];
-    // let tableData2=[
-    //   {
-    //     key:'上午3',
-    //   },{
-    //   key: '上午4',
-    //   },
-    // ]
-    // let tableData3=[
-    //   {
-    //     key:'下午1',
-    //   },
-    //   {
-    //     key:'下午2',
-    //   }, {
-    //     key:'下午3',
-    //   },
-    //   {
-    //     key:'下午4',
-    //   },
-    //   {
-    //     key:'晚自习1',
-    //   },
-    // ]
+            scopedSlots: { customRender: 'addName' }
+        },
+    ]
     export default {
         components: {CreateModal},
         data() {
             return {
-                // tableData1,
-                // tableData2,
-                // tableData3,
-                // columns,
                 column4,
                 tableData4,
                 columns,
@@ -377,20 +339,6 @@
         vertical-align: top;
         border-radius: 5px;
     }
-    .result-left{
-        width: 50%;
-    }
-    .link-font-color{
-        color: #0000ff;
-    }
-    .info{
-        height: 50px;
-        width: 100%;
-        margin: 0px 0px 10px 0px;
-        padding: 10px 5px;
-        background-color: white;
-        border-radius: 5px;
-    }
     .table-bg{
         background-color: white;
         margin: 0px 0px 20px 0px;
@@ -416,10 +364,35 @@
         padding-top:5px;
         background-color: #d9d9d9;
     }
-    /*.ant-table-tbody > tr > td {*/
-    /*    background-color: red;*/
-    /*  }*/
-    /*/deep/ .ant-table-row-level-0 {*/
-    /*  border: 1px solid #f0f0f0;*/
-    /*}*/
+    /deep/ #kebiaoTable {
+        .ant-table-tbody > tr:first-child > td,
+        .ant-table-tbody > tr:last-child > td{
+            background: #f00;
+        }
+        .ant-table-tbody > tr:first-child > td:first-child,
+        .ant-table-tbody > tr:last-child > td:first-child {
+             background: none;
+         }
+        .ant-table-tbody > tr:nth-child(2) > td,
+        .ant-table-tbody > tr:nth-child(3) > td {
+            background: #1abc9c;
+        }
+        .ant-table-tbody > tr:nth-child(2) > td:first-child,
+        .ant-table-tbody > tr:nth-child(3) > td:first-child {
+            background: none;
+        }
+        .ant-table-thead >tr >th{
+            background-color: #f4f4f4;
+        }
+        .ant-table-tbody > tr:nth-child(4) > td,
+        .ant-table-tbody > tr:nth-child(7) > td {
+            background-color: #f4f4f4;
+        }
+    }
+    /deep/ #moadalTable {
+        .ant-table-thead>tr >th{
+            background-color: #f4f4f4;
+        }
+    }
+
 </style>

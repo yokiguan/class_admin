@@ -21,29 +21,38 @@
             </a-row>
         </div>
         <create-modal
+                width="760px"
+                :close="false"
                 :visible="visible"
                 :loading="loading"
                 @modalClosed="closed"
                 @modalSubmit="handleSubmit">
             <div slot="content">
-                <a-form v-bind="formItemLayout" @submit="handleSubmit" ref="createForm">
-                    <a-form-item label="最大人数：">
+                <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit">
+                    <a-form-item label="最大人数：" style="margin-top: 50px">
                         <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                        <a-input placeholder="请输入"/>
+                        <a-input placeholder="请输入" style="width: 500px;height: 35px"/>
+                    </a-form-item>
+                    <a-form-item :wrapper-col="{ span: 8, offset:1 }" :label-col="{ span:4}" >
+                        <a-checkbox @change="onChange" style="margin-top: 30px;margin-left: 100px;font-size: 15px">
+                            生成班级个数
+                        </a-checkbox>
                     </a-form-item>
                 </a-form>
             </div>
         </create-modal>
         <create-modal
+                width="760px"
+                :close="false"
                 :visible="visit"
                 :loading="load"
                 @modalClosed="close"
                 @modalSubmit="handle">
             <div slot="content">
-                <a-form v-bind="formItemLayout" @submit="handle" ref="createForm">
-                    <a-form-item label="课时数：">
+                <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit1">
+                    <a-form-item label="课时数：" style="margin-top: 50px">
                         <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                        <a-input placeholder="请输入"/>
+                        <a-input placeholder="请输入" style="width: 500px;height: 35px"/>
                     </a-form-item>
                 </a-form>
             </div>
@@ -60,6 +69,9 @@
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true">
+<!--                <div slot="分类" slot-scope="change" style="background-color: #8c8c8c" v-if="change==='高一语文'" >{{change}}</div>-->
+<!--                <div slot="分类" slot-scope="change" v-else >{{change}}%</div>-->
+
                 <input
                         slot="classNum"
                         slot-scope="classNum"
@@ -90,7 +102,7 @@
 
             </a-table>
             <div style="margin: 20px 0px 20px 40%">
-                <a-button type="primary" style="margin-right:40px">开始</a-button>
+                <a-button type="primary" style="margin-right:40px;margin-top: 50px">开始分班</a-button>
                 <a-button type="primary">返回</a-button>
             </div>
         </div>
@@ -103,51 +115,61 @@
     const columns = [
         { title: '分类',
             dataIndex: 'category',
-            key: 'category'
+            key: 'category',
+            className:'class_color',
+            scopedSlots: { customRender: '分类' },
         },
         {
             title: '学生总人数',
             dataIndex: 'all',
             key: 'all',
+            className:'class_color'
         },
         {
             title: '未分班人数',
             dataIndex: 'unsorted',
             key: 'unsorted',
+            className:'class_color'
         },
         {
             title: '分班个数',
             key: 'classNum',
             dataIndex: 'classNum',
-            scopedSlots: { customRender: 'classNum' }
+            scopedSlots: { customRender: 'classNum' },
+            className:'class_color'
         },
         {
             title: '平均人数',
             key: 'ave',
-            dataIndex: 'ave'
+            dataIndex: 'ave',
+            className:'class_color'
         },
         {
             title: '每班最大人数',
             key: 'max',
             dataIndex: 'max',
-            scopedSlots: { customRender: 'max' }
+            scopedSlots: { customRender: 'max' },
+            className:'class_color'
         },
         {
             title: '每周课时数',
             key: 'classTime',
             dataIndex: 'classTime',
-            scopedSlots: { customRender: 'classTime' }
+            scopedSlots: { customRender: 'classTime' },
+            className:'class_color'
         },
         {
             title: '教师所教班级个数',
             key: 'teacherclassNum',
-            dataIndex: 'teacherclassNum'
+            dataIndex: 'teacherclassNum',
+            className:'class_color'
         },
         {
             title: '操作',
             key: 'opt',
             dataIndex: 'opt',
-            scopedSlots: { customRender: 'action' }
+            scopedSlots: { customRender: 'action' },
+            className:'class_color'
         },
     ];
     let tableData = [
@@ -268,7 +290,10 @@
             },
             editInfo: function (key) {
                 console.log(key)
-            }
+            },
+            onChange(e) {
+                console.log(`checked = ${e.target.checked}`);
+            },
         }
     };
 </script>

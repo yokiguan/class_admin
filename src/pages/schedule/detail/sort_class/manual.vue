@@ -32,8 +32,10 @@
                             <span style="color:blue;float:right;margin-right:1em;" @click="change">修改</span>
                         </div>
                         <div class="situation-body">
-                            <a-button v-for="(stu, sindex) in item.students" :key="sindex">
+                            <a-button v-for="(stu, sindex) in item.students" :key="sindex"
+                                >
                                 {{stu}}
+
                             </a-button>
                         </div>
                     </div>
@@ -44,19 +46,31 @@
                 </div>
             </a-table>
             <create-modal
+                    width="760px"
                     :visible="visible"
                     :loading="loading"
+                    :close="false"
                     @modalClosed="closed"
                     @modalSubmit="handleSubmit">
                 <div slot="content">
-                    <a-form v-bind="formItemLayout" @submit="handleSubmit" ref="createForm">
-                        <a-form-item label="班级名称：">
+                    <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit">
+                        <a-form-item label="班级名称：" style="margin-top: 50px">
                             <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                            <a-input placeholder="请输入"/>
+                            <a-input placeholder="请输入" style="width: 500px;height: 35px"/>
                         </a-form-item>
                         <a-form-item label="任课教师：">
-                            <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                            <a-input placeholder="张凯元"/>
+                            <a-select
+                                    v-decorator="['任课教师',{ rules: [{ required: true, message: 'Please select your teacher!' }] },]"
+                                    placeholder="张凯元"
+                                    @change="handleSelectChange"
+                                    style="width: 500px;height: 35px">
+                                <a-select-option value="kaiyuanZhang">
+                                    张凯元
+                                </a-select-option>
+                                <a-select-option value="yuanchaoLi">
+                                    李援朝
+                                </a-select-option>
+                            </a-select>
                         </a-form-item>
                     </a-form>
                 </div>

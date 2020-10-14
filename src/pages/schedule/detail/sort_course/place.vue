@@ -59,20 +59,30 @@
             <a-button
                     icon="plus"
                     style="color:white;
+
                     background-color:#3399cc;
-                    margin:10px 0px;"
+                    margin:30px 0px;"
                     @click="addClass"
             >
                 添加教室
             </a-button>
-            <router-link to="/schedule/detail/sort_course/course">
-                <button style="color:white;background-color:#0099ff;
-      margin-top: 30px;float:right;border: none">
-                    下一步</button>
+            <router-link to="/schedule/detail/sort_course/course/index">
+                <button style="background-color: #00ccff;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        float: right;
+                        margin-top: 70px;
+                        margin-bottom: 20px;
+                        width: 100px">
+                        下一步
+                    </button>
             </router-link>
 
             <!--        添加教室弹窗-->
             <create-modal
+                    :close="false"
                     :visible="visible"
                     :loading="loading"
                     @modalClosed="closed"
@@ -236,26 +246,11 @@
 <style lang="less" scoped>
     .result{
         width: 100%;
-        height: 300px;
-        background-color: white;
         height: 100px;
+        background-color: white;
         margin: 0px 0px 20px 0px;
         padding: 20px 25px;
         vertical-align: top;
-        border-radius: 5px;
-    }
-    .result-left{
-        width: 50%;
-    }
-    .link-font-color{
-        color: #0000ff;
-    }
-    .info{
-        height: 50px;
-        width: 100%;
-        margin: 0px 0px 10px 0px;
-        padding: 10px 5px;
-        background-color: white;
         border-radius: 5px;
     }
     .table-bg{
@@ -264,6 +259,7 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
+        height:500px;
     }
     .buttons{
         margin:5px 5px 20px 5px;

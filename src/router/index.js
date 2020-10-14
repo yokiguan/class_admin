@@ -222,6 +222,11 @@ export default new Router({
                   component: BlankView,
                   children: [
                     {
+                      path: '/schedule/detail/sort_course/index',
+                      name: '选课排课',
+                      component: () => import('@/pages/schedule/detail/sort_course/index'),
+                    },
+                    {
                       path: '/schedule/detail/sort_course/time',
                       name: '课节设置',
                       component: () => import('@/pages/schedule/detail/sort_course/time'),
@@ -242,9 +247,9 @@ export default new Router({
                         name: '设置',
                         component:BlankView,
                         children:[{
-                          path:'/schedule/detail/sort_course/course/course/contrast_setting',
-                          name:'互斥设置',
-                          component:()=>import('@/pages/schedule/detail/sort_course/course/course/contrast_setting'),
+                          path: '/schedule/detail/sort_course/course/course/contrast_setting',
+                          name: '互斥设置',
+                          component: () => import('@/pages/schedule/detail/sort_course/course/course/contrast_setting'),
                         },{
                           path:'/schedule/detail/sort_course/course/course/same_class',
                           name:'同时上课',
@@ -262,6 +267,10 @@ export default new Router({
                   name: '行政班排课',
                   component: BlankView,
                   children: [{
+                    path: '/schedule/detail/class_admin/index',
+                    name: '行政班排课',
+                    component: () => import('@/pages/schedule/detail/class_admin/index'),
+                  },{
                     path: '/schedule/detail/class_admin/course',
                     name: '学科设置',
                     component: () => import('@/pages/schedule/detail/class_admin/course'),
@@ -274,14 +283,91 @@ export default new Router({
                     name: '规则设置',
                     component: () => import('@/pages/schedule/detail/class_admin/rule'),
                   }]
-                }, {
+                },{
+                  path: '/schedule/detail/start_class',
+                  name: '开始排课',
+                  component: () => import('@/pages/schedule/detail/start_class/index'),
+                } ,
+                {
                   path: '/schedule/detail/task_mobile',
                   name: '走班排课任务',
-                  component: () => import('@/pages/schedule/detail/task_mobile'),
-                }, {
+                  component:BlankView,
+                  children:[
+                    {
+                      path: '/schedule/detail/task_mobile/index',
+                      name: '走班排课',
+                      component:() => import('@/pages/schedule/detail/task_mobile/index'),
+                    },{
+                      path: '/schedule/detail/task_mobile/all',
+                      name: '整体查看',
+                      component:() => import('@/pages/schedule/detail/task_mobile/all'),
+                    },
+                    {
+                      path: '/schedule/detail/task_mobile/teacher',
+                      name: '按老师查看',
+                      component:() => import('@/pages/schedule/detail/task_mobile/teacher'),
+                    }, {
+                      path: '/schedule/detail/task_mobile/room',
+                      name: '按教室查看',
+                      component:() => import('@/pages/schedule/detail/task_mobile/room'),
+                    }, {
+                      path: '/schedule/detail/task_mobile/course',
+                      name: '按课程查看',
+                      component:() => import('@/pages/schedule/detail/task_mobile/course'),
+                    }, {
+                      path: '/schedule/detail/task_mobile/change_student',
+                      name: '学生调班',
+                      component:() => import('@/pages/schedule/detail/task_mobile/change_student'),
+                    }, {
+                      path: '/schedule/detail/task_mobile/integrate',
+                      name: '手动调课',
+                      component:() => import('@/pages/schedule/detail/task_mobile/integrate'),
+                    },
+                  ]}, {
                   path: '/schedule/detail/task_admin',
                   name: '行政班排课任务',
-                  component: () => import('@/pages/schedule/detail/task_admin'),
+                  component:BlankView,
+                  children:[
+                    {
+                      path: '/schedule/detail/task_admin/index',
+                      name: '行政班排课',
+                      component:() => import('@/pages/schedule/detail/task_admin/index'),
+                    },{
+                      path: '/schedule/detail/task_admin/class',
+                      name: '班级查看',
+                      component:() => import('@/pages/schedule/detail/task_admin/class'),
+                    },{
+                      path: '/schedule/detail/task_admin/teacher',
+                      name: '老师查看',
+                      component:() => import('@/pages/schedule/detail/task_admin/teacher'),
+                    },
+                  ]
+                },{
+                  path: '/schedule/detail/curriculum',
+                  name: '总课表',
+                  component:BlankView,
+                  children:[
+                    {
+                      path: '/schedule/detail/curriculum/index',
+                      name: '总课表',
+                      component:() => import('@/pages/schedule/detail/curriculum/index'),
+                    },{
+                      path: '/schedule/detail/curriculum/teacher',
+                      name: '老师课表',
+                      component:() => import('@/pages/schedule/detail/curriculum/teacher'),
+                    },{
+                      path: '/schedule/detail/curriculum/place',
+                      name: '场地课表',
+                      component:() => import('@/pages/schedule/detail/curriculum/place'),
+                    },{
+                      path: '/schedule/detail/curriculum/subject',
+                      name: '科目课表',
+                      component:() => import('@/pages/schedule/detail/curriculum/subject'),
+                    },{
+                      path: '/schedule/detail/curriculum/student',
+                      name: '学生课表',
+                      component:() => import('@/pages/schedule/detail/curriculum/student'),
+                    }]
                 }
               ]
             }

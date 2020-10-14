@@ -2,6 +2,8 @@
   <div>
     <a-modal v-model="visible"
              :title="title"
+             :width="width"
+             :closable="close"
              @cancel="handleCancel">
       <template slot="footer">
         <a-button key="back" @click="handleCancel">
@@ -20,7 +22,7 @@
 <script>
 export default {
     name : "CreateModal",
-    props : ["title", "visible", "loading"],
+    props : ["title", "visible", "width", "loading","close"],
     data() {
         return {
         };

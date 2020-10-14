@@ -5,13 +5,16 @@
                 <a-row>
                     <a-col :span="13"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
                     <a-col :span="2">
-                        <button style="background-color: #00ccff;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 100px">
-                            互斥规则</button></a-col>
+                        <a-button
+                                  style="background-color: #00ccff;
+                                    color: white;
+                                    height: 40px;
+                                    border-radius: 5px;
+                                    width: 100px">
+                            <router-link to="/schedule/detail/sort_course/course/course/contrast_setting">
+                                互斥规则</router-link>
+                        </a-button>
+                    </a-col>
                     <a-col :span="2">
                         <button style="background-color: #00ccff;
                         color: white;
@@ -95,22 +98,24 @@
                         </a-button>
                         <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
                     </a-table>
-                </div>
-                <div class="footer">
-                    <button style="background-color: #00ccff;
+                    <router-link to="/schedule/detail/start_class">
+                        <button style="background-color: #00ccff;
                 border: none;color: white;
                 float: right;
                 height: 40px;
                 border-radius: 5px;
-                width: 100px;
+                width: 150px;
                 margin-right: 50px;
                 margin-top:50px">
-                        下一步</button>
+                            下一步</button>
+                    </router-link>
                 </div>
             </div>
         </div>
         <div class="Pop-ups">
             <create-modal class="Pop-ups_time"
+                          :close="false"
+                          width="700px"
                           :visible="visible"
                           :loading="loading"
                           @modalClosed="closed"
@@ -121,13 +126,13 @@
                             border-radius: 5px;
                              margin-top: -23px;
                              margin-left: -24px;
-                            width: 520px;background-color: #e4e4e4">
-                            <span style="margin: 0px 0px 50px 0px;
-                                  padding: 20px 25px;
+                            width: 700px;background-color: #e4e4e4">
+                            <h3 style="margin: 0px 0px 50px 0px;
+                                  padding: 15px 20px;
                                   font-size: 1.0rem;
-                                  vertical-align: top;">选择时间段</span>
+                                  vertical-align: top;">选择时间段</h3>
                         </div>
-                        <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
+                        <a-form style="margin-top: 30px" :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
                             <a-form-item label="类型">
                                 <a-select
                                         v-decorator="[
@@ -217,6 +222,8 @@
                 </div>
             </create-modal>
             <create-modal class="Pop-ups_class"
+                          width="700px"
+                          :close="false"
                           :visible="visibe"
                           :loading="load"
                           @modalClosed="close"
@@ -227,13 +234,13 @@
                             border-radius: 5px;
                              margin-top: -23px;
                              margin-left: -24px;
-                            width: 520px;background-color: #e4e4e4">
-                            <span style="margin: 0px 0px 50px 0px;
-                                  padding: 20px 25px;
+                            width: 700px;background-color: #e4e4e4">
+                            <h3 style="margin: 0px 0px 50px 0px;
+                                  padding: 15px 20px;
                                   font-size: 1.0rem;
-                                  vertical-align: top;">选择教室</span>
+                                  vertical-align: top;">选择教室</h3>
                         </div>
-                        <a-form :form="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
+                        <a-form style="margin-top: 30px" :form="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
                             <a-form-item label="类型">
                                 <a-select
                                         v-decorator="[
@@ -266,7 +273,7 @@
                         </a-form>
                     </div>
                     <div class="model2_content">
-                        <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
+                        <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 20}" @submit="handleSubmit1">
                             <a-form-item label="教室">
                                 <a-checkbox-group @change="onChange_class">
                                     <a-row>
@@ -459,5 +466,6 @@
         background-color: white;
         padding: 20px 25px;
         border-radius: 5px;
+        height: 500px;
     }
 </style>

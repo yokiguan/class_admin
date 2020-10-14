@@ -3,7 +3,7 @@
         <!-- result -->
         <div class="result">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.7em">高二2019-2020第一学期排课计划</span></a-col>
                 <a-col>
                     <button style="background-color: #19b294;
                         color: white;
@@ -15,29 +15,52 @@
                     >返回</button>
                 </a-col>
             </a-row>
-            <a-row style="margin-top: 10px">
-                <a-col>
-                    <button style="background-color: #19b294;
-                        color: white;
-                        height: 35px;
-                        border: none;
-                        border-radius: 3px;
-                        width: 150px">查看调课记录</button>
-                </a-col>
-            </a-row>
         </div>
         <div class="table-bg">
+            <a-row class="buttons">
+                <a-col :span="3">
+                    <button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        width: 110px">整体查看</button>
+                </a-col>
+                <a-col :span="3">
+                    <button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        width: 110px">按老师查看</button>
+                </a-col>
+                <a-col :span="3">
+                    <button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        width: 110px">按场地查看</button>
+                </a-col>
+                <a-col :span="3">
+                    <button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        width: 110px">按科目查看</button>
+                </a-col>
+            </a-row>
             <a-table
                     :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true"
                     style="margin-top: 20px;width:1200px;height: 700px">
-                <button slot="change" slot-scope="">调换</button>
             </a-table>
+
         </div>
     </div>
-
 </template>
 <script>
     const columns = [
@@ -102,7 +125,8 @@
             return {
                 columns,
                 tableData,
-
+                visible: false,
+                loading: false
             };
         },
         methods: {
@@ -113,17 +137,15 @@
 <style lang="less" scoped>
     .result{
         width: 100%;
-        height: 150px;
         background-color: white;
-        height: 130px;
+        height: 90px;
         margin: 0px 0px 20px 0px;
         padding: 20px 25px;
-        vertical-align: top;
         border-radius: 5px;
     }
     .table-bg{
         background-color: white;
-        margin: -10px 0px 20px 0px;
+        margin: 0px 0px 20px 0px;
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
