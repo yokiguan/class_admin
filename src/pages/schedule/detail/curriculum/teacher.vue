@@ -29,16 +29,7 @@
                 <div class="right">
                     <div class="title">
                         <a-row>
-                            <a-col :span="18"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        float: right;
-                        width: 150px">删除已发布课表</button>
-                            </a-col>
+                            <a-col :span="18"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>>
                             <a-col>
                                 <button style="background-color: #19b294;
                         color: white;
@@ -49,41 +40,17 @@
                         width: 150px">返回</button>
                             </a-col>
                         </a-row>
-                        <a-row style="margin-top: 20px">
-                            <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
+                    </div>
+                    <div class="table-bg">
+                        <a-row class="buttons">
                             <a-col :span="3">
-                                <button @click="maxTime" style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px">查看学生冲突</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <router-link to="/schedule/detail/sort_course/place">
-                                    <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px">手动调课</button>
-                                </router-link>
-                            </a-col>
-                            <a-col>
                                 <button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 150px">学生调班</button>
+                        width: 110px">整体查看</button>
                             </a-col>
-                        </a-row>
-                        <a-row>
-                            <a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col>
-                        </a-row>
-                    </div>
-                    <div class="table-bg">
-                        <a-row class="buttons">
                             <a-col :span="3">
                                 <button style="background-color: #19b294;
                         color: white;
@@ -108,6 +75,14 @@
                         border-radius: 5px;
                         width: 110px">按科目查看</button>
                             </a-col>
+                            <a-col :span="3">
+                                <button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        width: 110px">按学生查看</button>
+                            </a-col>
                         </a-row>
                         <a-table
                                 :columns="columns"
@@ -129,31 +104,37 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
+            width:'10%',
         },
         {
             title: '一',
             dataIndex: 'one',
             key:'one',
+            width:'18%',
         },
         {
             title: '二',
             dataIndex: 'two',
             key:'two',
+            width:'18%',
         },
         {
             title: '三',
             dataIndex: 'three',
             key:'three',
+            width:'18%',
         },
         {
             title: '四',
             dataIndex: 'four',
             key: 'four',
+            width:'18%',
         },
         {
             title: '五',
             dataIndex: 'five',
             key: 'five',
+            width:'18%',
         },
     ];
     const tableData=[
@@ -162,13 +143,13 @@
         },
         {
             key: '2',
-            one:'高二语文——高二1班',
-            two:'高二语文——高二1班',
+            one:'政治学考1班_李援朝',
+            two:'政治学考2班_李援朝',
         },
         {
             key: '3',
-            one:'高二语文——高二2班',
-            two:'高二语文——高二2班',
+            one:'高一1班语文',
+            three:'政治学考3班_李援朝',
         },{
             key:'4'
         },{
@@ -233,7 +214,7 @@
     .title{
         width: 100%;
         background-color: #fff;
-        height: 170px;
+        height: 120px;
         padding: 20px 25px;
         border-radius: 10px;
         margin-bottom: 50px;
