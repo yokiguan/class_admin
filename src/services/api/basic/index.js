@@ -1,5 +1,5 @@
 import template from './template'
-import admin from './admin'
+import adminClass from './admin'
 import building from './building'
 import classroom from './classroom'
 import grade from './grade'
@@ -10,7 +10,7 @@ import teacher from './teacher'
 
 const basic={
     template,
-    admin,
+    adminClass,
     building,
     classroom,
     grade,
