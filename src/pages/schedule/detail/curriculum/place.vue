@@ -122,7 +122,7 @@
                                 :data-source="tableData"
                                 :pagination="false"
                                 :bordered="true"
-                                style="margin-top: 20px;width:75%;height:100% ">
+                                style="margin-top: 20px;width:75%;">
                         </a-table>
                     </div>
                 </div>
@@ -137,37 +137,42 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
-            width:'10%',
+            width:'5%',
         },
         {
             title: '一',
             dataIndex: 'one',
             key:'one',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
         {
             title: '二',
             dataIndex: 'two',
             key:'two',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
         {
             title: '三',
             dataIndex: 'three',
             key:'three',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
         {
             title: '四',
             dataIndex: 'four',
             key: 'four',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
         {
             title: '五',
             dataIndex: 'five',
             key: 'five',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
     ];
     const tableData=[
@@ -257,10 +262,18 @@
         padding: 20px 25px;
         border-radius: 10px;
         text-align: center;
-        height: 500px;
+        height: 670px;
         margin-top: -35px;
         width: 100%;
         background-color: #fff;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
+        .ant-table-tbody>tr{
+            height:100px;
+        }
     }
 </style>
 

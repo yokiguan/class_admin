@@ -68,31 +68,37 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
+            width:'5%'
         },
         {
             title: '一',
             dataIndex: 'one',
             key:'one',
+            width:'19%'
         },
         {
             title: '二',
             dataIndex: 'two',
             key:'two',
+            width:'19%'
         },
         {
             title: '三',
             dataIndex: 'three',
             key:'three',
+            width:'19%'
         },
         {
             title: '四',
             dataIndex: 'four',
             key: 'four',
+            width:'19%'
         },
         {
             title: '五',
             dataIndex: 'five',
             key: 'five',
+            width:'19%'
         },
     ];
     const tableData=[
@@ -151,5 +157,10 @@
         text-align: center;
         height: 1000px;
         width: 100%;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
     }
 </style>

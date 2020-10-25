@@ -372,6 +372,25 @@ export default new Router({
               ]
             }
           ]
+        },
+          //数据字典
+        {
+          path: '/data',
+          component:BlankView,
+          redirect: '/data/template',
+          name: '数据字典',
+          meta: { icon: 'profile' },
+          children: [
+            {
+              path: '/data/subject/index',
+              name: '科目类别',
+              component: () => import('@/pages/data/subject/index')},
+          {
+              path: '/date/class',
+              name: '教室类型',
+              component: () => import('@/pages/data/class/index'),
+            }
+          ]
         }
       ]
     }
