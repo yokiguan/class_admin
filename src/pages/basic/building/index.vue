@@ -14,23 +14,28 @@
           </a-button>
         </a-dropdown>
       </div>
-      <standard-table
-        :rowKey="'key'"
+      <a-table
+        rowKey="buildingId"
         :columns="columns"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
         @change="onchange"
-      />
+      >
+      <span slot="operation" slot-scope="text, record">
+     <a @click="gotoNew(record.id)">编辑</a>
+     |
+     <a @click="deleteItem(record.buildingId)">删除</a>
+    </span></a-table>
     </div>
   </a-card>
 </template>
 
 <script>
-import StandardTable from '../../../components/table/StandardTable'
+import {message} from 'ant-design-vue'
 const columns = [
   {
     title: '教学楼编号',
-    dataIndex: 'no'
+    dataIndex: 'buildingId'
   },
   {
     title: '教学楼名称',
@@ -52,33 +57,17 @@ const columns = [
   }
 ]
 
-const dataSource = [{
-    key:1,
-    no:1,
-    name:'主楼101',
-    floor:1,
-    status:1
-},{
-    key:2,
-    no:2,
-    name:'化学实验',
-    floor:2,
-    status:2
-},{
-    key:3,
-    no:3,
-    name:'高一（1）',
-    floor:2,
-    status:2
-}]
-
 export default {
   name: 'classroom',
-  components: {StandardTable},
+   async created() {
+    let { data } = await this.$api.basic.building.fetchList();
+    this.dataSource = data.rows;
+    console.log(data);
+  },
   data () {
     return {
       columns: columns,
-      dataSource: dataSource,
+      dataSource: [],
       selectedRowKeys: [],
       selectedRows: []
     }
@@ -103,6 +92,13 @@ export default {
     capacity:200,
     status:2
 })
+    },
+    async deleteItem(id){
+      let{data}=this.$api.basic.building.deleteBuilding({id})
+      if(data.success){
+      this.dataSource=this.dataSource.filter(item=>item.id==id)
+      message.info('删除成功')
+      }
     },
     handleMenuClick (e) {
       if (e.key === 'delete') {

@@ -19,14 +19,12 @@ const building = {
 
     // 教学楼新增接口
     saveBuilding(params){
-        return axios.post(`${baseUrl}/saveData.json`,params, {
-            'Content-Type': 'multipart/form-data'});    
+        return axios.post(`${baseUrl}/saveData.json`,params);    
     },
 
     // 教学楼删除接口
     deleteBuilding(params){
-        return axios.get(`${baseUrl}/deleteData.json`,params, {
-            'Content-Type': 'multipart/form-data'});   
+        return axios.get(`${baseUrl}/deleteData.json`,{params});   
     }
 }
 

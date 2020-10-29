@@ -37,7 +37,7 @@ const student = {
     },
 
     // 行政班人员编辑
-    addClassMember(params){
+    updateClassMember(params){
         return axios.post(`${basicUrl}/updateMainclassMember`,params);   
     },
 

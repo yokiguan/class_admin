@@ -15,83 +15,63 @@
           </a-button>
         </a-dropdown>
       </div>
-      <standard-table
-        :rowKey="'name'"
+      <a-table
+        :rowKey="'id'"
         :columns="columns"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
-        subPath='/basic/template/detail'
+        subPath="/basic/template/detail"
         @change="onchange"
-      />
+      ><span slot="operation" slot-scope="text, record">
+     <a @click="gotoNew(record.id)">编辑</a>
+     |
+     <a @click="deleteItem(record.id)">删除</a>
+    </span></a-table>
     </div>
   </a-card>
 </template>
 
 <script>
-import StandardTable from "../../../components/table/StandardTable";
+import{message} from 'ant-design-vue'
 const columns = [
   {
     title: "模板编号",
-    dataIndex: "no",
+    dataIndex: "id",
   },
   {
     title: "模板名称",
-    dataIndex: "name",
+    dataIndex: "templateName",
   },
   {
     title: "一周工作日",
-    dataIndex: "workDay",
+    dataIndex: "workday",
     customRender: (text) => text + " 天",
   },
   {
     title: "休息天数",
-    dataIndex: "restDay",
+    dataIndex: "restday",
     customRender: (text) => text + " 天",
   },
   {
     title: "操作",
-    dataIndex: "operation",
+    key: "operation",
     scopedSlots: { customRender: "operation" },
-  },
-];
-
-const dataSource = [
-  {
-    key: 1,
-    no: 1,
-    name: "高一组课表模板",
-    workDay: 5,
-    restDay: 2,
-  },
-  {
-    key: 2,
-    no: 2,
-    name: "高二组课表模板",
-    workDay: 6,
-    restDay: 1,
-  },
-  {
-    key: 3,
-    no: 3,
-    name: "高三组课表模板",
-    workDay: 6.5,
-    restDay: 0.5,
   },
 ];
 
 export default {
   name: "templet",
-  components: { StandardTable },
   data() {
     return {
       columns: columns,
-      dataSource: dataSource,
+      dataSource: [],
       selectedRowKeys: [],
       selectedRows: [],
     };
   },
-  created(){
-    this.$api.basic.template.fetchList().then(res=>{console.log(res);})
+  async created(){
+   let {data}=await this.$api.basic.template.fetchList()
+    this.dataSource=data.rows
   },
   methods: {
     onchange(selectedRowKeys, selectedRows) {
@@ -106,8 +86,15 @@ export default {
         (item) => this.selectedRowKeys.indexOf(item.key) < 0
       );
     },
-    gotoNew() {
-      this.$router.push('/basic/template/detail')
+    gotoNew(id) {
+      this.$router.push('/basic/template/detail?id='+id)
+    },
+    async deleteItem(id){
+      let{data}=this.$api.basic.template.deleteTemplate({ids:id})
+      if(data.success){
+      this.dataSource=this.dataSource.filter(item=>item.id==id)
+      message.info('删除成功')
+      }
     },
     handleMenuClick(e) {
       if (e.key === "delete") {
