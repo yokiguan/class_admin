@@ -65,6 +65,15 @@ export default {
       selectedRows: []
     }
   },
+     async created() {
+    let queryString=window.location.hash.split('?')[1]
+    let id=queryString.split('=')[1]
+    if(id){
+      let { data } = await this.$api.basic.adminClass.fetchClassMember({id});
+      this.dataSource=data
+      this.gradeId=id
+    }   
+  },
   methods: {
     onchange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys

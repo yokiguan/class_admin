@@ -14,75 +14,72 @@
           </a-button>
         </a-dropdown>
       </div>
-      <standard-table
-        :rowKey="'key'"
+      <a-table
+        rowKey="gradeId"
         :columns="columns"
         :subName="'查看课程'"
-        :subPath="'/basic/grade/subject'"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
         @change="onchange"
-      />
+      >
+        <span slot="operation" slot-scope="text, record">
+     <a @click="gotoNew(record.id)">编辑</a>
+     |
+     <a @click="deleteItem(record.gradeId)">删除</a>
+     |
+     <a @click="gotoNew(record.id)">查看课程</a>
+    </span></a-table>
     </div>
   </a-card>
 </template>
 
 <script>
-import StandardTable from '../../../components/table/StandardTable'
+import{message} from 'ant-design-vue'
 const columns = [
   {
     title: '年级编号',
-    dataIndex: 'no'
+    dataIndex: 'gradeId'
   },
   {
     title: '名称',
-    dataIndex: 'name'
+    dataIndex: 'gradeName'
   },
   {
     title: '级部',
-    dataIndex: 'grade',
+    dataIndex: 'adminName',
   },
   {
     title: '课程',
-    dataIndex: 'subjects',
+    dataIndex: 'subjectEntities',
+    customRender:(text,record)=>{
+      let t=record.subjectEntities?record.subjectEntities.forEach(item=>item=item.name)?.join(','):''
+      console.log(t);
+      return t
+    }
   },
   {
     title: '操作',
-    dataIndex: 'operation',
+    key: 'operation',
     scopedSlots: { customRender: 'operation' },
   }
 ]
 
-const dataSource = [{
-    key:1,
-    no:1,
-    name:'高一',
-    grade:'高中部',
-    subjects:'语数英'
-},{
-    key:2,
-    no:2,
-    name:'高二（理）',
-    grade:'高中部',
-    type:'物化生'
-},{
-    key:3,
-    no:3,
-    name:'高二（文）',
-    grade:'高中部',
-    type:'政史地'
-}]
-
 export default {
   name: 'grade',
-  components: {StandardTable},
   data () {
     return {
       columns: columns,
-      dataSource: dataSource,
+      dataSource: [],
       selectedRowKeys: [],
       selectedRows: []
     }
+  },
+  async created(){
+   let {data:{result,success}}=await this.$api.basic.grade.fetchGradeList()
+   console.log(result,success);
+   if(success){
+     this.dataSource=result
+   }
   },
   methods: {
     onchange (selectedRowKeys, selectedRows) {
@@ -101,6 +98,16 @@ export default {
     grade:'高二文;高二理',
     type:'走班课'
 })
+    },
+     gotoNew(id) {
+      this.$router.push('/basic/grade/subject?id='+id)
+    },
+    async deleteItem(id){
+      let{data}=this.$api.basic.grade.deleteGrade({id})
+      if(data.success){
+      this.dataSource=this.dataSource.filter(item=>item.gradeId==id)
+      message.info('删除成功')
+      }
     },
     handleMenuClick (e) {
       if (e.key === 'delete') {

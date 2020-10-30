@@ -8,7 +8,7 @@
         :columns="columns"
         :dataSource="dataSource"
       >
-      <span slot="operation" slot-scope="text,value"><a @click='remove(value)'>删除</a></span>
+      <span slot="operation" slot-scope="text,value"><a @click='remove(value.subChildId)'>删除</a></span>
       </a-table>
       <a-modal title="新增课程" 
       :visible='showSubject'
@@ -23,7 +23,7 @@
 const columns = [
   {
     title: "课程编号",
-    dataIndex: "no",
+    dataIndex: "subChildId",
   },
   {
     title: "课程名称",
@@ -57,13 +57,26 @@ export default {
     return {
       columns,
       dataSource,
+      gradeId:'',
       showSubject:false,
       addSub:''
     };
   },
+   async created() {
+    let queryString=window.location.hash.split('?')[1]
+    let id=queryString.split('=')[1]
+    if(id){
+      let { data } = await this.$api.basic.grade.fetchGrade({id});
+      this.dataSource=data.result?.subjectEntities
+      this.gradeId=id
+    }   
+  },
   methods: {
-    remove(value){
-        this.dataSource.filter(item=>item.no==value.no)
+    remove(id){
+      let{data}=this.$api.basic.grade.deleteGradeSubject({gradeId:this.gradeId,subChildIds:[id]})
+      if(data.success){
+      this.dataSource=this.dataSource.filter(item=>item.subChildId==id)
+      }
     },
     addNew() {
         this.showSubject=true
