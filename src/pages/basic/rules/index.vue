@@ -92,8 +92,11 @@ export default {
         this.dataSource=this.dataSource.forEach(item => {
           if (item.id == this.id) item.name = this.changeName;
         });
-      } else 
-        await this.$api.basic.rule.saveRule({ name: this.changeName });
+      } else {
+          let res=await this.$api.basic.rule.saveRule({ name: this.changeName });
+      if(res.success)
+      this.dataSource.unshift({ name: this.changeName })
+      }
       
       this.visible = false;
 
