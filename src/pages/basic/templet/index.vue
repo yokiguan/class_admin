@@ -3,25 +3,12 @@
     <div>
       <div class="operator">
         <a-button @click="gotoNew" type="primary">新建</a-button>
-        <a-button>批量操作</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="audit">审批</a-menu-item>
-          </a-menu>
-          <a-button>
-            更多操作
-            <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
       </div>
       <a-table
         :rowKey="'id'"
         :columns="columns"
         :dataSource="dataSource"
-        :selectedRows="selectedRows"
         subPath="/basic/template/detail"
-        @change="onchange"
       ><span slot="operation" slot-scope="text, record">
      <a @click="gotoNew(record.id)">编辑</a>
      |
@@ -74,9 +61,9 @@ export default {
     this.dataSource=data.rows
   },
   methods: {
-    onchange(selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys;
-      this.selectedRows = selectedRows;
+
+    newModal(){
+
     },
     remove() {
       this.dataSource = this.dataSource.filter(
