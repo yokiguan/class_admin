@@ -2,107 +2,124 @@
   <a-card>
     <div>
       <div class="operator">
-        <a-button @click="gotoNew" type="primary">新建</a-button>
+        <a-button @click="showModal" type="primary">新建</a-button>
       </div>
-      <a-table
-        :rowKey="'key'"
-        :columns="columns"
-        :dataSource="dataSource"
-      >
-      <span slot='operation' slot-scope="text,value"><a @click="showModal(value)">编辑</a> | <a @click="gotoNew">查看</a> | <a @click="remove(value)">删除</a></span>
+      <a-table rowKey="ruleId" :columns="columns" :dataSource="dataSource">
+        <span slot="operation" slot-scope="text, record"
+          ><a @click="showModal(record)">编辑</a> |
+          <a @click="gotoNew(record.ruleId)">查看</a> |
+          <a @click="remove(record.ruleId)">删除</a
+          ><a-modal
+            title="修改规则名字"
+            :visible="visible"
+            @ok="editSubmit"
+            @cancel="cancelSubmit"
+          >
+            <a-input
+              label="规则初始名"
+              disabled
+              placeholder="请输入规则初始名"
+              v-model="name"
+            ></a-input>
+            <a-input
+              label="规则修改名"
+              placeholder="请输入规则修改名"
+              v-model="changeName"
+            ></a-input> </a-modal
+        ></span>
       </a-table>
     </div>
-    <a-modal title="修改规则名字" :visible='visible' @ok='editSubmit' @cancel='cancelSubmit'>
-      <a-input label='规则初始名' disabled placeholder="请输入" v-model='name'></a-input>
-      <a-input label='规则修改名' placeholder="请输入" v-model='changeName'></a-input>
-    </a-modal>
   </a-card>
 </template>
 
 <script>
 const columns = [
   {
-    title: '序号',
-    dataIndex: 'no'
+    title: "序号",
+    dataIndex: "ruleId"
   },
   {
-    title: '名称',
-    dataIndex: 'name'
+    title: "名称",
+    dataIndex: "name"
   },
   {
-    title: '选课规则',
-    dataIndex: 'text,value',
-    scopedSlots: { customRender: 'operation' },
+    title: "选课规则",
+    key: "operation",
+    scopedSlots: { customRender: "operation" }
   }
-]
-
-const dataSource = [{
-    key:1,
-    no:1,
-    name:'6+3'
-},{
-    key:2,
-    no:2,
-    name:'3+2+2',
-},{
-    key:3,
-    no:3,
-    name:'高三选课规则（文）',
-}]
+];
 
 export default {
-  name: '选课规则',
-  data () {
+  name: "rule",
+  data() {
     return {
       columns,
-      dataSource,
-      visible:false,
-      name:'',
-      changeName:'',
-      clickItem:null,
-    }
+      dataSource: [],
+      visible: false,
+      name: "",
+      id:null,
+      changeName: ""
+    };
+  },
+  async created() {
+    let { data } = await this.$api.basic.rule.fetchList();
+    this.dataSource = data.rows;
   },
   methods: {
-    remove (value) {
-      this.dataSource = this.dataSource.filter(item => item.key==value.key)
+    remove(id) {
+      let { data } = this.$api.basic.rule.deleteRule({ ids: id });
+      if (data.success)
+        this.dataSource = this.dataSource.filter(item => item.ruleId == id);
     },
-    gotoNew () {
-      this.$router.push('/basic/rule/detail')
+    gotoNew(id) {
+      this.$router.push("/basic/rule/detail?id=" + id);
     },
-    showModal(value){
-      this.visible=true
-      this.clickItem=value
-      this.name=value.name
+    showModal(value) {
+      this.visible = true;
+      console.log(value);
+      if (value.ruleId) {
+        this.name = value.name;
+        this.id=value.ruleId
+      }else this.id=null
     },
-    editSubmit(){
-      this.dataSource.forEach(item=>{
-        if(item.key==this.clickItem.key)
-        item.name=this.changeName
-      })
-      this.visible=false
+    async editSubmit() {
+      if (this.id) {
+        let { success } = await this.$api.basic.rule.saveRule({
+          ruleId: this.id,
+          name: this.changeName
+        });
+        if(success)
+        this.dataSource=this.dataSource.forEach(item => {
+          if (item.id == this.id) item.name = this.changeName;
+        });
+      } else 
+        await this.$api.basic.rule.saveRule({ name: this.changeName });
+      
+      this.visible = false;
+
     },
-    cancelSubmit(){
-      this.changeName=''
-      this.visible=false
+    cancelSubmit() {
+      this.changeName = "";
+      this.visible = false;
     }
   }
-}
+};
 </script>
 
 <style lang="less" scoped>
-  .search{
-    margin-bottom: 54px;
+.search {
+  margin-bottom: 54px;
+}
+.fold {
+  width: calc(100% - 216px);
+  display: inline-block;
+}
+.operator {
+  margin-bottom: 18px;
+}
+@media screen and (max-width: 900px) {
+  .fold {
+    width: 100%;
   }
-  .fold{
-    width: calc(100% - 216px);
-    display: inline-block
-  }
-  .operator{
-    margin-bottom: 18px;
-  }
-  @media screen and (max-width: 900px) {
-    .fold {
-      width: 100%;
-    }
-  }
+}
 </style>

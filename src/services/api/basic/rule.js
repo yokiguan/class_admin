@@ -13,7 +13,7 @@ const rule = {
 
     // 查询指定规则
     fetchRule(params){
-        return axios.get(`${baseUrl}/getDetailDataList.json`,params);    
+        return axios.get(`${detailUrl}/getDetailDataList.json`,params);    
     },
 
     // 规则新增接口
@@ -23,12 +23,12 @@ const rule = {
 
     // 规则删除接口
     deleteRule(params){
-        return axios.get(`${baseUrl}/deleteData.json`,params);   
+        return axios.post(`${baseUrl}/deleteData.json`,params);   
     },
 
     // 指定规则详情 删除
     deleteRuleItem(params){
-        return axios.get(`${detailUrl}/deleteData.json`,params);   
+        return axios.post(`${detailUrl}/deleteData.json`,params);   
     },
     // 指定规则详情 新增
     saveRuleItem(params){
