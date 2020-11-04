@@ -2,17 +2,7 @@
   <a-card>
     <div>
       <div class="operator">
-        <a-button @click="addNew" type="primary">新建</a-button>
-        <a-button >批量操作</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="audit">审批</a-menu-item>
-          </a-menu>
-          <a-button>
-            更多操作 <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
+        <a-button @click="showModal" type="primary">新建</a-button>
       </div>
       <a-table
         rowKey="buildingId"
@@ -27,6 +17,36 @@
      <a @click="deleteItem(record.buildingId)">删除</a>
     </span></a-table>
     </div>
+     <a-modal
+      title="新增教学楼"
+      :visible="show"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <a-form :form="form" v-bind="formItemLayout">
+        <a-form-item label="教学楼名称">
+          <a-input
+            v-decorator="[
+              'name',
+              { rules: [{ required: true, message: '请输入教学楼名称' }] }
+            ]"
+            placeholder="请输入你想要新增的教学楼名称"
+          ></a-input>
+        </a-form-item>
+        <a-form-item label="教学楼层数">
+          <a-input
+            v-decorator="[
+              'floor',
+              { rules: [{ required: true, message: '请输入层数' }] }
+            ]"
+            placeholder="请输入你想要新增的层数"
+          ></a-input>
+        </a-form-item>
+        <a-form-item label="是否启用">
+          <a-switch v-decorator="['status', { rules: [{ required: true }] }]" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </a-card>
 </template>
 
@@ -66,13 +86,39 @@ export default {
   },
   data () {
     return {
+      show:false,
       columns: columns,
       dataSource: [],
       selectedRowKeys: [],
-      selectedRows: []
+      selectedRows: [],
+      formItemLayout: {
+        labelCol: { span: 6 },
+        wrapperCol: { span: 14 }
+      }
     }
   },
+    beforeCreate() {
+    this.form = this.$form.createForm(this, { name: "building" });
+  },
   methods: {
+    showModal() {
+      this.show = true;
+    },
+    async handleOk() {
+      let formData = this.form.getFieldsValue();
+      formData = {
+        ...formData,
+        floor: parseInt(formData.floor),
+        status: formData.status ? 1 : 0
+      };
+      let res = await this.$api.basic.building.saveBuilding(formData);
+      console.log(res);
+      this.show = false;
+      this.dataSource.unshift(formData);
+    },
+    handleCancel() {
+      this.show = false;
+    },
     onchange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys
       this.selectedRows = selectedRows

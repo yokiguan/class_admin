@@ -23,12 +23,12 @@ const subject = {
 
     // 主课程删除接口
     deleteMain(params){
-        return axios.get(`${baseUrl}/deleteData.json`,params);   
+        return axios.post(`${baseUrl}/deleteData.json`,params);   
     },
 
     // 主课程对应子课程列表查看
     fetchChildList(params){
-     return axios.get(`${baseUrl}/getChildSubjectDataList.json`,params);   
+     return axios.post(`${baseUrl}/getChildSubjectDataList.json`,params);   
     },
 
     // 子课程查看

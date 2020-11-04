@@ -38,6 +38,14 @@ dataSource.push({
 });
 export default {
   name: "CardList",
+  async created(){
+    let queryString=window.location.hash.split('?')[1]
+    let id=queryString.split('=')[1]
+    if(id){
+      let { data } = await this.$api.basic.rule.fetchRule({id});
+      console.log(data);
+    }   
+  },
   data() {
     return {
       dataSource,

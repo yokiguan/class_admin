@@ -2,121 +2,128 @@
   <a-card>
     <div>
       <div class="operator">
-        <a-button @click="addNew" type="primary">新建</a-button>
-        <a-button >批量操作</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="audit">审批</a-menu-item>
-          </a-menu>
-          <a-button>
-            更多操作 <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
+        <a-button @click="showModal" type="primary">新建</a-button>
       </div>
-      <standard-table
-        :rowKey="'key'"
+      <a-table
+        rowKey="id"
         :columns="columns"
         :subName="'子课程'"
         :subPath="'/basic/subject/subsubject'"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
-        @change="onchange"
-      />
+      ><span slot="operation" slot-scope="text, record">
+          <a @click="showModal(record)">编辑</a>
+          |
+          <a @click="deleteItem(record.id)">删除</a>
+          |<a @click="gotoNew(record.id)">子课程</a>
+        </span>
+        </a-table>
     </div>
+    <a-modal
+      title="新增课程"
+      :visible="show"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <a-form :form="form" v-bind="formItemLayout">
+        <a-form-item label="科目名称">
+          <a-input
+            v-decorator="[
+              'subName',
+              { rules: [{ required: true, message: '请输入科目名称' }] }
+            ]"
+            placeholder="请输入你想要新增的科目名称"
+          ></a-input>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </a-card>
 </template>
 
 <script>
-import StandardTable from '../../../components/table/StandardTable'
 const columns = [
   {
-    title: '课程编号',
-    dataIndex: 'no'
+    title: "课程编号",
+    dataIndex: "id"
   },
   {
-    title: '名称',
-    dataIndex: 'name'
+    title: "名称",
+    dataIndex: "subName"
   },
   {
-    title: '简称',
-    dataIndex: 'alias',
-  },
-  {
-    title: '操作',
-    dataIndex: 'operation',
-    scopedSlots: { customRender: 'operation' },
+    title: "操作",
+    dataIndex: "operation",
+    scopedSlots: { customRender: "operation" }
   }
-]
-
-const dataSource = [{
-    key:1,
-    no:1,
-    name:'物理',
-    alias:'wl'
-},{
-    key:2,
-    no:2,
-    name:'语文',
-    alias:'yw'
-},{
-    key:3,
-    no:3,
-    name:'数学',
-    alias:'sx'
-}]
+];
 
 export default {
-  name: 'subject',
-  components: {StandardTable},
-  data () {
+  name: "subject",
+  data() {
     return {
-      columns: columns,
-      dataSource: dataSource,
+      columns,
+      dataSource: [],
+       formItemLayout: {
+        labelCol: { span: 6 },
+        wrapperCol: { span: 14 }
+      },
+      show:false,
       selectedRowKeys: [],
       selectedRows: []
-    }
+    };
+  },
+  async created() {
+    let { data } = await this.$api.basic.subject.fetchMainList();
+    this.dataSource=data.rows
+    console.log(data);
+  },
+   beforeCreate() {
+    this.form = this.$form.createForm(this, { name: "subject" });
   },
   methods: {
-    onchange (selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys
-      this.selectedRows = selectedRows
+    showModal(){
+      this.show=true
     },
-    remove () {
-      this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+    async handleOk() {
+      let formData = this.form.getFieldsValue();
+      let res = await this.$api.basic.subject.saveMain(formData);
+      console.log(formData,res);
+      this.dataSource.unshift(formData)
+      this.show = false;
     },
-    addNew () {
-      this.dataSource.unshift({
-    key:4,
-    no:4,
-     name:'英语',
-    alias:'yy'
-})
+    handleCancel() {
+      this.show = false;
     },
-    handleMenuClick (e) {
-      if (e.key === 'delete') {
-        this.remove()
-      }
-    }
+    onchange(selectedRowKeys, selectedRows) {
+      this.selectedRowKeys = selectedRowKeys;
+      this.selectedRows = selectedRows;
+    },
+    gotoNew(id) {
+      this.$router.push("/basic/subject/subsubject?id=" + id);
+    },
+    deleteItem(id) {
+      let { data } = this.$api.basic.subject.deleteMain({ ids:[id] });
+      if (data.success)
+        this.dataSource = this.dataSource.filter(i => i.roomId == id);
+    },
   }
-}
+};
 </script>
 
 <style lang="less" scoped>
-  .search{
-    margin-bottom: 54px;
+.search {
+  margin-bottom: 54px;
+}
+.fold {
+  width: calc(100% - 216px);
+  display: inline-block;
+}
+.operator {
+  margin-bottom: 18px;
+}
+@media screen and (max-width: 900px) {
+  .fold {
+    width: 100%;
   }
-  .fold{
-    width: calc(100% - 216px);
-    display: inline-block
-  }
-  .operator{
-    margin-bottom: 18px;
-  }
-  @media screen and (max-width: 900px) {
-    .fold {
-      width: 100%;
-    }
-  }
+}
 </style>

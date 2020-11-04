@@ -82,6 +82,14 @@ export default {
       selectedRows: []
     }
   },
+   async created() {
+    let queryString=window.location.hash.split('?')[1]
+    let id=queryString.split('=')[1]
+    if(id){
+      let { data } = await this.$api.basic.subject.fetchChildList({id});
+      console.log(data);
+    }   
+  },
   methods: {
     onchange (selectedRowKeys, selectedRows) {
       this.selectedRowKeys = selectedRowKeys
