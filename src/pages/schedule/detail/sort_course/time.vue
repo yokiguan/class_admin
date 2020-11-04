@@ -1,7 +1,14 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">选课排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">课节设置</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
                 <a-col>
@@ -11,52 +18,31 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px"
-                    >返回</button>
-                </a-col>
+                        width: 100px">返回</button>  </a-col>
             </a-row>
         </div>
         <!-- /result -->
-
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3">
-                    <a-button>课时设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button >课节设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>教师设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>课程设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>开始排课</a-button>
-                </a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-row class="buttons-sub">
-                <a-col :span="3">
-                    <a-button type="danger" style="color:white;
+                <a-col :span="3"><a-button type="danger" style="color:white;
                           width: 100px;
-                         height: 30px;">禁选</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button style="background-color:grey;
+                         height: 30px;">禁选</a-button></a-col>
+                <a-col :span="3"><a-button style="background-color:grey;
                       width: 100px;
-                        height: 30px;color:white">普通</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button type="primary" style="color:white;
+                        height: 30px;color:white">普通</a-button></a-col>
+                <a-col :span="3"><a-button type="primary" style="color:white;
                               width: 100px;
-                              height: 30px;">优先</a-button>
-                </a-col>
+                              height: 30px;">优先</a-button></a-col>
                 <a-col :span="12">
                 </a-col>
-                <a-col :span="3">
-                    <a-button
-                            style="height:40px;background-color:#0099ff;color:white" @click="maxTime">最大课时数设置</a-button>
+                <a-col :span="3"><a-button style="height:40px;background-color:#0099ff;color:white" @click="maxTime">最大课时数设置</a-button>
                 </a-col>
             </a-row>
             <a-table id="kebiaoTable"
@@ -72,8 +58,7 @@
                         border: none;
                         border-radius: 5px;
                         margin-top: 50px;
-                        width: 100px">
-                    下一步</button>
+                        width: 100px">下一步</button>
             </router-link>
             <create-modal
                     width="900px"
@@ -104,33 +89,41 @@
                                      :data-source="tableData4"
                                      :pagination="false"
                                      :bordered="true">
-                                <div slot="addName" icon="plus" style="color: blue">
-
-                                    <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;
-                                            color: blue;">
-                                        <a-icon type="plus" />
-                                        <span>
-                                            添加一项
-                                        </span>
-                                    </div>
-                                </div>
                                 <a-select slot="buildingType"
                                           slot-scope="type"
                                           :default-value="type"
                                           style="width: 240px">
-                                    <a-select-option value="0">
-                                        1
-                                    </a-select-option>
-                                    <a-select-option value="0">
-                                        2
-                                    </a-select-option>
+                                    <a-select-option value="0">1</a-select-option>
+                                    <a-select-option value="0">2</a-select-option>
                                 </a-select>
                                 <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
                             </a-table>
                         </a-form-item>
                     </a-form>
+                    <div slot="addName"  style="float: left;font-size: 1.0rem;color: blue;margin-left: 10px;margin-top: -10px" @click="addNames">
+                        <a-icon type="plus" />
+                        <span>添加一项</span>
+                    </div>
                 </div>
             </create-modal>
+<!--            添加一项-->
+            <a-modal :visible='addNameVisit'
+                     width="600px"
+                     :closable="false"
+                     on-ok="handleOk">
+                <a-checkbox-group
+                        v-model="value"
+                        name="checkboxgroup"
+                        :options="options"
+                        @change="onChange"
+                        style="margin-left: 50px;margin-bottom: 100px;margin-top: 30px"/>
+                <template slot="footer">
+                    <a-button key="Save" style="float: left;margin-left: 150px; background-color: #0099ff;color: white;width: 100px;height: 40px" :loading="loading" @click="handleOk">确定
+                    </a-button>
+                    <a-button key="back" style="margin-right: 150px;background-color: #0099ff;color: white;width: 100px;height: 40px"  @click="handleCancel">取消
+                    </a-button>
+                </template>
+            </a-modal>
         </div>
     </div>
 </template>
@@ -245,7 +238,6 @@
             key: '晚自习1',
         },
     ];
-    // eslint-disable-next-line no-unused-vars
     const column4 = [
         {
             title: '课节',
@@ -266,8 +258,6 @@
             scopedSlots: { customRender: 'action' }
         },
     ];
-
-    // eslint-disable-next-line no-unused-vars
     const tableData4= [
         {
             times: '周一上午第一节',
@@ -277,7 +267,17 @@
         {
             scopedSlots: { customRender: 'addName' }
         },
-    ]
+    ];
+    const options = [
+        { label: '上午第1节', value: 'morningOne' },
+        { label: '上午第2节', value: 'morningTwo' },
+        { label: '上午第3节', value: 'morningThree' },
+        { label: '上午第4节', value: 'morningFour' },
+        { label: '下午第1节', value: 'afterOne' },
+        { label: '下午第2节', value: 'afterTwo' },
+        { label: '下午第3节', value: 'afterThree' },
+        { label: '下午第4节', value: 'afterFour' },
+    ];
     export default {
         components: {CreateModal},
         data() {
@@ -286,8 +286,10 @@
                 tableData4,
                 columns,
                 tableData,
+                options,
                 visible: false,
-                loading: false
+                loading: false,
+                addNameVisit:false,
             };
         },
         methods: {
@@ -323,13 +325,55 @@
             delSituation: function(key, index){
                 console.log(key, index)
                 this.tableData[key].situation.pop(index)
-            }
+            },
+            addNames(){
+                this.addNameVisit=true
+            },
+            handleOk(){
+                this.loading=true
+                setTimeout(()=>{
+                    this.loading=false
+                    this.addNameVisit=false
+                })
+            },
+            handleCancel() {
+                this.addNameVisit=false;
+            },
+            timesSetting(){
+                this.$router.push('/schedule/detail/sort_course/index')
+            },
+            oncesSetting(){
+                this.$router.push('/schedule/detail/sort_course/time')
+            },
+            placeSetting(){
+                this.$router.push('/schedule/detail/sort_course/place')
+            },
+            courseSetting(){
+                this.$router.push('/schedule/detail/sort_course/course/index')
+            },
+            startArray(){
+                this.$router.push('/schedule/detail/start_class')
+            },
+            onChange(checkedValues) {
+                console.log('checked = ', checkedValues);
+                console.log('value = ', this.value);
+            },
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;

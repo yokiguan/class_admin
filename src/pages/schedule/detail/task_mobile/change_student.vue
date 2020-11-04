@@ -2,6 +2,14 @@
     <EasyScrollbar :barOption="myBarOption">
         <div id="wrapper" style="width: 600px">
             <div style="width: 1800px">
+                <div class="result">
+                    <a-breadcrumb>
+                        <a-breadcrumb-item>首页</a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">学生调班</a></a-breadcrumb-item>
+                    </a-breadcrumb>
+                </div>
                 <div class="left">
                     <a-row class="left_title">
                         <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
@@ -52,37 +60,30 @@
                     </div>
                     <div class="table-bg">
                         <a-row class="buttons">
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
+                            <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">整体查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
+                        width: 110px" @click="allLook">整体查看</button></a-col>
+                            <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按老师查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
+                        width: 110px" @click="teacherLook">按老师查看</button></a-col>
+                            <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按场地查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
+                        width: 110px" @click="placeLook">按场地查看</button></a-col>
+                            <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按科目查看</button>
+                        width: 110px" @click="subjectLook">按科目查看</button>
                             </a-col>
                         </a-row>
                         <a-table
@@ -307,12 +308,37 @@
                 }else{
                     return ''
                 }
-            }
+            },
+            allLook(){
+                this.$router.push('/schedule/detail/task_mobile/all')
+            },
+            teacherLook(){
+                this.$router.push('/schedule/detail/task_mobile/teacher')
+            },
+            placeLook(){
+                this.$router.push('/schedule/detail/task_mobile/place')
+            },
+            subjectLook(){
+                this.$router.push('/schedule/detail/task_mobile/course')
+            },
+            studentLook(){
+                this.$router.push('/schedule/detail/curriculum/student')
+            },
         },
     };
 </script>
 
 <style lang="less" scoped>
+    .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
     .left{
         width: 300px;
         height: 900px;
@@ -334,6 +360,7 @@
         padding: 20px 25px;
         border-radius: 10px;
         margin-bottom: 50px;
+        margin-top: 35px;
     }
     .table-bg{
         padding: 20px 25px;

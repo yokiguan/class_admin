@@ -1,86 +1,50 @@
 <template>
     <div>
         <div>
+            <div class="result">
+                <a-breadcrumb>
+                    <a-breadcrumb-item>首页</a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">选课排课</a></a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">课程设置</a></a-breadcrumb-item>
+                </a-breadcrumb>
+            </div>
             <div class="header-item">
                 <a-row>
                     <a-col :span="13"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
-                    <a-col :span="2">
-                        <a-button
-                                  style="background-color: #00ccff;
+                        <a-button style="background-color: #00ccff;
                                     color: white;
                                     height: 40px;
                                     border-radius: 5px;
-                                    width: 100px">
-                            <router-link to="/schedule/detail/sort_course/course/course/contrast_setting">
-                                互斥规则</router-link>
-                        </a-button>
-                    </a-col>
-                    <a-col :span="2">
-                        <button style="background-color: #00ccff;
+                                    width: 100px" @click="contrastRegular">互斥规则</a-button>
+                        <button style="background-color: #00ccff;margin-left: 50px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 100px">
-                            同时上课</button></a-col>
-                    <a-col :span="5">
-                        <button style="background-color: #00ccff;
+                        width: 100px " @click="sameClass">同时上课</button>
+                        <button style="background-color: #00ccff;margin-left: 50px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 100px">禁止相邻</button></a-col>
-                    <a-col>
-                        <button style="background-color: blue;
+                        width: 100px" @click="banned">禁止相邻</button>
+                        <button style="background-color: blue;margin-left: 50px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 100px"
-                        >返回</button></a-col>
+                        width: 100px">返回</button>
                 </a-row>
             </div>
             <div class="content">
-                <div class="content-title">
-                    <a-row>
-                        <a-col :span="2">
-                            <button style="background-color: #e4e4e4;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 100px">
-                                课时设置</button></a-col>
-                        <a-col :span="2">
-                            <button style="background-color: #e4e4e4;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 100px">
-                                课节设置</button></a-col>
-                        <a-col :span="2">
-                            <button style="background-color: #e4e4e4;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 100px">
-                                教师设置</button></a-col>
-                        <a-col :span="2">
-                            <button style="background-color:#f2f2f2;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 100px"
-                            >课程设置</button></a-col>
-                        <a-col>
-                            <button style="background-color:#e4e4e4;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 100px"
-                            >开始排课</button></a-col>
-
-                    </a-row>
-                </div>
+                <a-row class="buttons">
+                    <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                    <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
+                    <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                    <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                    <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
+                </a-row>
                 <div class="table-content">
                     <a-table
                             :columns="columns"
@@ -402,7 +366,6 @@
             middle_blank:'  ',
             opt:'删除'
         }]
-
     export default {
         components: {CreateModal},
         data() {
@@ -437,11 +400,45 @@
             },
             onChange_class(checkedValues){
                 console.log('checked = ', checkedValues);
-            }
+            },
+            contrastRegular(){
+                this.$router.push('/schedule/detail/sort_course/course/course/contrast_setting')
+            },
+            sameClass(){
+                this.$router.push('/schedule/detail/sort_course/course/course/contrast_setting')
+            },
+            banned(){
+                this.$router.push('/schedule/detail/sort_course/course/course/contrast_setting')
+            },
+            timesSetting(){
+                this.$router.push('/schedule/detail/sort_course/index')
+            },
+            oncesSetting(){
+                this.$router.push('/schedule/detail/sort_course/time')
+            },
+            placeSetting(){
+                this.$router.push('/schedule/detail/sort_course/place')
+            },
+            courseSetting(){
+                this.$router.push('/schedule/detail/sort_course/course/index')
+            },
+            startArray(){
+                this.$router.push('/schedule/detail/start_class')
+            },
         },
     }
 </script>
 <style lang="less" scoped>
+    .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
     .header-item{
         height: 300px;
         background-color: white;
@@ -454,13 +451,14 @@
     .header-item span{
         font-size:1.5em
     }
-    .content-title{
-        width: 100%;
-        height: 70px;
-        background-color: white;
-        border-radius: 5px;
+    .buttons{
+       padding-left: 50px;
         padding-top: 30px;
-        padding-left: 100px;
+        background-color: white;
+    }
+    .buttons button{
+        background-color:#e4e4e4;
+        color:black;
     }
     .table-content{
         background-color: white;

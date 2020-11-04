@@ -1,17 +1,21 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">选课分班</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">手动分班</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
-                <a-col :span="12">
+                <a-col :span="18">
                     <span style="font-size:1.5em">高一2019-2020第一学期排课计划 -手动分班</span>
                     <!-- <br>
                     <span style="margin-left:2em">未分班人数<font style="color:red">100</font>人</span> -->
                 </a-col>
-                <a-col :span="12">
-                    <a-row>
-                        <a-col :span="6"><a-button>返回</a-button></a-col>
-                    </a-row>
+                <a-col><button style="width: 100px;height: 40px;background-color: blue;color: white;border-radius: 5px;border: none" @click="back">返回</button>
                 </a-col>
             </a-row>
         </div>
@@ -190,13 +194,26 @@
             },
             editInfo: function (key) {
                 console.log(key)
-            }
+            },
+            back(){
+              this.$router.push('/schedule/detail/sort_class/admin')
+            },
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;

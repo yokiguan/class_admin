@@ -1,7 +1,14 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">学科设置</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
                 <a-col>
@@ -11,30 +18,17 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px"
-                    >返回</button>
+                        width: 100px">返回</button>
                 </a-col>
             </a-row>
         </div>
-        <!-- /result -->
-
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3">
-                    <a-button>课时设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button >课节设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>教师设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>课程设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>开始排课</a-button>
-                </a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-table :columns="columns"
                      :data-source="tableData"
@@ -43,10 +37,11 @@
                 <a-input slot="every_time"></a-input>
                 <a-icon type="edit" slot="class_day" style="color: #00ccff;
                 font-size: 25px;
-                font-weight: bold"
-                @click="edit"/>
+                font-weight: bold" @click="edit"/>
                 <a-input slot="maxClass" placeholder="0"></a-input>
                 <a-input slot="everySettingTimes" placeholder="0"></a-input>
+                <a-input slot="morningClassTimes" placeholder="0"></a-input>
+                <a-input slot="afterClassTimes" placeholder="0"></a-input>
                 <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
             </a-table>
             <a-button
@@ -60,10 +55,7 @@
                         border-radius: 5px;
                         margin-top: 30px;
                         width: 150px"
-                    @click="add">
-                添加
-            </a-button>
-            <router-link to="/schedule/detail/sort_course/course">
+                    @click="add">添加</a-button>
                 <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
@@ -72,10 +64,8 @@
                         float: right;
                         margin-top: 150px;
                         margin-bottom: 20px;
-                        width: 150px">
+                        width: 150px" @click="Next">
                     下一步</button>
-            </router-link>
-
             <!--        编辑弹窗-->
             <create-modal class="edit"
                           :close="false"
@@ -194,68 +184,77 @@
     </div>
 </template>
 <script>
-    // import echarts from 'echarts'
     import CreateModal from "../../../../components/modal/CreateModal";
-    // import Templet from "../../../basic/templet/index";
     const columns = [
         {
             title: '学科名称',
             dataIndex: 'subject',
             key: 'subject',
-            align:'center'
+            align:'center',
+            width:'8%'
         },
         {
             title: '优先级',
             dataIndex: 'priority',
             key: 'priority',
-            align:'center'
+            align:'center',
+            width:'8%'
         },
         {
             title: '每周节数',
             dataIndex: 'every_times',
             key: 'every_times',
             scopedSlots: { customRender: 'every_time' },
-            align:'center'
+            align:'center',
+            width:'10%'
         },
         {
             title: '上课天数',
             dataIndex: 'class_days',
             key: 'class_days',
             scopedSlots: { customRender: 'class_day' },
-            align:'center'
+            align:'center',
+            width:'8%'
         },
         {
             title: '最大开课数',
             dataIndex: 'max_class',
             key: 'max_class',
             scopedSlots: { customRender: 'maxClass' },
-            align:'center'
+            align:'center',
+            width:'15%'
         },
         {
             title: '每天课时数设置',
             key: 'every_setting_times',
             dataIndex: 'every_setting_times',
             scopedSlots: { customRender: 'everySettingTimes' },
-            align:'center'
+            align:'center',
+            width:'15%'
         },
         {
             title: '上午课时数',
             key: 'morning_times',
             dataIndex: 'morning_times',
-            align:'center'
+            align:'center',
+            scopedSlots: { customRender: 'morningClassTimes' },
+            width:'15%'
         },
         {
             title: '下午课时数',
             key: 'after_times',
             dataIndex: 'after_times',
-            align:'center'
+            align:'center',
+            scopedSlots: { customRender: 'afterClassTimes' },
+            width:'15%'
         },
         {
             title: '操作',
             dataIndex: 'opt',
             key: 'opt',
             scopedSlots: { customRender: 'action' },
-            align:'center'
+            align:'center',
+            width:'5%'
         },
     ];
     let tableData = [
@@ -280,8 +279,6 @@
             opt: '删除'
         }
     ];
-    // eslint-disable-next-line no-unused-vars
-    import { Tree } from 'antd';
     export default {
         components: {CreateModal},
         data() {
@@ -345,12 +342,40 @@
             onSelect(selectedKeys, info) {
                 console.log('selected', selectedKeys, info);
             },
+            timesSetting(){
+                this.$router.push('/schedule/detail/sort_course/index')
+            },
+            oncesSetting(){
+                this.$router.push('/schedule/detail/sort_course/time')
+            },
+            placeSetting(){
+                this.$router.push('/schedule/detail/sort_course/place')
+            },
+            courseSetting(){
+                this.$router.push('/schedule/detail/sort_course/course/index')
+            },
+            startArray(){
+                this.$router.push('/schedule/detail/start_class')
+            },
+            Next(){
+                this.$router.push('/schedule/detail/class_admin/class')
+            }
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;

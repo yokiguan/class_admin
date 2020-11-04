@@ -1,7 +1,13 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
                 <a-col>
@@ -11,8 +17,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px"
-                    >返回</button>
+                        width: 150px">返回</button>
                 </a-col>
             </a-row>
         </div>
@@ -25,32 +30,13 @@
             style="margin-top: 20px;width:1200px;height: 700px">
                 <div slot="option" style="color: blue" >
                     <a-row>
-                            <a-col :span="2">
-                                 <span>
-                                    <router-link to="/schedule/detail/task_mobile/all">
-                                   查看
-                                    </router-link>
-                                 </span>
-                            </a-col>
-                            <a-col :span="4">
-                                <span >删除</span>
-                            </a-col>
-                            <a-col :span="4">
-                                <span>继续排课</span>
-                            </a-col>
-                            <a-col :span=" 4">
-                                <span>手动调整</span>
-                            </a-col>
-                            <a-col :span="4">
-                                <span>学生调班</span>
-                            </a-col>
-                            <a-col>
-                                <span>
-                                    <router-link to="">
-                                        发布结果
-                                    </router-link></span>
-                            </a-col>
-                        </a-row>
+                       <span style="float:left "  @click="onClickLook">查看</span>
+                       <span style="margin-left:0px " >删除</span>
+                       <span style="margin-left: 50px ">继续排课</span>
+                        <span style="margin-left: 50px " @click="integrate">手动调整</span>
+                        <span @click="changeClass" style="margin-left: 50px ">学生调班</span>
+                        <span style="margin-left: 50px ">发布结果</span>
+                    </a-row>
                 </div>
             </a-table>
 
@@ -115,7 +101,6 @@
         },
     ];
     export default {
-
         data() {
             return {
                 columns,
@@ -124,13 +109,33 @@
                 loading: false
             };
         },
-        methods: {
+        methods:{
+            onClickLook(){
+                this.$router.push('/schedule/detail/task_mobile/all')
+            },
+            integrate(){
+                this.$router.push('/schedule/detail/task_mobile/integrate')
+            },
+            changeClass(){
+                this.$router.push('/schedule/detail/task_mobile/change_student')
+            },
+
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;
@@ -139,9 +144,6 @@
         padding: 20px 25px;
         vertical-align: top;
         border-radius: 5px;
-    }
-    .result-left{
-        width: 50%;
     }
     .link-font-color{
         color: #0000ff;

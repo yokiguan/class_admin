@@ -1,7 +1,14 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">整体查看</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content ">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
                 <a-col>
@@ -11,37 +18,29 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px"
-                    >返回</button>
+                        width: 150px">返回</button>
                 </a-col>
             </a-row>
             <a-row style="margin-top: 20px">
                 <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
-                <a-col :span="4">
                     <button @click="showModal" style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 150px">查看学生冲突</button>
-                </a-col>
-                <a-col :span="4">
-                    <button type="primary" style="background-color: #19b294;
+                    <button type="primary" style="background-color: #19b294;margin-left: 30px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 150px">
-                        <router-link to="/schedule/detail/task_mobile/integrate">手动调课</router-link></button>
-                </a-col>
-                <a-col>
-                    <button style="background-color: #19b294;
+                        width: 150px" @click="manualChangeClass">手动调课</button>
+                    <button style="background-color: #19b294;margin-left: 30px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 150px" type="primary">学生调班</button>
-                </a-col>
+                        width: 150px" type="primary" @click="changClass">学生调班</button>
             </a-row>
             <a-row>
                 <a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col>
@@ -55,7 +54,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">整体查看</button>
+                        width: 110px" @click="allLook">整体查看</button>
                 </a-col>
                 <a-col :span="3">
                     <button style="background-color: #19b294;
@@ -63,7 +62,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按老师查看</button>
+                        width: 110px"  @click="teacherLook">按老师查看</button>
                 </a-col>
                 <a-col :span="3">
                     <button style="background-color: #19b294;
@@ -71,7 +70,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按场地查看</button>
+                        width: 110px"  @click="placeLook">按场地查看</button>
                 </a-col>
                 <a-col :span="3">
                     <button style="background-color: #19b294;
@@ -79,7 +78,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按科目查看</button>
+                        width: 110px"  @click="subjectLook">按科目查看</button>
                 </a-col>
             </a-row>
             <a-table
@@ -90,14 +89,7 @@
                     style="margin-top: 20px;width:1200px;height: 700px">
             </a-table>
         </div>
-<!--        <a-modal v-model="visible"-->
-<!--                 ok-text="添加"-->
-<!--                 cancel-text="取消"-->
-<!--                 @ok="hideModal">-->
-<!--            <p>Bla bla ...</p>-->
-<!--            <p>Bla bla ...</p>-->
-<!--            <p>Bla bla ...</p>-->
-<!--        </a-modal>-->
+
     </div>
 
 </template>
@@ -168,26 +160,40 @@
             };
         },
         methods: {
-            // showModal() {
-            //     this.visible = true;
-            // },
-            // hideModal() {
-            //     this.visible = false;
-            // },
-            // confirm() {
-            //     this.$confirm({
-            //         title: 'Confirm',
-            //         content: 'Bla bla ...',
-            //         okText: '确认',
-            //         cancelText: '取消',
-            //     });
-            // },
+            manualChangeClass(){
+                this.$router.push('/schedule/detail/task_mobile/integrate')
+            },
+            changClass(){
+                this.$router.push('/schedule/detail/task_mobile/change_student')
+            },
+            teacherLook(){
+                this.$router.push('/schedule/detail/task_mobile/teacher')
+            },
+            placeLook(){
+                this.$router.push('/schedule/detail/task_mobile/room')
+            },
+            subjectLook(){
+                this.$router.push('/schedule/detail/task_mobile/course')
+            },
+            studentLook(){
+                this.$router.push('/schedule/detail/curriculum/student')
+            },
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;
@@ -217,7 +223,13 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
+
         height: 1000px;
         width: 100%;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
     }
 </style>

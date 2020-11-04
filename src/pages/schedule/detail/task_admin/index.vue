@@ -2,6 +2,13 @@
     <EasyScrollbar :barOption="myBarOption">
         <div id="wrapper" style="width: 600px">
             <div style="width: 1800px">
+                <div class="result">
+                    <a-breadcrumb>
+                        <a-breadcrumb-item>首页</a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">行政班课表</a></a-breadcrumb-item>
+                    </a-breadcrumb>
+                </div>
                 <div class="left">
                     <a-row class="left_title">
                         <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
@@ -90,7 +97,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按老师查看</button>
+                        width: 110px" @click="teacherLook">按老师查看</button>
                             </a-col>
                             <a-col :span="3">
                                 <button style="background-color: #19b294;
@@ -98,7 +105,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按场地查看</button>
+                        width: 110px" @click="placeLook">按场地查看</button>
                             </a-col>
                             <a-col :span="3">
                                 <button style="background-color: #19b294;
@@ -106,7 +113,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按科目查看</button>
+                        width: 110px" @click="subjectLook">按科目查看</button>
                             </a-col>
                         </a-row>
                         <a-table
@@ -129,42 +136,42 @@
             align: "center",
             title: " ",
             dataIndex: 'num',
-            width:'7%',
+            width:'5%',
         },
         {
             title: '一',
             dataIndex: 'one',
             key:'one',
             align: "center",
-            width:'16.6%',
+            width:'19%',
         },
         {
             title: '二',
             dataIndex: 'two',
             key:'two',
             align: "center",
-            width:'16.6%',
+            width:'19%',
         },
         {
             title: '三',
             dataIndex: 'three',
             key:'three',
             align: "center",
-            width:'16.6%',
+            width:'19%',
         },
         {
             title: '四',
             dataIndex: 'four',
             key: 'four',
             align: "center",
-            width:'16.6%',
+            width:'19%',
         },
         {
             title: '五',
             dataIndex: 'five',
             key: 'five',
             align: "center",
-            width:'16.6%',
+            width:'19%',
         },
     ];
     const tableData=[
@@ -223,11 +230,30 @@
             onCheck(checkedKeys, info) {
                 console.log('onCheck', checkedKeys, info);
             },
+            teacherLook(){
+                this.$router.push('/schedule/detail/task_admin/teacher')
+            },
+            placeLook(){
+                this.$router.push('/schedule/detail/curriculum/place')
+            },
+            subjectLook(){
+                this.$router.push('/schedule/detail/task_admin/class')
+            },
         },
     };
 </script>
 
 <style lang="less" scoped>
+    .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
     .left{
         width: 300px;
         height: 900px;
@@ -248,6 +274,7 @@
         height: 170px;
         padding: 20px 25px;
         border-radius: 10px;
+        margin-top: 35px;
         margin-bottom: 50px;
     }
     .table-bg{
@@ -261,6 +288,14 @@
     }
     .a-table .cell {
         white-space: pre-line;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
+        .ant-table-tbody>tr{
+            height:100px;
+        }
     }
 </style>
 

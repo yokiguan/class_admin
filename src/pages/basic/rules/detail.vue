@@ -23,46 +23,46 @@
 </template>
 
 <script>
-let dataSource = [
-  {
-    title: "必选课程",
-    content: "高一语文<br/>高一数学<br/>",
-  },
-  {
-    title: "必选外语课",
-    content: "高一英语<br/>高一日语<br/>高一法语<br/>",
-  }
-];
-dataSource.push({
-  add: true,
-});
-export default {
-  name: "CardList",
-  data() {
-    return {
-      dataSource,
-    };
-  },
-};
+  let dataSource = [
+    {
+      title: "必选课程",
+      content: "高一语文<br/>高一数学<br/>",
+    },
+    {
+      title: "必选外语课",
+      content: "高一英语<br/>高一日语<br/>高一法语<br/>",
+    }
+  ];
+  dataSource.push({
+    add: true,
+  });
+  export default {
+    name: "CardList",
+    data() {
+      return {
+        dataSource,
+      };
+    },
+  };
 </script>
 
 <style lang="less" scoped>
-.card-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 48px;
-}
-.new-btn {
-  border-radius: 2px;
-  width: 100%;
-  height: 187px;
-}
-.meta-content {
-  position: relative;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
+  .card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 48px;
+  }
+  .new-btn {
+    border-radius: 2px;
+    width: 100%;
+    height: 187px;
+  }
+  .meta-content {
+    position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
 </style>

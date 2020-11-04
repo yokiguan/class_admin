@@ -2,6 +2,13 @@
     <EasyScrollbar :barOption="myBarOption">
         <div id="wrapper" style="width: 600px">
             <div style="width: 1800px">
+                <div class="result">
+                    <a-breadcrumb>
+                        <a-breadcrumb-item>首页</a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">课表查看</a></a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">教室课表</a></a-breadcrumb-item>
+                    </a-breadcrumb>
+                </div>
                 <div class="left">
                     <a-row class="left_title">
                         <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
@@ -29,16 +36,13 @@
                 <div class="right">
                     <div class="title">
                         <a-row>
-                            <a-col :span="18"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>>
-                            <a-col :span="3">
+                            <a-col :span="18"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
                                 <button @click="maxTime" style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 150px">删除已发布课表</button>
-                            </a-col>
-                            <a-col>
                                 <button style="background-color: #19b294;
                         color: white;
                         height: 40px;
@@ -46,7 +50,6 @@
                         border-radius: 5px;
                         float: right;
                         width: 150px">返回</button>
-                            </a-col>
                         </a-row>
                     </div>
                     <div class="table-bg">
@@ -57,7 +60,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">整体查看</button>
+                        width: 110px" @click="allLook">整体查看</button>
                             </a-col>
                             <a-col :span="3">
                                 <button style="background-color: #19b294;
@@ -65,7 +68,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按老师查看</button>
+                        width: 110px" @click="teacherLook">按老师查看</button>
                             </a-col>
                             <a-col :span="3">
                                 <button style="background-color: #19b294;
@@ -73,7 +76,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按场地查看</button>
+                        width: 110px" @click="placeLook">按场地查看</button>
                             </a-col>
                             <a-col :span="3">
                                 <button style="background-color: #19b294;
@@ -81,15 +84,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按科目查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 110px">按学生查看</button>
+                        width: 110px" @click="subjectLook">按科目查看</button>
                             </a-col>
                         </a-row>
                         <a-table
@@ -112,37 +107,42 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
-            width:'10%',
+            width:'5%',
         },
         {
             title: '一',
             dataIndex: 'one',
             key:'one',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
         {
             title: '二',
             dataIndex: 'two',
             key:'two',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
         {
             title: '三',
             dataIndex: 'three',
             key:'three',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
         {
             title: '四',
             dataIndex: 'four',
             key: 'four',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
         {
             title: '五',
             dataIndex: 'five',
             key: 'five',
-            width:'18%',
+            width:'19%',
+            align: 'center'
         },
     ];
     const tableData=[
@@ -208,11 +208,34 @@
             onCheck(checkedKeys, info) {
                 console.log('onCheck', checkedKeys, info);
             },
+            allLook(){
+                this.$router.push('/schedule/detail/curriculum/index')
+            },
+            teacherLook(){
+                this.$router.push('/schedule/detail/curriculum/teacher')
+            },
+            placeLook(){
+                this.$router.push('/schedule/detail/curriculum/place')
+            },
+            subjectLook(){
+                this.$router.push('/schedule/detail/curriculum/subject')
+            },
+
         },
     };
 </script>
 
 <style lang="less" scoped>
+    .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
     .left{
         width: 300px;
         height: 900px;
@@ -233,16 +256,25 @@
         height: 120px;
         padding: 20px 25px;
         border-radius: 10px;
+        margin-top: 35px;
         margin-bottom: 50px;
     }
     .table-bg{
         padding: 20px 25px;
         border-radius: 10px;
         text-align: center;
-        height: 600px;
+        height: 670px;
         margin-top: -35px;
         width: 100%;
         background-color: #fff;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
+        .ant-table-tbody>tr{
+            height:100px;
+        }
     }
 </style>
 

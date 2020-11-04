@@ -1,7 +1,14 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">班级设置</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
                 <a-col>
@@ -17,44 +24,23 @@
             </a-row>
         </div>
         <!-- /result -->
-
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3">
-                    <a-button>课时设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button >课节设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>教师设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>课程设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>开始排课</a-button>
-                </a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-table :columns="columns"
-                     :data-source="tableData"
-                     :pagination="false"
+                     :data-source="data"
                      :bordered="true"
-                     class="table">
-                <a-icon type="edit" slot="teacher" style="color: #00ccff;font-size: 20px;font-weight: bold"/>
+                     :pagination="false"
+                     style="width: 55%">
+                <a-icon type="edit" slot="class_day" style="color: #00ccff;font-size: 25px;font-weight: bold" @click="edit"/>
                 <a-icon type="close" slot="blank" style="font-weight: bolder;font-size: 30px;color: #0099ff"/>
-                <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
-                <div style="
-                    margin-top: 20px;
-                    margin-left: 55px;
-                    float: left;
-                    font-size: 1.0rem;
-                    color: blue;">
-                    <a-icon type="plus" />
-                    <span>
-                   添加一项
-               </span>
-                </div>
+                <span slot="add" style="color:blue">+添加一项</span>
+                <span slot="action" slot-scope="text" @click="editInfo(record.key)" style="background-color:blue">{{text}}</span>
             </a-table>
             <button style="background-color: #00ccff;
                         color: white;
@@ -64,133 +50,169 @@
                         float: right;
                         margin-top:100px;
                         margin-bottom: 20px;
-                        width: 200px">
-                    下一步</button>
+                        width: 200px" @click="Next">下一步</button>
         </div>
     </div>
 </template>
 <script>
     // by setting it's colSpan to be 0
-    const renderContent = (value, row, index) => {
-        const obj = {
-            children: value,
-            colSpan: {}
-        };
-        if (index === 4) {
-            console.log(obj.attrs.colSpan)
-        }
-        return obj;
-    };
+    // const renderContent = (value, row, index) => {
+    //     const obj = {
+    //         children: value,
+    //         attrs: {},
+    //     };
+    //     if (index ===3||index===6) {
+    //         obj.attrs.colSpan = 0;
+    //     }
+    //     return obj;
+    // };
     const columns = [
         {
             title: '班级',
             dataIndex: 'class',
-            key: 'class',
-            scopedSlots: { customRender: 'class' },
             align:'center',
             customRender: (value, row, index) => {
                 const obj = {
                     children: value,
-                    colSpan: 8,
+                    attrs: {},
                 };
-
-                if (index === 2) {
-                    console.log('obj.attrs.rowSpan');
-                    // obj.attrs.rowSpan = 2;
+                if (index === 0) {
+                    obj.attrs.rowSpan = 4;
                 }
-                // // These two are merged into above cell
-                // if (index === 3) {
-                //     obj.attrs.rowSpan = 0;
-                // }
-                // if (index === 4) {
-                //     obj.attrs.colSpan = 0;
-                // }
+                // These two are merged into above cell
+                if (index === 1) {
+                    obj.attrs.rowSpan = 0;
+                }
+                if (index === 2) {
+                    obj.attrs.colSpan = 0;
+                }
+                if (index === 3) {
+                    obj.attrs.colSpan = 0;
+                }
+                if(index===4){
+                    obj.attrs.rowSpan = 3;
+                }
+                if (index === 5) {
+                    obj.attrs.rowSpan = 0;
+                }
+                if (index === 6) {
+                    obj.attrs.rowSpan = 0;
+                }
                 return obj;
             },
         },
         {
             title: '学科名称',
-            dataIndex: 'subject',
-            key: 'subject',
-            scopedSlots: { customRender: 'subject' },
+            dataIndex: 'name',
             align:'center',
-            customRender: renderContent,
-
-        },{
-            title: ' 任课教师',
-            dataIndex: 'teacher',
-            key: 'teacher',
-            align:'center',
-            scopedSlots: { customRender: 'teacher' },
-            customRender: renderContent,
+            customRender: (text, row, index) => {
+                if (index === 3 || index === 6) {
+                    return {
+                        children: text,
+                        attrs: {
+                            colSpan: 3,
+                        },
+                    };
+                } else {
+                    return text;
+                }
+            },
         },
         {
-            title: ' ',
+            title: '任课教师',
+            dataIndex: 'teacher',
+            align:'center',
+            scopedSlots:{
+                customRender:(value,row,index)=>{
+                    const obj={
+                        children:value='class_day',
+                    };
+                    if(index===3){
+                        obj.attrs.colSpan = 0;
+                    }
+                    return obj;
+                }
+
+            },
+        },
+        {
+            title: '  ',
             dataIndex: 'blank',
-            key: 'blank',
             align:'center',
             scopedSlots: { customRender: 'blank' },
-            customRender: renderContent,
         },
         {
             title: '操作',
             dataIndex: 'opt',
-            key: 'opt',
-            scopedSlots: { customRender: 'action' },
             align:'center',
-            customRender: renderContent,
+            scopedSlots: { customRender: 'action' },
+            customRender: (value, row, index) => {
+                const obj = {
+                    children: value,
+                    attrs: {},
+                };
+                if (index === 0) {
+                    obj.attrs.rowSpan = 4;
+                }
+                // These two are merged into above cell
+                if (index === 1) {
+                    obj.attrs.rowSpan = 0;
+                }
+                if (index === 2) {
+                    obj.attrs.colSpan = 0;
+                }
+                if (index === 3) {
+                    obj.attrs.colSpan = 0;
+                }
+                if(index===4){
+                    obj.attrs.rowSpan = 3;
+                }
+                if (index === 5) {
+                    obj.attrs.rowSpan = 0;
+                }
+                if (index === 6) {
+                    obj.attrs.rowSpan = 0;
+                }
+                return obj;
+            }
         },
     ];
-    let tableData = [
+    const data = [
         {
             class:'2020级高一1班',
-            subject:'语文',
-            opt: '删除'
+            name: '语文',
+            opt:'删除'
         },
         {
-            class:'',
-            subject:'数学',
-            opt: ''
+            name:'数学',
         },
         {
-            class:'  ',
-            subject:'体育',
-            opt: ''
+            name:'体育',
         },
         {
-            class:'',
-            subject:'',
-            opt: ''
+            name:'+添加一项'
         },
         {
             class:'2020级高一2班',
-            subject:'升国旗',
-            opt: '删除'
+            name:'升国旗',
+            opt:'删除'
         },
         {
-            class:'',
-            subject:'班会',
-            opt:''
+            name:'班会',
+        }, {
+            name:'+添加一项'
         },
     ];
     export default {
         data() {
+
             return {
-                tableData,
+                data,
                 columns,
+                // tableData,
+                // columns,
                 visible: false,
                 loading: false,
-                customRender: (text, row, index) => {
-                    if (index < 4) {
-                        return <a href="javascript:;">{text}</a>;
-                    }
-                    return {
-                        children: <a href="javascript:;">{text}</a>,
-                        attrs: {
-                            colSpan: 5,
-                        },
-                    };
-                },
             };
         },
         methods: {
@@ -216,12 +238,40 @@
             onChange(e){
                 console.log('radio checked',e.target.value)
             },
+            timesSetting(){
+                this.$router.push('/schedule/detail/sort_course/index')
+            },
+            oncesSetting(){
+                this.$router.push('/schedule/detail/sort_course/time')
+            },
+            placeSetting(){
+                this.$router.push('/schedule/detail/sort_course/place')
+            },
+            courseSetting(){
+                this.$router.push('/schedule/detail/sort_course/course/index')
+            },
+            startArray(){
+                this.$router.push('/schedule/detail/start_class')
+            },
+            Next(){
+                this.$router.push('/schedule/detail/class_admin/rule')
+            }
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;
@@ -250,7 +300,7 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-        height: 600px;
+        height: 700px;
     }
     .buttons{
         margin:5px 5px 20px 5px;
@@ -263,5 +313,10 @@
     .table{
         margin-left: 48px;
         width: 56%;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
     }
 </style>

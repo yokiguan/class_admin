@@ -63,14 +63,14 @@
         <a-button @click="clearInfo" style="margin-left: 8px">清空</a-button>
 
         <a-button type="primary" style="margin-left: 8px" @click='showPublicModal'>公共时段设置</a-button>
-        <a-button type="primary" style="margin-left: 8px" @click='showTimeModal'>节次时间设置</a-button> 
+        <a-button type="primary" style="margin-left: 8px" @click='showTimeModal'>节次时间设置</a-button>
       </a-row>
     </a-form-model>
     <simple-table :columns="columns" :dataSource="dataSource" :rowKey="`activity`" />
     <a-row>
-      <a-button @click="saveInfo" type="primary" style="margin-left: 8px">保存</a-button>
-        <a-button @click="goBackAdmin" style="margin-left: 8px">返回</a-button>
-    </a-row> 
+      <a-button @click="saveInfo" type="primary" style="margin-left:450px;height: 40px;width: 150px;margin-top: 50px">保存</a-button>
+        <a-button @click="goBackAdmin"  type="primary" style="margin-left:100px;height: 40px;width: 150px;margin-top: 50px">返回</a-button>
+    </a-row>
     <a-modal
     :visible='timeModal'
       title="节次时间设置"
@@ -79,20 +79,42 @@
     >
     <a-table :columns='timeColumns' :dataSource='timeData' rowKey='value' :pagination='false'>
       <span slot='time' slot-scope="time">
-    <a-time-picker v-model='time[0]' format="hh:mm"/> - 
+    <a-time-picker v-model='time[0]' format="hh:mm"/> -
     <a-time-picker v-model='time[1]' @change='changeTime' format="hh:mm"/>
     </span>
     </a-table>
     </a-modal>
     <a-modal
-    :visible='publicModal'
-      title="公共时段设置"
-      @ok="handleOkPublic"
-      @cancel="handleCancelPublic"
-    >
+     :visible='publicModal'
+      width="600px"
+      :closable="false">
+      <a-form-model :model="form" :label-col="labelCol" :wrapper-col="wrapperCol">
+        <a-form-model-item label="时间段位置" >
+          <a-input v-model="form.name" placeholder="早读1之后"/>
+        </a-form-model-item>
+        <a-form-model-item label="时间段名称">
+          <a-input v-model="form.time" placeholder="早饭"/>
+        </a-form-model-item>
+      </a-form-model>
+      <a-table
+              :columns="publicColumns"
+              :data-source="publicData"
+              :bordered = "true"
+              :pagination = "false"></a-table>
+      <template slot="footer">
+        <a-button key="submit" type="primary" :loading="loading" @click="handlePublicok">
+          保存
+        </a-button>
+        <a-button key="back" @click="handlePublicCancel">
+          取消
+        </a-button>
+        <a-button key="delete" @click="handlePublicDelete">
+          删除
+        </a-button>
+      </template>
     </a-modal>
   </a-card>
- 
+
 </template>
 
 <script>
@@ -160,8 +182,20 @@ const activity = [
     value: "evening",
   },
 ];
-
+const  publicColumns=[
+        {
+            title:' ',
+            dataIndex:'check'
+        },{
+          title:'时间段位置',
+          dataIndex:'timeLocate'
+        },
+       {
+        title:'时间段名称',
+       dataIndex:'timename'
+       },]
 const timeColumns=[
+
   {
     title:'时间段名',
     dataIndex:'activity'
@@ -182,9 +216,12 @@ export default {
       timeColumns,
       timeData:[],
       dataSource:[],
+      publicColumns,
       activity,
       publicModal:false,
       timeModal:false,
+      labelCol: { span: 4 },
+      wrapperCol: { span: 14 },
       form: {
         templet_name: undefined,
         workday: undefined,
@@ -277,7 +314,7 @@ timeDatas.push({
                 time:[moment(undefined),moment(undefined)]
               });
             }
-              
+
           });
           this.dataSource = activities;
           this.timeData=timeDatas;
@@ -293,10 +330,10 @@ timeDatas.push({
     showPublicModal(){
       this.publicModal=true
     },
-    handleOkPublic(){
+    handlePublicok(){
       this.publicModal=false
     },
-    handleCancelPublic(){
+    handlePublicCancel(){
       this.publicModal=false
     },
     showTimeModal(){
@@ -308,6 +345,9 @@ timeDatas.push({
     handleCancelTime(){
       this.timeModal=false
     },
+    handlePublicDelete(){
+
+    }
   },
 };
 </script>

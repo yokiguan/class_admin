@@ -2,6 +2,14 @@
     <EasyScrollbar :barOption="myBarOption">
         <div id="wrapper" style="width: 600px">
             <div style="width: 1800px">
+                <div class="result">
+                    <a-breadcrumb>
+                        <a-breadcrumb-item>首页</a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+                        <a-breadcrumb-item><a href="">教室查看</a></a-breadcrumb-item>
+                    </a-breadcrumb>
+                </div>
                 <div class="left">
                     <a-row class="left_title">
                         <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
@@ -51,32 +59,24 @@
                         </a-row>
                         <a-row style="margin-top: 20px">
                             <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
-                            <a-col :span="3">
-                                <button @click="maxTime" style="background-color: #19b294;
+                            <button @click="maxTime" style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 150px">查看学生冲突</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <router-link to="/schedule/detail/sort_course/place">
-                                    <button style="background-color: #19b294;
+                            <button style="background-color: #19b294;margin-left: 30px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 150px">手动调课</button>
-                                </router-link>
-                            </a-col>
-                            <a-col>
-                                <button style="background-color: #19b294;
+                        width: 150px" @click="changeCourse">手动调课</button>
+                            <button style="background-color: #19b294;margin-left: 30px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 150px">学生调班</button>
-                            </a-col>
+                        width: 150px" @click="changClass">学生调班</button>
                         </a-row>
                         <a-row>
                             <a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col>
@@ -90,7 +90,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">整体查看</button>
+                        width: 110px" @click="allLook">整体查看</button>
                             </a-col>
                             <a-col :span="3">
                                 <button style="background-color: #19b294;
@@ -98,7 +98,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按老师查看</button>
+                        width: 110px" @click="teacherLook">按老师查看</button>
                             </a-col>
                             <a-col :span="3">
                                 <button style="background-color: #19b294;
@@ -106,15 +106,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按场地查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 110px">按科目查看</button>
+                        width: 110px" @click="subjectLook">按科目查看</button>
                             </a-col>
                         </a-row>
                         <a-table
@@ -137,31 +129,42 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
+            width:'5%',
         },
         {
             title: '一',
             dataIndex: 'one',
             key:'one',
+            align: "center",
+            width:'19%',
         },
         {
             title: '二',
             dataIndex: 'two',
             key:'two',
+            align: "center",
+            width:'19%',
         },
         {
             title: '三',
             dataIndex: 'three',
             key:'three',
+            align: "center",
+            width:'19%',
         },
         {
             title: '四',
             dataIndex: 'four',
             key: 'four',
+            align: "center",
+            width:'19%',
         },
         {
             title: '五',
             dataIndex: 'five',
             key: 'five',
+            align: "center",
+            width:'19%',
         },
     ];
     const tableData=[
@@ -220,11 +223,36 @@
             onCheck(checkedKeys, info) {
                 console.log('onCheck', checkedKeys, info);
             },
+            changeCourse(){
+                this.$router.push('/schedule/detail/task_mobile/integrate')
+            },
+            changClass(){
+                this.$router.push('/schedule/detail/task_mobile/change_student')
+            },
+            allLook(){
+                this.$router.push('/schedule/detail/task_mobile/all')
+            },
+            teacherLook(){
+                this.$router.push('/schedule/detail/task_mobile/teacher')
+            },
+            subjectLook(){
+                this.$router.push('/schedule/detail/task_mobile/course')
+            },
         },
     };
 </script>
 
 <style lang="less" scoped>
+    .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
     .left{
         width: 300px;
         height: 900px;
@@ -245,16 +273,25 @@
         height: 170px;
         padding: 20px 25px;
         border-radius: 10px;
+        margin-top: 35px;
         margin-bottom: 50px;
     }
     .table-bg{
         padding: 20px 25px;
         border-radius: 10px;
         text-align: center;
-        height: 500px;
+        height: 670px;
         margin-top: -35px;
         width: 100%;
         background-color: #fff;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
+        .ant-table-tbody>tr{
+            height:100px;
+        }
     }
 </style>
 

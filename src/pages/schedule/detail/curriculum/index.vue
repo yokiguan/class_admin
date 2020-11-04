@@ -1,7 +1,13 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">课表查看</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">整体查看</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.7em">高二2019-2020第一学期排课计划</span></a-col>
                 <a-col>
@@ -24,7 +30,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">整体查看</button>
+                        width: 110px" @click="teacherLook">按老师查看</button>
                 </a-col>
                 <a-col :span="3">
                     <button style="background-color: #19b294;
@@ -32,7 +38,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按老师查看</button>
+                        width: 110px" @click="placeLook">按场地查看</button>
                 </a-col>
                 <a-col :span="3">
                     <button style="background-color: #19b294;
@@ -40,7 +46,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按场地查看</button>
+                        width: 110px" @click="subjectLook">按科目查看</button>
                 </a-col>
                 <a-col :span="3">
                     <button style="background-color: #19b294;
@@ -48,7 +54,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">按科目查看</button>
+                        width: 110px" @click="studentLook">按学生查看</button>
                 </a-col>
             </a-row>
             <a-table
@@ -136,12 +142,34 @@
             };
         },
         methods: {
+            teacherLook(){
+                this.$router.push('/schedule/detail/curriculum/teacher')
+            },
+            placeLook(){
+                this.$router.push('/schedule/detail/curriculum/place')
+            },
+            subjectLook(){
+                this.$router.push('/schedule/detail/curriculum/subject')
+            },
+            studentLook(){
+                this.$router.push('/schedule/detail/curriculum/student')
+            },
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         background-color: white;
         height: 90px;

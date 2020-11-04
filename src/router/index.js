@@ -54,15 +54,10 @@ export default new Router({
               },
                 {
                   path: '/basic/classroom/rule',
-                  name: '教室时间规则',
+                  name: '教师时间规则',
                   component:() => import('@/pages/basic/classroom/rule')
                 }
               ]
-            },
-            {
-              path: '/basic/classboard',
-              name: '班牌',
-              component: () => import('@/pages/basic/classboard/index'),
             },
             {
               path: '/basic/building',
@@ -223,7 +218,7 @@ export default new Router({
                   children: [
                     {
                       path: '/schedule/detail/sort_course/index',
-                      name: '选课排课',
+                      name: '课时设置',
                       component: () => import('@/pages/schedule/detail/sort_course/index'),
                     },
                     {
@@ -256,7 +251,7 @@ export default new Router({
                           component:()=>import('@/pages/schedule/detail/sort_course/course/course/same_class'),
                         },{
                           path:'/schedule/detail/sort_course/course/course/banned_subject',
-                          name:'禁止科目',
+                          name:'禁止科目相邻',
                           component:()=>import('@/pages/schedule/detail/sort_course/course/course/banned_subject'),
                         }],
                       }]
@@ -334,7 +329,7 @@ export default new Router({
                       component:() => import('@/pages/schedule/detail/task_admin/index'),
                     },{
                       path: '/schedule/detail/task_admin/class',
-                      name: '班级查看',
+                      name: '科目查看',
                       component:() => import('@/pages/schedule/detail/task_admin/class'),
                     },{
                       path: '/schedule/detail/task_admin/teacher',
@@ -370,6 +365,10 @@ export default new Router({
                     }]
                 }
               ]
+            },{
+              path: '/schedule/train',
+              name: '练习',
+              component: () => import('@/pages/schedule/train'),
             }
           ]
         },
@@ -391,8 +390,28 @@ export default new Router({
               component: () => import('@/pages/data/class/index'),
             }
           ]
-        }
+        },
+        {
+          path: '/studentChooseClass',
+          name: '学生选课',
+          redirect: '/studentChooseClass',
+          component: BlankView,
+          meta: { icon: 'profile' },
+          children:[{
+            path: '/studentChooseClass/index',
+            name: '我的课表',
+            component: () => import('@/pages/studentChooseClass/index'),
+          },
+            {
+              path: '/studentChooseClass/startChooseClass',
+              name: '开始选课',
+              component: () => import('@/pages/studentChooseClass/startChooseClass/index'),
+            },
+
+          ]
+        },
       ]
-    }
+    },
+
   ]
 })

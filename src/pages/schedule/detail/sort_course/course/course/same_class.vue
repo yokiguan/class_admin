@@ -1,40 +1,35 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">选课排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">课程设置</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">同时上课</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
-                <a-col>
-                    <button style="background-color: blue;
+                <a-col><button style="background-color: blue;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px"
-                    >返回</button>
-                </a-col>
+                        width: 100px">返回</button> </a-col>
             </a-row>
         </div>
         <!-- /result -->
 
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3">
-                    <a-button>课时设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button >课节设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>教师设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>课程设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>开始排课</a-button>
-                </a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-table :columns="columns"
                      :data-source="tableData"
@@ -191,8 +186,6 @@
             opt: '删除'
         },
     ];
-    // eslint-disable-next-line no-unused-vars
-    import { Tree } from 'antd';
     export default {
         components: {CreateModal},
         data() {
@@ -226,12 +219,37 @@
             onChange(e){
                 console.log('radio checked',e.target.value)
             },
+            timesSetting(){
+                this.$router.push('/schedule/detail/sort_course/index')
+            },
+            oncesSetting(){
+                this.$router.push('/schedule/detail/sort_course/time')
+            },
+            placeSetting(){
+                this.$router.push('/schedule/detail/sort_course/place')
+            },
+            courseSetting(){
+                this.$router.push('/schedule/detail/sort_course/course/index')
+            },
+            startArray(){
+                this.$router.push('/schedule/detail/start_class')
+            },
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;

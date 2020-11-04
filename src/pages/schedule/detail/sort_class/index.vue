@@ -1,6 +1,5 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
             <a-row>
                 <a-col :span="12">
@@ -8,40 +7,37 @@
                     <br>
                     <span style="margin-left:2em">未分班人数<font style="color:red">100</font>人</span>
                 </a-col>
-
                 <a-col :span="12">
                     <a-row>
-                        <a-col :span="6"><a-button type="primary"><router-link to="/schedule/detail/sort_class/auto">自动分班</router-link></a-button></a-col>
-                        <a-col :span="6"><a-button type="primary"><router-link to="/schedule/detail/sort_class/manual">手动分班</router-link></a-button></a-col>
-                        <a-col :span="6"><a-button type="danger">清空</a-button></a-col>
-                        <a-col :span="6"><a-button>返回</a-button></a-col>
+                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="autoSortClass">
+                            <router-link to="/schedule/detail/sort_class/auto">自动分班</router-link></a-button></a-col>
+                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="manaulSortClass">
+                            <router-link to="/schedule/detail/sort_class/manual">手动分班</router-link></a-button></a-col>
+                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white">清空</a-button></a-col>
+                        <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
                     </a-row>
                 </a-col>
             </a-row>
         </div>
-        <!-- <div class="info link-font-color">已有900人选课 （共1000人）<font style="color:red">100人未选</font></div> -->
-        <!-- /result -->
-
-
         <div class="table-bg">
             <a-table :columns="columns"
                      :data-source="tableData"
+                     :bordered="true"
                      :pagination="false">
                 <div slot="action" slot-scope="situation">
                     <li
                             v-for="(s, index) in situation"
                             :key="index"
-                            class="situation"
-                    >
-                        <a-row>
+                            class="situation">
+                        <a-row style="width: 100%">
                             <a-col :span="16">
                                 <span>{{s}}</span>
                             </a-col>
                             <a-col :span="4">
-                                <button style="color:blue" @click="changeSituation" type="dashed">修改</button>
+                                <span style="color:blue; " @click="changeSituation" type="dashed">修改</span>
                             </a-col>
                             <a-col :span="4">
-                                <button style="color:red" @click="delSituation" type="dashed">删除</button>
+                                <span style="color:red" @click="delSituation" type="dashed">删除</span>
                             </a-col>
                         </a-row>
                     </li>
@@ -51,13 +47,15 @@
         <!--   添加新表-->
         <create-modal
                 :visible="visible"
+                :close="false"
+                width="700px"
                 :loading="loading"
                 @modalClosed="closed"
-                @modalSubmit="handleSubmit"
-        >
+                @modalSubmit="handleSubmit">
             <div slot="content">
-                <a-form v-bind="formItemLayout" @submit="handleSubmit" ref="createForm">
-                    <a-form-item label="班级名称：">
+                <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:15}" @submit="addClassHandleSubmint"
+                        style="margin-left: 30px">
+                    <a-form-item label="班级名称：" >
                         <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
                         <a-input placeholder="请输入"/>
                     </a-form-item>
@@ -71,37 +69,39 @@
     </div>
 </template>
 <script>
-    // import echarts from 'echarts'
-
-    import CreateModal from "../../../../components/modal/CreateModal";
+    import CreateModal from "@/components/modal/CreateModal";
     const columns = [
         { title: '课程名称',
             dataIndex: 'name',
-            key: 'name'
+            key: 'name',
+            align:'center',
         },
         {
             title: '总人数',
             dataIndex: 'all',
             key: 'all',
+            align:'center',
         },
         {
             title: '未分班人数',
             dataIndex: 'unsorted',
             key: 'unsorted',
+            align:'center',
         },
         {
             title: '分班个数',
             key: 'classNum',
-            dataIndex: 'classNum'
+            dataIndex: 'classNum',
+            align:'center',
         },
         {
             title: '分班情况',
             dataIndex: 'situation',
             key: 'situation',
-            scopedSlots: { customRender: 'action' }
+            scopedSlots: { customRender: 'action' },
+            align:'center',
         },
     ];
-
     let tableData = [
         {
             key: 0,
@@ -148,31 +148,31 @@
             };
         },
         methods: {
-            changeSituation: function(){
-                this.visible=true;
+            changeSituation: function () {
+                this.visible = true;
             },
-            closed:function(){
+            closed: function () {
                 this.visible = false
                 this.loading = false
             },
-            handleSubmit : function(){
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
-                setTimeout(()=>{
-                    that.dataSource.push(
-                        {
-                            avatar:
-                                "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-                            content: "班级名称：请输入/任课教师：请选择",
-                        }
-                    ),
-                        that.visible = false
-                    that.loading = false
+            handleSubmit: function () {
+                console.log(this.$refs.createForm)
+                this.loading = true
+                setTimeout(() => {
+                    this.dataSource.push({
+                        // avatar:
+                        //     "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
+                        // content: "班级名称：请输入/任课教师：请选择",
+                    }),
+                        this.visible = false
+                    this.loading = false
                 }, 2000)
             },
-        },
-        delSituation: function(){
+            delSituation: function () {
+            },
+            back(){
+              this.$router.push('/schedule/detail/index')
+            },
         }
     };
 </script>
@@ -211,10 +211,15 @@
     .situation{
         border:1px solid black;
         margin:5px 10px;
-        padding:2px 4px;
+        padding:8px 4px;
         border-radius: 4px;
-        width: 50%;
-        font-size: 0.7em;
+        width:100%;
+        height: 40px;
         margin-right: 1em;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
     }
 </style>

@@ -1,7 +1,14 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">选课排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">教室设置</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
                 <a-col>
@@ -20,21 +27,11 @@
 
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3">
-                    <a-button>课时设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button >课节设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>教师设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>课程设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>开始排课</a-button>
-                </a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-table :columns="columns"
                      :data-source="tableData"
@@ -56,26 +53,21 @@
                 </a-select>
                 <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
             </a-table>
-            <a-button
-                    icon="plus"
+            <a-button icon="plus"
                     style="color:white;
-
                     background-color:#3399cc;
-                    margin:30px 0px;"
-                    @click="addClass"
-            >
-                添加教室
-            </a-button>
+                    margin:30px 0px; border-radius: 5px;
+                    width: 150px;height: 40px"
+                    @click="addClass">添加教室</a-button>
             <router-link to="/schedule/detail/sort_course/course/index">
                 <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        float: right;
                         margin-top: 70px;
-                        margin-bottom: 20px;
-                        width: 100px">
+                       margin-left: 100px;
+                        width: 150px">
                         下一步
                     </button>
             </router-link>
@@ -99,9 +91,7 @@
     </div>
 </template>
 <script>
-    // import echarts from 'echarts'
     import CreateModal from "../../../../components/modal/CreateModal";
-    // import Templet from "../../../basic/templet/index";
     const columns = [
         {
             title: '序号',
@@ -170,8 +160,6 @@
             opt: '编辑'
         },
     ];
-    // eslint-disable-next-line no-unused-vars
-    import { Tree } from 'antd';
     export default {
         components: {CreateModal},
         data() {
@@ -238,13 +226,38 @@
             delSituation: function(key, index){
                 console.log(key, index)
                 this.tableData[key].situation.pop(index)
-            }
+            },
+            timesSetting(){
+                this.$router.push('/schedule/detail/sort_course/index')
+            },
+            oncesSetting(){
+                this.$router.push('/schedule/detail/sort_course/time')
+            },
+            placeSetting(){
+                this.$router.push('/schedule/detail/sort_course/place')
+            },
+            courseSetting(){
+                this.$router.push('/schedule/detail/sort_course/course/index')
+            },
+            startArray(){
+                this.$router.push('/schedule/detail/start_class')
+            },
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 100px;
         background-color: white;

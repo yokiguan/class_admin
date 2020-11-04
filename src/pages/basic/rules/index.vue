@@ -5,11 +5,11 @@
         <a-button @click="gotoNew" type="primary">新建</a-button>
       </div>
       <a-table
-        :rowKey="'key'"
-        :columns="columns"
-        :dataSource="dataSource"
+              :rowKey="'key'"
+              :columns="columns"
+              :dataSource="dataSource"
       >
-      <span slot='operation' slot-scope="text,value"><a @click="showModal(value)">编辑</a> | <a @click="gotoNew">查看</a> | <a @click="remove(value)">删除</a></span>
+        <span slot='operation' slot-scope="text,value"><a @click="showModal(value)">编辑</a> | <a @click="gotoNew">查看</a> | <a @click="remove(value)">删除</a></span>
       </a-table>
     </div>
     <a-modal title="修改规则名字" :visible='visible' @ok='editSubmit' @cancel='cancelSubmit'>
@@ -20,73 +20,73 @@
 </template>
 
 <script>
-const columns = [
-  {
-    title: '序号',
-    dataIndex: 'no'
-  },
-  {
-    title: '名称',
-    dataIndex: 'name'
-  },
-  {
-    title: '选课规则',
-    dataIndex: 'text,value',
-    scopedSlots: { customRender: 'operation' },
-  }
-]
+  const columns = [
+    {
+      title: '序号',
+      dataIndex: 'no'
+    },
+    {
+      title: '名称',
+      dataIndex: 'name'
+    },
+    {
+      title: '选课规则',
+      dataIndex: 'text,value',
+      scopedSlots: { customRender: 'operation' },
+    }
+  ]
 
-const dataSource = [{
+  const dataSource = [{
     key:1,
     no:1,
     name:'6+3'
-},{
+  },{
     key:2,
     no:2,
     name:'3+2+2',
-},{
+  },{
     key:3,
     no:3,
     name:'高三选课规则（文）',
-}]
+  }]
 
-export default {
-  name: '选课规则',
-  data () {
-    return {
-      columns,
-      dataSource,
-      visible:false,
-      name:'',
-      changeName:'',
-      clickItem:null,
-    }
-  },
-  methods: {
-    remove (value) {
-      this.dataSource = this.dataSource.filter(item => item.key==value.key)
+  export default {
+    name: '选课规则',
+    data () {
+      return {
+        columns,
+        dataSource,
+        visible:false,
+        name:'',
+        changeName:'',
+        clickItem:null,
+      }
     },
-    gotoNew () {
-      this.$router.push('/basic/rule/detail')
-    },
-    showModal(value){
-      this.visible=true
-      this.clickItem=value
-      this.name=value.name
-    },
-    editSubmit(){
-      this.dataSource.forEach(item=>{
-        if(item.key==this.clickItem.key)
-        item.name=this.changeName
-      })
-      this.visible=false
-    },
-    cancelSubmit(){
-      this.changeName=''
-      this.visible=false
+    methods: {
+      remove (value) {
+        this.dataSource = this.dataSource.filter(item => item.key==value.key)
+      },
+      gotoNew () {
+        this.$router.push('/basic/rule/detail')
+      },
+      showModal(value){
+        this.visible=true
+        this.clickItem=value
+        this.name=value.name
+      },
+      editSubmit(){
+        this.dataSource.forEach(item=>{
+          if(item.key==this.clickItem.key)
+            item.name=this.changeName
+        })
+        this.visible=false
+      },
+      cancelSubmit(){
+        this.changeName=''
+        this.visible=false
+      }
     }
   }
-}
 </script>
 
 <style lang="less" scoped>

@@ -1,21 +1,23 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">选课分班</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">自动分班</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="12">
                     <span style="font-size:1.5em">高一2019-2020第一学期排课计划 -自动分班</span>
-                    <!-- <br>
-                    <span style="margin-left:2em">未分班人数<font style="color:red">100</font>人</span> -->
                 </a-col>
                 <a-col :span="12">
                     <a-row>
-                        <a-col :span="6">
-                            <a-button type="primary" @click="maxNum">统一设置最大人数</a-button></a-col>
-                        <a-col :span="6">
-                            <a-button type="primary" @click="timeNum">统一设置课时数</a-button></a-col>
-                        <!-- <a-col :span="6"><a-button type="danger">清空</a-button></a-col> -->
-                        <a-col :span="6"><a-button>返回</a-button></a-col>
+                        <a-button style="width: 150px;height: 40px;background-color: #1abc9c;color: white" @click="maxNum">统一设置最大人数</a-button>
+                        <a-button style="margin-left:50px;width: 150px;height: 40px;background-color: #1abc9c;color: white" @click="timeNum">统一设置课时数</a-button>
+                        <button style="margin-left:50px;width: 100px;height: 40px;background-color: blue;color: white;border-radius: 5px;border: none" @click="back">返回</button>
                     </a-row>
                 </a-col>
             </a-row>
@@ -23,14 +25,13 @@
         <create-modal
                 width="760px"
                 :close="false"
-                :visible="visible"
+                :visible="numvisible"
                 :loading="loading"
                 @modalClosed="closed"
                 @modalSubmit="handleSubmit">
             <div slot="content">
                 <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit">
                     <a-form-item label="最大人数：" style="margin-top: 50px">
-                        <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
                         <a-input placeholder="请输入" style="width: 500px;height: 35px"/>
                     </a-form-item>
                     <a-form-item :wrapper-col="{ span: 8, offset:1 }" :label-col="{ span:4}" >
@@ -44,12 +45,12 @@
         <create-modal
                 width="760px"
                 :close="false"
-                :visible="visit"
-                :loading="load"
-                @modalClosed="close"
-                @modalSubmit="handle">
+                :visible="timevisible"
+                :loading="loading"
+                @modalClosed="closed"
+                @modalSubmit="handlesubmit">
             <div slot="content">
-                <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit1">
+                <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit">
                     <a-form-item label="课时数：" style="margin-top: 50px">
                         <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
                         <a-input placeholder="请输入" style="width: 500px;height: 35px"/>
@@ -57,60 +58,99 @@
                 </a-form>
             </div>
         </create-modal>
-        <!-- <div class="info link-font-color">已有900人选课 （共1000人）<font style="color:red">100人未选</font></div> -->
-        <!-- /result -->
         <div class="table-bg">
-            <div style="margin: 5px 0px 10px 50%">
-                可用教室数:
-                <input type="text" value="16">
-            </div>
-            <a-table
-                    :columns="columns"
+            <a-form :form="form" :label-col="{ span:6 }" :wrapper-col="{ span: 13 }" style="margin-left: 300px">
+                <a-form-item label="可用教室数：">
+                    <a-input  placeholder="16" style="width: 300px;"></a-input>
+                </a-form-item>
+            </a-form>
+            <a-table :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true">
-<!--                <div slot="分类" slot-scope="change" style="background-color: #8c8c8c" v-if="change==='高一语文'" >{{change}}</div>-->
-<!--                <div slot="分类" slot-scope="change" v-else >{{change}}%</div>-->
-
-                <input
-                        slot="classNum"
+                <input slot="classNum"
                         slot-scope="classNum"
                         :value="classNum"
-                        @change="changeMax(record.key, classNum)"
-                >
-                <input
-                        slot="max"
+                        @change="changeMax(record.key, classNum)">
+                <input slot="max"
                         slot-scope="max"
                         :value="max"
-                        @change="changeClassNum(record.key, max)"
-                >
-                <input
-                        slot="classTime"
+                        @change="changeClassNum(record.key, max)">
+                <input slot="classTime"
                         slot-scope="classTime"
                         :value="classTime"
-                        @change="changeAve(record.key, classTime)"
-                >
-                <a-button
-                        slot="action"
+                        @change="changeAve(record.key, classTime)">
+                <a-button slot="action"
                         slot-scope="text"
-                        @click="editInfo(record.key)"
-                        style="background-color:blue;color:white"
-                >
-                    {{text}}
-                </a-button>
-                import record from '../../../../components/menu/menu';
-
+                        @click="add"
+                        style="background-color:blue;color:white">{{text}}</a-button>
             </a-table>
             <div style="margin: 20px 0px 20px 40%">
-                <a-button type="primary" style="margin-right:40px;margin-top: 50px">开始分班</a-button>
-                <a-button type="primary">返回</a-button>
+                <a-button type="primary" style="margin-right:40px;margin-top: 50px;width: 100px;height: 40px">开始分班</a-button>
+                <a-button type="primary" style="width: 100px;height: 40px">返回</a-button>
             </div>
         </div>
+<!--        添加-->
+        <a-modal :visible='addVisit' width="800px" :closable="false" on-ok="handleOk">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleAdd">添加
+                </a-button>
+                <a-button key="back" @click="handleCancel">取消
+                </a-button>
+            </template>
+            <div class="title" style="width:770px;height: 50px;border-radius: 5px; margin-left: -10px;
+                        margin-top: -10px; background-color: #6Db5a7">
+                <h3 style="color: white;padding-top: 10px;padding-left: 20px">老师所教班级个数</h3>
+            </div>
+            <div class="content_table" style="margin-top: 10px;margin-left: -10px">
+                <div class="left" style="width: 300px;height:500px">
+                    <a-row class="left_title">
+                        <a-col :span="12"><span style="font-size: 1.2em;font-weight: bold">老师列表：</span></a-col>
+                    </a-row>
+                    <a-row style="font-size: 1.2em;margin-top: 10px;margin-bottom: 10px">
+                        <a-form :form="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }" @submit="handleSubmit">
+                            <a-form-item label="选择老师">
+                                <a-input placeholder="请输入" v-decorator="['选择老师', { rules: [{ required: true, message: '请选择老师' }] }]"/>
+                            </a-form-item>
+                        </a-form>
+                        <span style="float: right;margin-top: -50px">全部展开</span>
+                    </a-row>
+                    <a-divider style="background-color: black;margin-top: -50px"></a-divider>
+                    <a-tree
+                            :tree-data="treeData"
+                            :default-expanded-keys="['0-0-0', '0-0-1']"
+                            :default-selected-keys="['0-0-0', '0-0-1']"
+                            :default-checked-keys="['0-0-0', '0-0-1']"
+                            :replace-fields="replaceFields"
+                            @select="onSelect"
+                            @check="onCheck"
+                            checkable
+                            style="font-size: 1.3em;margin-top: -20px"/>
+                </div>
+                <a-divider type="vertical" style="background-color: black; height: 500px;margin-left: 310px;margin-top: -500px"/>
+                <div class="right" style="position:relative;float: right;margin-top: -480px">
+                    <a-row style="margin-left: 30px">
+                        <a-col :span="10"><span style="font-size: 1.2em;font-weight: bold">已选教师：</span></a-col>
+                        <a-col> <span style="font-size: 1.2em;">全部清除</span></a-col>
+                    </a-row>
+                    <a-table
+                        :columns="teacherColumns"
+                        :data-source="teacherData"
+                        :pagination="false"
+                        :bordered="true"
+                        :cell-style="changeCellStyle"
+                        style="float:right;width: 400px;margin-right: 30px;margin-top: 30px">
+
+                    <a-input slot="classNums" placeholder="0"></a-input>
+                     <button slot="delete"
+                             style="background-color: red;color: white;border: none;width: 80px;height: 30px;border-radius: 5px">删除</button>
+                </a-table></div>
+
+            </div>
+        </a-modal>
     </div>
 </template>
 <script>
-    // import echarts from 'echarts'
-
     import CreateModal from "../../../../components/modal/CreateModal";
     const columns = [
         { title: '分类',
@@ -222,30 +262,89 @@
             opt: "添加"
         },
     ];
+    const treeData = [
+        {
+            name: '小学语文',
+            key: '0-0',
+            child: [
+                { name: '赵卫民', key: '0-0-0'},
+                { name: '李援朝', key: '0-0-1' },
+            ],
+        },
+        {
+            name: '初中英语',
+            key: '0-1',
+            child: [
+                { name: '赵卫民', key: '0-1-0'},
+                { name: '李援朝', key: '0-1-1' },
+            ],
+        },
+    ];
+    const teacherColumns=[
+        {
+            title:'教师名称',
+            key:'teacherName',
+            dataIndex:'teacherName',
+            align:'center',
+            width:'30%',
+        },{
+        title: '所教班级个数',
+            key:'classNum',
+            dataIndex:'classNum',
+            align: 'center',
+            width: '45%',
+            scopedSlots: { customRender: "classNums" },
+        },{
+            title:'操作',
+            key:'opt',
+            dataIndex:'opt',
+            align:'center',
+            width:'25%',
+            scopedSlots: { customRender: "delete" },
+        }
+    ]
+    const teacherData=[
+        {
+            teacherName:'李援朝',
+        },
+        {
+            teacherName:'赵卫民',
+        },{
+
+        },{
+
+        }
+    ]
     export default {
         components: {CreateModal},
         data() {
             return {
                 tableData,
                 columns,
-                visible: false,
-                visit:false
+                treeData,
+                teacherColumns,
+                teacherData,
+                numvisible: false,
+                timevisible: false,
+                addVisit:false,
+                visit:false,
+                replaceFields: {
+                    children: 'child',
+                    title: 'name',
+                },
             };
         },
         methods: {
             maxNum: function () {
-                this.visible = true;
+                this.numvisible = true
             },
             timeNum: function () {
-                this.visit = true;
+                this.timevisible = true
             },
             closed: function () {
-                this.visible = false
+                this.numvisible = false
+                this.timevisible = false
                 this.loading = false
-            },
-            close: function () {
-                this.visit = false
-                this.load = false
             },
             handleSubmit: function () {
                 const that = this
@@ -254,29 +353,11 @@
                 setTimeout(() => {
                     that.dataSource.push(
                         {
-                            avatar:
-                                "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-                            content: "班级名称：请输入",
                         }
                     ),
-                        that.visible = false
+                        this.numvisible = false
+                    this.timevisible = false
                     that.loading = false
-                }, 2000)
-            },
-            handle: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.load = true
-                setTimeout(() => {
-                    that.dataSource.push(
-                        {
-                            avatar:
-                                "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-                            content: "课时数：请输入",
-                        }
-                    ),
-                        that.visit = false
-                    that.load = false
                 }, 2000)
             },
             changeMax: function (key, val) {
@@ -288,18 +369,41 @@
             changeAve: function (key, val) {
                 this.tableData[key].ave = val
             },
-            editInfo: function (key) {
-                console.log(key)
+            add: function () {
+                this.addVisit=true
             },
             onChange(e) {
                 console.log(`checked = ${e.target.checked}`);
             },
+            back(){
+                this.$router.push('/schedule/detail/sort_class/admin')
+            },
+            handleAdd() {
+                this.loading = true;
+                setTimeout(() => {
+                    this.addVisit=false
+                },2000)
+            },
+            handleCancel() {
+                this.addVisit=false;
+            },
+
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;
@@ -333,5 +437,10 @@
         border:1px solid black;
         border-radius: 5px;
         width:6em;
+    }
+    /deep/ Table {
+        .ant-table-thead > tr > th {
+            background-color: #f4f4f4;
+        }
     }
 </style>

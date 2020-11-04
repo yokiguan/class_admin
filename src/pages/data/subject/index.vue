@@ -9,16 +9,18 @@
             </a-breadcrumb>
         </div>
         <!-- /result -->
-        <div class="table-bg">
+        <a-card class="table-bg">
             <a-row class="buttons">
                 <a-col :span="3">
-                    <a-button style="background-color: #1abc9c">新增</a-button>
+                    <a-button @click="addClass" type="primary"
+                              style="background-color: #1abc9c">新增</a-button>
                 </a-col>
                 <a-col :span="3">
                     <a-button style="background-color: #ff0000">删除</a-button>
                 </a-col>
                 <a-col :span="3">
-                    <a-button style="background-color: #1abc9c">编辑</a-button>
+                    <a-button @click="edit" type="primary"
+                              style="background-color: #1abc9c">编辑</a-button>
                 </a-col>
             </a-row>
             <a-row>
@@ -26,13 +28,69 @@
                          :data-source="data"
                          :bordered="true"
                          :pagination="false"
-                         style="width: 45%;margin-left: 50px">
+                         style="width: 45%;margin-left: 50px;">
                     <a-checkbox slot="checkBox" @change="change"></a-checkbox>
 
                 </a-table>
             </a-row>
+        </a-card>
+        <a-modal
+                :visible="addClassVisit"
+                @ok="handleOk"
+                @cancel="handleCancel"
+                width="500px"
+                :closable="false"
+                ok-text="保存"
+                cancel-text="取消"
+                v-model="addClassVisit">
+            <div>
+                <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint">
+                    <a-form-item label="类名名称：">
+                        <a-input placeholder="请输入"
+                                 v-decorate="['note',{rules:[{required:true,message:'请输入类名名称'}]}]"
+                                 style="width: 275px"></a-input>
+                    </a-form-item>
+                    <a-form-item label="备注：">
+                        <a-input
+                                placeholder="请输入"
+                                v-decorate="['note',{rules:[{required:true,message:'请输入类名名称'}]}]"
+                                style="width: 275px;height:200px"></a-input>
+                    </a-form-item>
+                    <a-form-item label="是否启用">
+                        <a-switch v-decorator="['switch', { valuePropName: 'checked' }]" />
+                    </a-form-item>
+                </a-form>
+            </div>
+        </a-modal>
+        <a-modal
+                :visible="editVisit"
+                @ok="handleOk"
+                @cancel="handleCancel"
+                width="500px"
+                :closable="false"
+                ok-text="保存"
+                cancel-text="取消"
+                v-model="editVisit">
+            <div>
+                <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="editHandleSubmint">
+                    <a-form-item label="类名名称：">
+                        <a-input placeholder="请输入"
+                                 v-decorate="['note',{rules:[{required:true,message:'请输入类名名称'}]}]"
+                                 style="width: 275px"></a-input>
+                    </a-form-item>
+                    <a-form-item label="备注：">
+                        <a-input
+                                placeholder="请输入"
+                                v-decorate="['note',{rules:[{required:true,message:'请输入类名名称'}]}]"
+                                style="width: 275px;height:200px"></a-input>
+                    </a-form-item>
+                    <a-form-item label="是否启用">
+                        <a-switch v-decorator="['switch', { valuePropName: 'checked' }]" />
+                    </a-form-item>
+                </a-form>
+            </div>
 
-        </div>
+        </a-modal>
     </div>
 </template>
 <script>
@@ -87,13 +145,32 @@
             return {
                 columns,
                 data,
-                method:{
-                    // onChange(){
-                    //     console.log('checked=${e.target.checked');
-                    // }
-                }
+                addClassVisit: false,
+                editVisit: false,
             };
         },
+        methods:{
+            addClass() {
+                this.addClassVisit = true;
+            },
+            edit() {
+                this.editVisit = true;
+            },
+            handleOk() {
+                setTimeout(() => {
+                    this.addClassVisit = false;
+                    this.editVisit = false;
+                }, 2000);
+            },
+            handleCancel() {
+                console.log('Clicked cancel button');
+                this.addClassVisit = false;
+                this.editVisit = false;
+            },
+            editHandleSubmint(){
+
+            },
+        }
     };
 </script>
 
@@ -116,6 +193,7 @@
         text-align: center;
         width: 100%;
         height: 500px;
+
     }
     .buttons{
         margin:15px 5px 20px 5px;

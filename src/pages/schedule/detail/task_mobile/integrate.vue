@@ -1,7 +1,14 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">手动调课</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
                 <a-col>
@@ -11,8 +18,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px"
-                    >返回</button>
+                        width: 150px">返回</button>
                 </a-col>
             </a-row>
             <a-row style="margin-top: 10px">
@@ -32,8 +38,8 @@
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true"
-                    style="margin-top: 20px;width:1200px;height: 700px">
-                <button slot="change" slot-scope="">调换</button>
+                    style="margin-top: 20px;">
+                <button slot="change">调换</button>
             </a-table>
         </div>
     </div>
@@ -45,31 +51,92 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
+            customCell:(record,index) => {
+            return {
+              on :{//给单元格增加事件
+                click:()=>{
+                 console.log(record)
+                 console.log(index)
+                }
+              }
+            }
+          },
         },
         {
             title: '一',
             dataIndex: 'one',
             key:'one',
+            customCell:(record,index) => {
+            return {
+              on :{//给单元格增加事件
+                click:()=>{
+                 console.log(record)
+                 console.log(index)
+                }
+              }
+            }
+          },
         },
         {
             title: '二',
             dataIndex: 'two',
             key:'two',
+            customCell:(record,index) => {
+            return {
+              on :{//给单元格增加事件
+                click:()=>{
+                 console.log(record)
+                 console.log(index)
+                }
+              }
+            }
+          },
         },
         {
             title: '三',
             dataIndex: 'three',
             key:'three',
+            customCell:(record,index) => {
+            return {
+              on :{//给单元格增加事件
+                click:()=>{
+                 console.log(record)
+                 console.log(index)
+                }
+              }
+            }
+          },
         },
         {
             title: '四',
             dataIndex: 'four',
             key: 'four',
+            customCell:(record,index) => {
+            return {
+              on :{//给单元格增加事件
+                click:()=>{
+                 console.log(record)
+                 console.log(index)
+                }
+              }
+            }
+          },
         },
         {
             title: '五',
             dataIndex: 'five',
             key: 'five',
+            customCell:(record,index,dataIndex) => {
+            return {
+              on :{//给单元格增加事件
+                click:()=>{
+                 console.log(record)
+                 console.log(index)
+                 console.log(dataIndex)
+                }
+              }
+            }
+          },
         },
     ];
     const tableData=[
@@ -101,17 +168,27 @@
         data() {
             return {
                 columns,
-                tableData,
-
+                tableData
             };
         },
         methods: {
-        }
-    };
+
+    },
+}
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 150px;
         background-color: white;
