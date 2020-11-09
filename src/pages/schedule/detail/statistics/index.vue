@@ -10,12 +10,10 @@
         <div class="content">
             <a-row>
                 <a-col :span="12">
-                    <a-space>
                         <span style="font-size:1.5em">高一2019-2020第一学期选课结果</span>
                         <br>
                         <span class="link-font-color" style="margin-left:2em">选课时间：2020/03/01 ——2020/03/15</span>
                         <span class="link-font-color" style="margin-left:2em">选课中</span>
-                    </a-space>
                 </a-col>
                 <a-col :span="12">
                     <a-row>
@@ -58,6 +56,7 @@
             <!-- statistics -->
             <!-- table -->
             <a-table
+                    :key="'key'"
                     :columns="columns"
                     :data-source="classData"
                     :bordered = "true"
@@ -87,17 +86,14 @@
     const columns = [
         {
             title: '',
-            dataIndex: 'key',
-            key: 'key',
+            dataIndex: 'key'
         },
         {
             title: '课程组合',
             dataIndex: 'name',
-            key: 'key',
         },
         {
             title: '选课人数',
-            key: 'key',
             dataIndex: 'count'
         }
     ];
@@ -197,6 +193,9 @@
                     this.loading = false
                 }, 2000)
             },
+            back(){},
+            loading(){},
+
         }
     };
 </script>

@@ -1,130 +1,338 @@
 <template>
-  <a-card>
-    <div>
-      <div class="operator">
-        <a-button @click="addNew" type="primary">新建</a-button>
-        <a-button >批量操作</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="audit">审批</a-menu-item>
-          </a-menu>
-          <a-button>
-            更多操作 <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
-      </div>
-      <standard-table
-              :rowKey="'key'"
-              :columns="columns"
-              :subName="'查看课程'"
-              :subPath="'/basic/grade/subject'"
-              :dataSource="dataSource"
-              :selectedRows="selectedRows"
-              @change="onchange"
-      />
+  <div>
+    <!-- result -->
+    <div class="result">
+      <a-breadcrumb>
+        <a-breadcrumb-item>首页</a-breadcrumb-item>
+        <a-breadcrumb-item><a href="">基础数据</a></a-breadcrumb-item>
+        <a-breadcrumb-item><a href="">年级管理</a></a-breadcrumb-item>
+      </a-breadcrumb>
     </div>
-  </a-card>
+    <!-- /result -->
+    <a-card class="table-bg">
+      <a-row class="buttons">
+        <a-col :span="3">
+          <a-button @click="addClass" type="primary"
+                    style="background-color: #1abc9c">新增</a-button>
+        </a-col>
+        <a-col :span="3">
+          <a-button @click="Delete" style="background-color: #ff0000">删除</a-button>
+        </a-col>
+      </a-row>
+      <a-row>
+        <a-table  :rowKey="'key'"
+                  :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+                  :selectedRows="selectedRows"
+                :columns="columns"
+                 :data-source="data"
+                 :bordered="true"
+                 :pagination="false"
+                 style="width: 55%;margin-left: 20px;">
+          <div slot="action">
+            <button @click="lookCourse" style="float: left;background-color: #199ed8;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">查看课程</button>
+            <button @click="editCourse" style="background-color: #008000;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">修改</button>
+          </div>
+        </a-table>
+      </a-row>
+    </a-card>
+    <a-modal
+            :visible='addClassVisit'
+            width="600px"
+            :closable="false"
+            on-ok="handleOk">
+      <template slot="footer">
+        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
+          保存
+        </a-button>
+        <a-button key="back" @click="handleCancel">
+          取消
+        </a-button>
+      </template>
+      <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint"
+              style="margin-left: 70px">
+        <a-form-item label="级部" has-feedback>
+          <a-select v-decorator="['级部',{ rules: [{ required: true, message: 'Please select your country!' }] },]"
+                    placeholder="高中">
+            <a-select-option value="junior">
+              小学
+            </a-select-option>
+            <a-select-option value="middle">
+              初中
+            </a-select-option>
+            <a-select-option value="senior">
+              高中
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="年级名称" has-feedback>
+          <a-select v-decorator="['年级名称',{ rules: [{ required: true, message: 'Please select your country!' }] },]"
+                    placeholder="高一">
+            <!--            <a-select-option value="junior">-->
+            <!--              小学-->
+            <!--            </a-select-option>-->
+            <!--            <a-select-option value="middle">-->
+            <!--              初中-->
+            <!--            </a-select-option>-->
+            <!--            <a-select-option value="senior">-->
+            <!--              高中-->
+            <!--            </a-select-option>-->
+          </a-select>
+        </a-form-item>
+        <a-form-item label="课程" has-feedback>
+          <a-tree-select
+                  v-model="value"
+                  :tree-data="treeData"
+                  tree-checkable
+                  :show-checked-strategy="SHOW_PARENT"
+                  search-placeholder="Please select"
+          />
+        </a-form-item>
+      </a-form>
+    </a-modal>
+    <a-modal
+            :visible='editVisit'
+            width="600px"
+            :closable="false"
+            on-ok="handleOk">
+      <template slot="footer">
+        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
+          保存
+        </a-button>
+        <a-button key="back" @click="handleCancel">
+          取消
+        </a-button>
+      </template>
+      <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="editHandleSubmint"
+              style="margin-left: 70px">
+        <a-form-item label="级部" has-feedback>
+          <a-select v-decorator="['级部',{ rules: [{ required: true, message: 'Please select your country!' }] },]"
+                    placeholder="高中">
+            <a-select-option value="junior">
+              小学
+            </a-select-option>
+            <a-select-option value="middle">
+              初中
+            </a-select-option>
+            <a-select-option value="senior">
+              高中
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="年级名称" has-feedback>
+          <a-select v-decorator="['年级名称',{ rules: [{ required: true, message: 'Please select your country!' }] },]"
+                    placeholder="高一">
+            <!--            <a-select-option value="junior">-->
+            <!--              小学-->
+            <!--            </a-select-option>-->
+            <!--            <a-select-option value="middle">-->
+            <!--              初中-->
+            <!--            </a-select-option>-->
+            <!--            <a-select-option value="senior">-->
+            <!--              高中-->
+            <!--            </a-select-option>-->
+          </a-select>
+        </a-form-item>
+        <a-form-item label="课程" has-feedback>
+          <a-tree-select
+                  v-model="value"
+                  :tree-data="treeData"
+                  tree-checkable
+                  :show-checked-strategy="SHOW_PARENT"
+                  search-placeholder="Please select"
+          />
+        </a-form-item>
+      </a-form>
+    </a-modal>
+  </div>
 </template>
-
 <script>
-  import StandardTable from '../../../components/table/StandardTable'
-  const columns = [
+  import { TreeSelect } from 'ant-design-vue';
+  const SHOW_PARENT = TreeSelect.SHOW_PARENT;
+  const treeData = [
     {
-      title: '年级编号',
-      dataIndex: 'no'
+      title: '物理',
+      value: '0-0',
+      key: '0-0',
+      children: [
+        {
+          title: '物理学修',
+          value: '0-0-0',
+          key: '0-0-0',
+        },
+        {
+          title: '物理选修',
+          value: '0-0-1',
+          key: '0-0-1',
+        },
+      ],
     },
     {
-      title: '名称',
-      dataIndex: 'name'
+      title: '生物',
+      value: '0-1',
+      key: '0-1',
+      children: [
+        {
+          title: '生物学修',
+          value: '0-1-0',
+          key: '0-1-0',
+        },
+        {
+          title: '生物选修',
+          value: '0-1-1',
+          key: '0-1-1',
+        },
+      ],
+    },
+  ];
+  const columns=[
+    {
+      title:'序号',
+      dataIndex:'serialNum',
+      key:'serialNum',
+      align:'center',
+      width:'15%'
     },
     {
-      title: '级部',
-      dataIndex: 'grade',
+      title:'年级',
+      dataIndex:'grade',
+      key:'grade',
+      align:'center',
+      width:'17%'
     },
     {
-      title: '课程',
-      dataIndex: 'subjects',
+      title:'级部',
+      dataIndex:'levelDepart',
+      key:'levelDepart',
+      align:'center',
+      width:'17%'
     },
     {
-      title: '操作',
-      dataIndex: 'operation',
-      scopedSlots: { customRender: 'operation' },
+      title:'课程名称',
+      dataIndex:'name',
+      key:'name',
+      align:'center',
+      width:'20%'
+    },
+
+    {
+      title:'操作',
+      dataIndex:'opts',
+      key:'opts',
+      align:'center',
+      width:'55%',
+      scopedSlots: { customRender: 'action' },
+    },
+  ]
+  const data=[
+    {
+      key:'1',
+      serialNum:'1',
+      grade:'高一',
+      levelDepart:'高中部',
+      name:'数学,语文,英语,日语',
+    },
+    {
+      key:'2',
+      serialNum:'2',
+      grade:'高二（文）',
+      levelDepart:'高中部',
+    },
+    {
+      key:'3',
+      serialNum:'3',
+    },
+    {
+      key:'4',
     }
   ]
-
-  const dataSource = [{
-    key:1,
-    no:1,
-    name:'高一',
-    grade:'高中部',
-    subjects:'语数英'
-  },{
-    key:2,
-    no:2,
-    name:'高二（理）',
-    grade:'高中部',
-    type:'物化生'
-  },{
-    key:3,
-    no:3,
-    name:'高二（文）',
-    grade:'高中部',
-    type:'政史地'
-  }]
-
   export default {
-    name: 'grade',
-    components: {StandardTable},
-    data () {
+    data() {
       return {
-        columns: columns,
-        dataSource: dataSource,
-        selectedRowKeys: [],
-        selectedRows: []
-      }
+        columns,
+        data,
+        loading:false,
+        addClassVisit: false,
+        editVisit: false,
+        value: ['语文'],
+        treeData,
+        SHOW_PARENT,
+        selectedRowKeys: [], // Check here to configure the default column
+        selectedRows:[],
+      };
     },
-    methods: {
-      onchange (selectedRowKeys, selectedRows) {
-        this.selectedRowKeys = selectedRowKeys
-        this.selectedRows = selectedRows
+    methods:{
+      addClass() {
+        this.addClassVisit = true;
       },
-      remove () {
-        this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+      editCourse() {
+        this.editVisit = true;
+      },
+      lookCourse(){
+        this.$router.push('/basic/grade/subject')
+      },
+      editHandleSubmint(){
+      },
+      onSelectChange( selectedRowKeys,selectedRows) {
+        this.selectedRowKeys = selectedRowKeys;
+        this.selectedRows=selectedRows
+      },
+      Delete(){
+        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
         this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
       },
-      addNew () {
-        this.dataSource.unshift({
-          key:4,
-          no:4,
-          name:'物理选修',
-          grade:'高二文;高二理',
-          type:'走班课'
-        })
+      handleOk() {
+        this.loading = true;
+        setTimeout(() => {
+          this.addClassVisit = false;
+          this.editVisit = false;
+          this.loading = false;
+        }, 2000);
       },
-      handleMenuClick (e) {
-        if (e.key === 'delete') {
-          this.remove()
-        }
-      }
+      handleCancel() {
+        this.addClassVisit = false;
+        this.editVisit = false;
+      },
+      form(){},
+      addClassHandleSubmint(){},
     }
-  }
+  };
 </script>
 
 <style lang="less" scoped>
-  .search{
-    margin-bottom: 54px;
+  .result{
+    width: 100%;
+    background-color: white;
+    height:50px;
+    margin: 20px 0px 10px 0px;
+    padding-left: 25px;
+    padding-top: 15px;
+    vertical-align: top;
+    border-radius: 5px;
   }
-  .fold{
-    width: calc(100% - 216px);
-    display: inline-block
+  .table-bg{
+    background-color: white;
+    margin: 0px 0px 20px 0px;
+    padding: 20px 25px;
+    border-radius: 5px;
+    text-align: center;
+    width: 100%;
+    height: 500px;
+
   }
-  .operator{
-    margin-bottom: 18px;
+  .buttons{
+    margin:0px 5px 20px 5px;
+    padding:2px 4px;
+    margin-left: 30px;
   }
-  @media screen and (max-width: 900px) {
-    .fold {
-      width: 100%;
+  .buttons button{
+    width: 110px;
+    height: 45px;
+    color:white;
+  }
+  /deep/ Table {
+    .ant-table-thead > tr > th {
+      background-color: #f4f4f4;
     }
   }
+
 </style>

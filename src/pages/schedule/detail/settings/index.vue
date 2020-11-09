@@ -57,7 +57,7 @@
              <tr v-for="t in teacher" :key="t" class="teacher">
                <td>{{ t.name }}</td>
                <td><a-input v-model="t.capacity"></a-input></td>
-               <td><a-button type="primary">删除</a-button></td>
+               <td><a-button type="primary" @click="deleteTeacher">删除</a-button></td>
              </tr>
              <tr class="teacher">
                <a class="add-btn" @click="addTeacher"><a-icon type="plus" />新增老师</a>
@@ -74,7 +74,8 @@
            <!--          <a-select-option value="female">female</a-select-option>-->
          </a-select>
        </a-form-item>
-       <a slot='operate'>删除</a>
+
+       <a slot='operate' @click="deleteTypical">删除</a>
      </a-table>
      <div style="margin-top: 30px">
        <h3>选课说明</h3>
@@ -164,7 +165,7 @@ const columnsSubjects = [
 ];
 const dataSource = [
   {
-    key: 1,
+    key: '1',
     type: "必修课",
     subjects: [
       {
@@ -186,10 +187,12 @@ const dataSource = [
         isMust: true,
         teacher: [
           {
+            key:'1',
             name: "张x",
             capacity: 30,
           },
           {
+            key:'2',
             name: "王x",
             capacity: 30,
           },
@@ -199,7 +202,7 @@ const dataSource = [
     rule: "覆盖2科",
   },
   {
-    key: 3,
+    key: '2',
     type: "选修课",
     subjects: [
       {
@@ -265,7 +268,6 @@ const treeData=[
   }],}
   ]},
 ];
-
 export default {
   name: "QueryList",
   components: {},
@@ -356,6 +358,10 @@ export default {
     addTeacher(){
       this.addVisit=true;
     },
+    deleteTypical(key){
+      const dataSource = [...this.dataSource];
+      this.dataSource= dataSource.filter(item => item.key !== key);
+    },
     handleOk() {
       this.loading = true;
       setTimeout(() => {
@@ -366,7 +372,8 @@ export default {
     handleCancel() {
       this.addVisit=false;
     },
-    addHandleSubmint(){}
+    addHandleSubmint(){},
+    deleteTeacher(){},
   },
 };
 </script>

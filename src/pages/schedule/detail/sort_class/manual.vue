@@ -21,14 +21,14 @@
         </div>
         <div class="table-bg">
             <a-table
+                    :key="'key'"
                     :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true">
                 <div
                         slot="situation"
-                        slot-scope="data"
-                >
+                        slot-scope="data">
                     <div v-for="(item, index) in data" :key="index" class="situation">
                         <div class="situation-header">
                             {{item.class}}{{item.teacher}}（共有学生{{item.all}}人）
@@ -94,17 +94,14 @@
     const columns = [
         { title: '学科',
             dataIndex: 'subject',
-            key: 'subject'
         },
         {
             title: '未分班学生',
             dataIndex: 'unsorted',
-            key: 'unsorted',
         },
         {
             title: '分班情况',
             dataIndex: 'situation',
-            key: 'situation',
             scopedSlots: { customRender: 'situation' }
         },
     ];
@@ -198,6 +195,9 @@
             back(){
               this.$router.push('/schedule/detail/sort_class/admin')
             },
+            form(){},
+            handleSelectChange(){},
+            loading(){},
         }
     };
 </script>

@@ -17,7 +17,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">返回</button>
+                        width: 150px" @click="back">返回</button>
                 </a-col>
             </a-row>
         </div>
@@ -119,6 +119,13 @@
             changeClass(){
                 this.$router.push('/schedule/detail/task_mobile/change_student')
             },
+            back(){
+                this.$router.go(-1)
+            },
+            onChange(){},
+            showModal(){},
+            alllook(){},
+            click(){}
 
         }
     };

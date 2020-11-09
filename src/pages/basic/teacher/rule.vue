@@ -106,7 +106,7 @@
                        :data-source="tableData"
                        :pagination="false"
                        :bordered="true"
-                        style="margin-top: 30px">
+                       style="margin-top: 30px">
               </a-table>
             </a-row>
           </a-card>
@@ -426,7 +426,7 @@
     .ant-table-tbody > tr:nth-child(2) > td:nth-child(2){
       background-color: #f00;
       color: white;
-      }
+    }
     .ant-table-tbody > tr:first-child > td:nth-child(5),
     .ant-table-tbody > tr:first-child > td:nth-child(4),
     .ant-table-tbody > tr:first-child > td:nth-child(3){

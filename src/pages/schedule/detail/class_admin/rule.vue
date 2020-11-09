@@ -11,7 +11,7 @@
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
                 <a-col><button style="background-color: blue; color: white;height: 40px; border: none;border-radius: 5px;
-                        float: right;width: 100px">返回</button>
+                        float: right;width: 100px" @click="back">返回</button>
                 </a-col>
             </a-row>
         </div>
@@ -27,10 +27,10 @@
                 <template>
                     <a-descriptions bordered>
                         <a-descriptions-item label="学科时间规则" >
-                            <a-table  :columns="column1"
+                            <a-table  :rowKey="'subjectTimekey'"
+                                    :columns="column1"
                                       :data-source="studyTimeData"
                                       :pagination="false"
-                                      rowKey="column1Id"
                                       :bordered="true">
                                 <a-form-item slot="subjects" >
                                     <a-select v-decorator="['subject',{ rules: [{ required: true, message: 'Please select your subject!' }] },]"
@@ -53,12 +53,16 @@
                                     <a-icon  type="edit" @click="timeRegularSetting"  style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
                                 <div slot="action">
-                                    <span  style="color:blue;float:left">删除</span>
-                                    <span  style="color:blue;float:right">保存</span>
+                                    <a-popconfirm v-if="studyTimeData.length"
+                                                  title="确认删除?"
+                                                  ok-text="是" cancel-text="否"
+                                                  @confirm="() => subjectTimeDelete(record.key)">
+                                        <a href="javascript:;" style="color:blue;float:left">删除</a>
+                                    </a-popconfirm>
+                                    <span  style="color:blue;float:right" @click="() => save(record.key)">保存</span>
                                 </div>
                             </a-table>
-<!--                            @click="addSubjectTimeRegular"-->
-                            <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;color: blue;"  class="editable-add-btn" @click="handleAdd">
+                            <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;color: blue;"  class="editable-add-btn"  @click="addSubjectTimeRegular">
                                 <a-icon type="plus" />
                                 <span>添加规则 </span>
                             </div>
@@ -66,10 +70,10 @@
                     </a-descriptions>
                     <a-descriptions bordered>
                         <a-descriptions-item label="教师时间规则">
-                            <a-table  :columns="column2"
+                            <a-table :rowkey="'teacherTimeKey'"
+                                    :columns="column2"
                                       :data-source="teacherTimeData"
                                       :pagination="false"
-                                      rowKey="column2Id"
                                       :bordered="true">
                                 <div slot="teachers" slot-scope="teacher">
                                     <span>{{teacher}}</span>
@@ -96,7 +100,7 @@
                             <a-table  :columns="column3"
                                       :data-source="classTimeData"
                                       :pagination="false"
-                                      rowKey="column3Id"
+                                      :rowKey="'classTimeKey'"
                                       :bordered="true"
                                       :cell-class-name="addClass">
                                 <a-form-item slot="class" >
@@ -147,7 +151,8 @@
                     </a-descriptions>
                     <a-descriptions bordered>
                         <a-descriptions-item label="禁止相邻">
-                            <a-table  :columns="column4"
+                            <a-table :rowKey="'banTimeKey'"
+                                    :columns="column4"
                                       :data-source="banData"
                                       :pagination="false"
                                       :bordered="true"
@@ -186,7 +191,8 @@
                     </a-descriptions>
                     <a-descriptions bordered>
                         <a-descriptions-item label="单双周课程">
-                            <a-table  :columns="column5"
+                            <a-table :rowKey="'weekTimeKey'"
+                                    :columns="column5"
                                       :data-source="weekData"
                                       :pagination="false"
                                       :bordered="true"
@@ -225,7 +231,7 @@
                     </a-descriptions>
                 </template>
                 <button style="background-color: #00ccff;margin-top:100px; color: white;height: 40px;border: none;
-                border-radius: 5px; width: 200px" >下一步</button>
+                border-radius: 5px; width: 200px" @click="Next" >下一步</button>
             </div>
         </div>
 <!--        添加时间规则-->
@@ -387,30 +393,6 @@
                 </template>
             </div>
         </a-modal>
-<!--        添加学科时间规则-->
-        <a-modal :visible='subjectTimeVisit'
-                 width="600px"
-                 :closable="false"
-                 on-ok="handleOk">
-            <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存
-                </a-button>
-                <a-button key="back" @click="handleCancel">取消
-                </a-button>
-            </template>
-        </a-modal>
-        <!--        添加教师时间规则-->
-        <a-modal :visible='teacherTimeVisit'
-                 width="600px"
-                 :closable="false"
-                 on-ok="handleOk">
-            <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存
-                </a-button>
-                <a-button key="back" @click="handleCancel">取消
-                </a-button>
-            </template>
-        </a-modal>
     </div>
 </template>
 <script>
@@ -442,12 +424,15 @@
     ]
     const studyTimeData=[
         {
+            subjectTimekey:'1',
             time1:'必须星期一下午第4节',
         },
         {
+            subjectTimekey:'2',
             time1:'必须星期一下午第3节 必须星期一下午第4节',
         },
         {
+            subjectTimekey:'3',
             time1:'不能星期一下午第1节 不能星期一上午第二节 不能星期一上午第3节',
         },
     ]
@@ -479,6 +464,7 @@
     ]
     const teacherTimeData=[
         {
+            teacherTimeKey:'1',
             teacher:'张凯元',
             time1:'必须星期一下午第4节',
         },
@@ -519,9 +505,11 @@
     ]
     const classTimeData=[
         {
+            classTimeKey:'1',
             time1:'必须星期一下午第4节',
         },
         {
+            classTimeKey:'2',
             time1:'必须星期一下午第3节 必须星期一下午第4节',
         },
     ]
@@ -561,6 +549,7 @@
     ]
     const banData=[
         {
+            banTimeKey:'1'
         },
     ]
     const column5=[
@@ -599,6 +588,7 @@
     ]
     const weekData=[
         {
+            weekTimeKey:'1',
         },
     ]
     const editColumn=[
@@ -662,6 +652,7 @@
             return {
                 column1,
                 studyTimeData,
+                subjectTimeCount:3,
                 column2,
                 teacherTimeData,
                 column3,
@@ -675,7 +666,6 @@
                 timeRegularVisit: false,
                 loading:false,
                 teacherVisit:false,
-                subjectTimeVisit:false,
             };
         },
         methods:{
@@ -695,7 +685,7 @@
                 this.$router.push('/schedule/detail/start_class')
             },
             Next(){
-                this.$router.push('/schedule/detail/class_admin/rule')
+                this.$router.push('/schedule/detail/start_class')
             },
             timeRegularSetting() {
                 this.timeRegularVisit = true;
@@ -704,14 +694,35 @@
                 this.teacherVisit=true;
             },
             addSubjectTimeRegular(){
-                this.subjectTimeVisit=true
+                this. studyTimeData.unshift({
+                    subjectTimekey:'3',
+                    time1:'不能星期一下午第1节 不能星期一上午第二节 不能星期一上午第3节',
+                })
+          },
+            addTeacherTimeRegular(){
+                this. teacherTimeData.unshift({
+                    teacherTimeKey:'2',
+                    teacher:'张凯元',
+                    time1:'必须星期一下午第4节',
+                })
             },
-            addTeacherTimeRegular(){},
-            addClassTimeRegular(){},
-            addWeekRegular(){},
-            addBanRegular(){},
+            addClassTimeRegular(){
+                this.classTimeData.unshift({
+                    classTimeKey:'2',
+                    time1:'必须星期一下午第3节 必须星期一下午第4节',
+                })
+            },
+            addWeekRegular(){
+                this.weekData.unshift({
+                    weekTimeKey:'1',
+                })
+            },
+            addBanRegular(){
+                this.banData.unshift({
+                    banTimeKey:'1'
+                })
+            },
             handleSelectChange(){
-
             },
             handleOk() {
                 this.loading = true;
@@ -727,7 +738,26 @@
                 this.teacherVisit= false;
                 this.subjectTimeVisit=false;
             },
-
+            subjectTimeDelete(key){
+                console.log(1245)
+                console.log(key)
+                const dataSource = [...this.studyTimeData];
+                this.studyTimeData = dataSource.filter(item => item.key !== key);
+            },
+            back(){
+                this.$router.go(-1)
+            },
+            teacherTimeVisit(){},
+            handleSelectChange3(){},
+            handleSelectChange2(){},
+            handleSubmit(){},
+            handleSubmit1(){},
+            handleSubmit2(){},
+            addClass(){},
+            onChange(){},
+            form(){},
+            classTimeKey(){},
+            visible(){},
         }
 
     };

@@ -64,7 +64,8 @@
                     <a-input  placeholder="16" style="width: 300px;"></a-input>
                 </a-form-item>
             </a-form>
-            <a-table :columns="columns"
+            <a-table :key="'key'"
+                    :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true">
@@ -155,58 +156,49 @@
     const columns = [
         { title: '分类',
             dataIndex: 'category',
-            key: 'category',
             className:'class_color',
             scopedSlots: { customRender: '分类' },
         },
         {
             title: '学生总人数',
             dataIndex: 'all',
-            key: 'all',
             className:'class_color'
         },
         {
             title: '未分班人数',
             dataIndex: 'unsorted',
-            key: 'unsorted',
             className:'class_color'
         },
         {
             title: '分班个数',
-            key: 'classNum',
             dataIndex: 'classNum',
             scopedSlots: { customRender: 'classNum' },
             className:'class_color'
         },
         {
             title: '平均人数',
-            key: 'ave',
             dataIndex: 'ave',
             className:'class_color'
         },
         {
             title: '每班最大人数',
-            key: 'max',
             dataIndex: 'max',
             scopedSlots: { customRender: 'max' },
             className:'class_color'
         },
         {
             title: '每周课时数',
-            key: 'classTime',
             dataIndex: 'classTime',
             scopedSlots: { customRender: 'classTime' },
             className:'class_color'
         },
         {
             title: '教师所教班级个数',
-            key: 'teacherclassNum',
             dataIndex: 'teacherclassNum',
             className:'class_color'
         },
         {
             title: '操作',
-            key: 'opt',
             dataIndex: 'opt',
             scopedSlots: { customRender: 'action' },
             className:'class_color'
@@ -283,20 +275,17 @@
     const teacherColumns=[
         {
             title:'教师名称',
-            key:'teacherName',
             dataIndex:'teacherName',
             align:'center',
             width:'30%',
         },{
         title: '所教班级个数',
-            key:'classNum',
             dataIndex:'classNum',
             align: 'center',
             width: '45%',
             scopedSlots: { customRender: "classNums" },
         },{
             title:'操作',
-            key:'opt',
             dataIndex:'opt',
             align:'center',
             width:'25%',
@@ -387,6 +376,12 @@
             handleCancel() {
                 this.addVisit=false;
             },
+            changeCellStyle(){},
+            onCheck(){},
+            onSelect(){},
+            form(){},
+            loading(){},
+            handlesubmit(){},
 
         }
     };

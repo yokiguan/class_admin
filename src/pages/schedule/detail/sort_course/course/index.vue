@@ -34,7 +34,7 @@
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 100px">返回</button>
+                        width: 100px" @click="back">返回</button>
                 </a-row>
             </div>
             <div class="content">
@@ -47,6 +47,7 @@
                 </a-row>
                 <div class="table-content">
                     <a-table
+                            :key="'key'"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
@@ -60,7 +61,7 @@
                         <a-button slot="adds_datas" style="background-color: #00ccff;color:white;" @click="add_class">
                             添加教室
                         </a-button>
-                        <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
+                        <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>
                     </a-table>
                     <router-link to="/schedule/detail/start_class">
                         <button style="background-color: #00ccff;
@@ -70,13 +71,13 @@
                 border-radius: 5px;
                 width: 150px;
                 margin-right: 50px;
-                margin-top:50px">
-                            下一步</button>
+                margin-top:50px">  下一步</button>
                     </router-link>
                 </div>
             </div>
         </div>
         <div class="Pop-ups">
+<!--            选择时间段-->
             <create-modal class="Pop-ups_time"
                           :close="false"
                           width="700px"
@@ -185,11 +186,12 @@
                     </div>
                 </div>
             </create-modal>
+<!--            添加教室-->
             <create-modal class="Pop-ups_class"
                           width="700px"
                           :close="false"
-                          :visible="visibe"
-                          :loading="load"
+                          :visible="classVisible"
+                          :loading="classloading"
                           @modalClosed="close"
                           @modalSubmit="handleSubmit2">
                 <div slot="content">
@@ -332,6 +334,7 @@
         }]
     let  tableData=[
         {
+            key:0,
             num:'1',
             name:'语文1班',
             teacher:'张凯元',
@@ -339,6 +342,7 @@
             opt:'删除'
         },
         {
+            key:1,
             num:'2',
             name:'语文2班',
             teacher:'张凯元',
@@ -346,6 +350,7 @@
             opt:'删除'
         },
         {
+            key:2,
             num:'3',
             name:'语文3班',
             teacher:'张凯元',
@@ -353,6 +358,7 @@
             opt:'删除'
         },
         {
+            key:3,
             num:'4',
             name:'生物学修1班',
             teacher:'张凯方',
@@ -360,6 +366,7 @@
             opt:'删除'
         },
         {
+            key:4,
             num:'5',
             name:'生物学修2班',
             teacher:'张凯方',
@@ -373,7 +380,9 @@
                 columns,
                 tableData,
                 visible: false,
-                visibe:false,
+                classVisible:false,
+                classloading:false,
+                loading:false,
             }
         },
         methods:{
@@ -381,7 +390,7 @@
                 this.visible=true;
             },
             add_class:function(){
-                this.visibe=true;
+                this.classVisible=true;
             },
             change: function () {
                 this.visible = true;
@@ -424,6 +433,31 @@
             },
             startArray(){
                 this.$router.push('/schedule/detail/start_class')
+            },
+            onDelete(){
+                const dataSource = [...this.tableData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this.tableData = dataSource
+            },
+            handleSubmit1(){
+                this.loading = true
+                setTimeout(() => {
+                    this.visible = false
+                    this.loading = false
+                }, 2000)
+            },
+            handleSubmit2(){
+                this.classloading = true
+                setTimeout(() => {
+                    this.classVisible = false
+                    this.classloading = false
+                }, 2000)
+            },
+            form(){},
+            handleSelectChange2(){},
+            handleSelectChange(){},
+            back(){
+                this.$router.go(-1)
             },
         },
     }

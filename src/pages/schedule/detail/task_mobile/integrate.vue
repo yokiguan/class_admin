@@ -18,7 +18,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">返回</button>
+                        width: 150px" @click="back">返回</button>
                 </a-col>
             </a-row>
             <a-row style="margin-top: 10px">
@@ -65,7 +65,6 @@
         {
             title: '一',
             dataIndex: 'one',
-            key:'one',
             customCell:(record,index) => {
             return {
               on :{//给单元格增加事件
@@ -80,7 +79,6 @@
         {
             title: '二',
             dataIndex: 'two',
-            key:'two',
             customCell:(record,index) => {
             return {
               on :{//给单元格增加事件
@@ -95,7 +93,6 @@
         {
             title: '三',
             dataIndex: 'three',
-            key:'three',
             customCell:(record,index) => {
             return {
               on :{//给单元格增加事件
@@ -110,7 +107,6 @@
         {
             title: '四',
             dataIndex: 'four',
-            key: 'four',
             customCell:(record,index) => {
             return {
               on :{//给单元格增加事件
@@ -125,7 +121,6 @@
         {
             title: '五',
             dataIndex: 'five',
-            key: 'five',
             customCell:(record,index,dataIndex) => {
             return {
               on :{//给单元格增加事件
@@ -172,7 +167,9 @@
             };
         },
         methods: {
-
+            back(){
+                this.$router.go(-1)
+            },
     },
 }
 </script>

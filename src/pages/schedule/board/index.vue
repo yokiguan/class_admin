@@ -29,14 +29,14 @@
           </template>
         </a-list-item>
       </a-list>
-      <!-- 新增表 -->
+      <!-- 添加排课规则 -->
       <create-modal
               title="添加排课规则"
+              :close="false"
               :visible="visible"
               :loading="loading"
               @modalClosed="closed"
-              @modalSubmit="handleSubmit"
-      >
+              @modalSubmit="handleSubmit">
         <div slot="content">
           <a-form v-bind="formItemLayout" @submit="handleSubmit" ref="createForm">
             <a-form-item label="计划名称">

@@ -19,7 +19,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px">返回</button></a-col>
+                        width: 100px" @click="back">返回</button></a-col>
             </a-row>
         </div>
         <div class="table-bg">
@@ -41,18 +41,16 @@
                     color: white;
                     height:40px;"
                     @click="add_course">添加课程</a-button>
-                <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
+                <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>
             </a-table>
            <div style="
                     margin-top: 20px;
                     margin-left: 55px;
                     float: left;
                     font-size: 1.0rem;
-                    color: blue;">
+                    color: blue;" @click="AddContent">
                <a-icon type="plus" />
-               <span>
-                   添加一项
-               </span>
+               <span>添加一项</span>
            </div>
             <router-link to="/schedule/detail/sort_course/course">
                 <button style="background-color: #00ccff;
@@ -157,14 +155,17 @@
     ];
     let tableData = [
         {
+            key:'0',
             blank:'1',
             opt: '删除'
         },
         {
+            key:'1',
             blank:'2',
             opt: '删除'
         },
         {
+            key:'2',
             blank:'3',
             opt: '删除'
         },
@@ -219,6 +220,27 @@
             startArray(){
                 this.$router.push('/schedule/detail/start_class')
             },
+            AddContent(){
+                const { count, tableData} = this;
+                const newData = {
+                    key: count,
+                    blank:'3',
+                    kinds:true,
+                    opt: '删除'
+                };
+                this.tableData= [...tableData, newData];
+                this.count = count + 1;
+            },
+            onDelete(){
+                const dataSource = [...this.tableData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this.tableData = dataSource
+            },
+            back(){
+                this.$router.go(-1)
+            },
+            form(){},
+            click(){},
         }
     };
 </script>
@@ -236,26 +258,10 @@
     }
     .content{
         width: 100%;
-        height: 300px;
         background-color: white;
-        height: 100px;
         margin: 0px 0px 20px 0px;
         padding: 20px 25px;
         vertical-align: top;
-        border-radius: 5px;
-    }
-    .result-left{
-        width: 50%;
-    }
-    .link-font-color{
-        color: #0000ff;
-    }
-    .info{
-        height: 50px;
-        width: 100%;
-        margin: 0px 0px 10px 0px;
-        padding: 10px 5px;
-        background-color: white;
         border-radius: 5px;
     }
     .table-bg{
@@ -263,7 +269,6 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-        height: 600px;
     }
     .buttons{
         margin:5px 5px 20px 5px;

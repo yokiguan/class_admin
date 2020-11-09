@@ -17,7 +17,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px">返回</button>
+                        width: 100px" @click="back">返回</button>
                 </a-col>
             </a-row>
         </div>
@@ -259,6 +259,9 @@
             },
             Next(){
                 this.$router.push('/schedule/detail/class_admin/course')
+            },
+            back(){
+                this.$router.go(-1)
             }
         }
     };

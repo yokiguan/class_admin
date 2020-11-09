@@ -18,8 +18,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px"
-                    >返回</button>
+                        width: 100px" @click="back">返回</button>
                 </a-col>
             </a-row>
         </div>
@@ -179,27 +178,34 @@
     ];
     const data = [
         {
+            key:0,
             class:'2020级高一1班',
             name: '语文',
             opt:'删除'
         },
         {
+            key:1,
             name:'数学',
         },
         {
+            key:2,
             name:'体育',
         },
         {
+            key:3,
             name:'+添加一项'
         },
         {
+            key:4,
             class:'2020级高一2班',
             name:'升国旗',
             opt:'删除'
         },
         {
+            key:5,
             name:'班会',
         }, {
+        key:6,
             name:'+添加一项'
         },
     ];
@@ -255,7 +261,11 @@
             },
             Next(){
                 this.$router.push('/schedule/detail/class_admin/rule')
-            }
+            },
+            back(){
+                this.$router.go(-1)
+            },
+            edit(){},
         }
     };
 </script>

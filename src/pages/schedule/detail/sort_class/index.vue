@@ -173,6 +173,11 @@
             back(){
               this.$router.push('/schedule/detail/index')
             },
+            form(){},
+            addClassHandleSubmint(){},
+            loading(){},
+            manaulSortClass(){},
+            autoSortClass(){}
         }
     };
 </script>

@@ -18,7 +18,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px">返回</button>  </a-col>
+                        width: 100px" @click="back">返回</button>  </a-col>
             </a-row>
         </div>
         <!-- /result -->
@@ -70,21 +70,13 @@
                 <div slot="content">
                     <a-form @submit="handleSubmit" ref="createForm">
                         <a-form-item>
-                            <p style="height:80px;
-                  background-color: #0099ff;
-                  margin-top: -15px;
-                  color: white;
-                  margin-right: -10px;
-                  line-height: 70px;
-                  padding-left: 5px;
-                  padding-top: 10px;
-                  margin-left: -18px;
-                  font-size: 23px;">
-                                设置每个老师使用某个课时的最大数量</p>
-                            <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
+                            <p style="height:80px; margin-right: -10px; line-height: 70px;
+                  background-color: #0099ff;padding-left: 5px;padding-top: 10px;margin-left: -18px;
+                  margin-top: -15px;color: white;font-size: 23px;">设置每个老师使用某个课时的最大数量</p>
                         </a-form-item>
                         <a-form-item>
-                            <a-table id="modalTable"
+                            <a-table :key="'key'"
+                                    id="modalTable"
                                     :columns="column4"
                                      :data-source="tableData4"
                                      :pagination="false"
@@ -96,7 +88,7 @@
                                     <a-select-option value="0">1</a-select-option>
                                     <a-select-option value="0">2</a-select-option>
                                 </a-select>
-                                <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
+                                <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>
                             </a-table>
                         </a-form-item>
                     </a-form>
@@ -260,12 +252,10 @@
     ];
     const tableData4= [
         {
+            key:'0',
             times: '周一上午第一节',
             number: '1',
             opt: '删除',
-        },
-        {
-            scopedSlots: { customRender: 'addName' }
         },
     ];
     const options = [
@@ -283,6 +273,7 @@
         data() {
             return {
                 column4,
+                count:1,
                 tableData4,
                 columns,
                 tableData,
@@ -335,6 +326,15 @@
                     this.loading=false
                     this.addNameVisit=false
                 })
+                const { count, tableData4} = this;
+                const newData = {
+                    key: count,
+                    times: '周一上午第一节',
+                    number: '1',
+                    opt: '删除',
+                };
+                this.tableData4= [...tableData4, newData];
+                this.count = count + 1;
             },
             handleCancel() {
                 this.addNameVisit=false;
@@ -358,6 +358,14 @@
                 console.log('checked = ', checkedValues);
                 console.log('value = ', this.value);
             },
+            onDelete(){
+                const dataSource = [...this. tableData4];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this. tableData4 = dataSource
+            },
+            back(){
+                this.$router.go(-1)
+            }
         }
     };
 </script>

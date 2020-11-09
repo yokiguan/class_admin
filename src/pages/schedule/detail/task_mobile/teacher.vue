@@ -20,8 +20,7 @@
                    <div style="width: 100%; height: 1px;
             margin-top: 10px;
             border-top: solid black 1px;"></div>
-                   <div>
-                       <a-tree
+                   <a-tree
                                :tree-data="treeData"
                                :default-expanded-keys="['0-0-0', '0-0-1']"
                                :default-selected-keys="['0-0-0', '0-0-1']"
@@ -30,32 +29,26 @@
                                @select="onSelect"
                                @check="onCheck"
                                checkable
-                               style="font-size: 1.3em;"
-                       />
-                   </div>
+                               style="font-size: 1.3em;"/>
                </div>
                <div class="right">
                    <div class="title">
                        <a-row>
                            <a-col :span="18"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
-                           <a-col :span="3">
-                               <button style="background-color: #19b294;
+                           <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">删除已发布课表</button>
-                           </a-col>
-                           <a-col>
-                               <button style="background-color: #19b294;
+                        width: 150px">删除已发布课表</button></a-col>
+                           <a-col><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">返回</button>
-                           </a-col>
+                        width: 150px" @click="back">返回</button></a-col>
                        </a-row>
                        <a-row style="margin-top: 20px">
                            <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
@@ -78,36 +71,28 @@
                         border-radius: 5px;
                         width: 150px" @click="changClass">学生调班</button>
                        </a-row>
-                       <a-row>
-                           <a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col>
-                       </a-row>
+                       <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
                    </div>
                    <div class="table-bg">
                        <a-row class="buttons">
-                           <a-col :span="3">
-                               <button style="background-color: #19b294;
+                           <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="allLook">整体查看</button>
-                           </a-col>
-                           <a-col :span="3">
-                               <button style="background-color: #19b294;
+                        width: 110px" @click="allLook">整体查看</button></a-col>
+                           <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="placeLook">按场地查看</button>
-                           </a-col>
-                           <a-col :span="3">
-                               <button style="background-color: #19b294;
+                        width: 110px" @click="placeLook">按场地查看</button></a-col>
+                           <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="subjectLook">按科目查看</button>
-                           </a-col>
+                        width: 110px" @click="subjectLook">按科目查看</button></a-col>
                        </a-row>
                        <a-table
                                :columns="columns"
@@ -237,6 +222,13 @@
             subjectLook(){
                 this.$router.push('/schedule/detail/task_mobile/course')
             },
+            back(){
+                this.$router.go(-1)
+            },
+            onChange(){},
+            showModal(){},
+            maxTime(){},
+            click(){}
         },
     };
 </script>

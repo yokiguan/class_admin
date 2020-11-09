@@ -18,7 +18,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px">返回</button>
+                        width: 100px" @click="back">返回</button>
                 </a-col>
             </a-row>
         </div>
@@ -30,23 +30,25 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
-            <a-table :columns="columns"
+            <a-table :key="'key'"
+                    :columns="columns"
                      :data-source="tableData"
                      :pagination="false"
                      :bordered="true">
                 <a-input slot="every_time"></a-input>
-                <a-icon type="edit" slot="class_day" style="color: #00ccff;
-                font-size: 25px;
-                font-weight: bold" @click="edit"/>
+                <a-icon type="edit" slot="class_day"
+                        style="color: #00ccff;font-size: 25px;font-weight: bold" @click="editDays"/>
                 <a-input slot="maxClass" placeholder="0"></a-input>
                 <a-input slot="everySettingTimes" placeholder="0"></a-input>
                 <a-input slot="morningClassTimes" placeholder="0"></a-input>
                 <a-input slot="afterClassTimes" placeholder="0"></a-input>
-                <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
+                <template slot="priority" slot-scope="text, record">
+                    <editable-cell :text="text" @change="onCellChange(record.key, 'priority', $event)" />
+                </template>
+                <a  slot="action" style="color: blue" @click="onDelete">删除</a>
+<!--                <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>-->
             </a-table>
-            <a-button
-                    icon="plus"
-                    style="background-color: #00ccff;
+            <a-button icon="plus" style="background-color: #00ccff;
                         color: white;
                         height: 40px;
                         border: none;
@@ -54,9 +56,8 @@
                         font-weight: bold;
                         border-radius: 5px;
                         margin-top: 30px;
-                        width: 150px"
-                    @click="add">添加</a-button>
-                <button style="background-color: #00ccff;
+                        width: 150px" @click="add">添加</a-button>
+            <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
                         border: none;
@@ -64,8 +65,7 @@
                         float: right;
                         margin-top: 150px;
                         margin-bottom: 20px;
-                        width: 150px" @click="Next">
-                    下一步</button>
+                        width: 150px" @click="Next">下一步</button>
             <!--        编辑弹窗-->
             <create-modal class="edit"
                           :close="false"
@@ -73,7 +73,7 @@
                           :visible="visible"
                           :loading="loading"
                           @modalClosed="closed"
-                          @modalSubmit="handleSubmit1">
+                          @modalSubmit="edithandleSubmit">
                 <div slot="content">
                     <div style="height: 65px;
                          border-radius: 5px;
@@ -85,12 +85,12 @@
                               vertical-align: top;
                               font-size: 1.2rem">设置上课天数</h3>
                     </div>
-                    <a-form style="margin-top: 30px;"  :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
+                    <a-form :value="value" style="margin-top: 30px;"  :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
                         <a-form-item label="类型">
                             <a-select
                                 v-decorator="[
-                                    'type',
-                                    { rules: [{ required: true, message: '小于/大于/等于' }] }, ]"
+                                    '类型',
+                                    { rules: [{ required: true, message: '请选择类型！' }] }, ]"
                                 placeholder="小于/大于/等于"
                                 @change="handleSelectChange">
                             <a-select-option value="1">
@@ -105,7 +105,7 @@
                         </a-select>
                     </a-form-item>
                     <a-form-item label="天数">
-                        <a-input placeholder="请输入"/>
+                        <a-input placeholder="请输入"  v-decorator="['天数', { rules: [{ required: true, message: '请输入天数！' }] }]"/>
                     </a-form-item>
                 </a-form>
             </div>
@@ -114,10 +114,10 @@
             <create-modal class="add"
                           width="700px"
                           :close="false"
-                          :visible="visib"
+                          :visible="addvisible"
                           :loading="load"
                           @modalClosed="close"
-                          @modalSubmit="handleSubmit2">
+                          @modalSubmit="AddhandleSubmit">
                 <div slot="content">
                     <div style="height: 65px;
                          border-radius: 5px;
@@ -129,10 +129,11 @@
                               vertical-align: top;
                               font-size: 1.2rem">添加课程</h3>
                     </div>
-                    <a-form style="margin-top: 30px" :form="form"  @submit="handleSubmit1">
+                    <a-form style="margin-top: 30px" :form="form"  @submit="handleSubmit">
                         <a-form-item label="添加课程：" :label-col="{ span: 5}" :wrapper-col="{ span: 18}">
-                            <a-input-search placeholder="请输入"/>
+                            <a-input-search placeholder="请输入" v-model="inputData"/>
                         </a-form-item>
+                        <div>数据：{{inputData}}</div>
                         <a-form-item :wrapper-col="{ span: 33}">
                             <div style="margin-left: 90px">
                                 <a-tree
@@ -141,12 +142,8 @@
                                     <a-tree-node key="0-0">
                                         <span slot="title" >物理</span>
                                         <a-tree-node key="0-0-0" title="物理选修">
-                                            <a-tree-node key="0-0-0-0">
-                                            </a-tree-node>
                                         </a-tree-node>
                                         <a-tree-node key="0-0-1" title="物理学修">
-                                            <a-tree-node key="0-0-1-1">
-                                            </a-tree-node>
                                         </a-tree-node>
                                     </a-tree-node>
                                     <a-tree-node key="0-1">
@@ -198,7 +195,8 @@
             dataIndex: 'priority',
             key: 'priority',
             align:'center',
-            width:'8%'
+            width:'8%',
+            scopedSlots: { customRender: 'every_time' },
         },
         {
             title: '每周节数',
@@ -259,45 +257,94 @@
     ];
     let tableData = [
         {
+            key:'0',
             subject:'语文',
             opt: '删除'
         },
         {
+            key:'1',
             subject:'数学',
             opt: '删除'
         },
         {
+            key:'2',
             subject:'体育',
             opt: '删除'
         },
         {
+            key:'3',
             subject:'升国旗',
             opt: '删除'
         },
         {
+            key:'4',
             subject:'班会',
             opt: '删除'
         }
     ];
-    export default {
-        components: {CreateModal},
+    const EditableCell = {
+        template: `
+      <div class="editable-cell">
+        <div v-if="editable" class="editable-cell-input-wrapper">
+          <a-input :value="value" @change="handleChange" @pressEnter="check" /><a-icon
+            type="check"
+            class="editable-cell-icon-check"
+            @click="check"/>
+        </div>
+        <div v-else class="editable-cell-text-wrapper">
+          {{ value || ' ' }}
+          <a-icon type="edit" class="editable-cell-icon" @click="edit" />
+        </div>
+      </div>`,
+        props: {
+            text: String,
+        },
         data() {
             return {
-                tableData,
-                columns,
-                visible: false,
-                visib:false,
-                load:false,
-                loading: false,
-                showLine: true,
+                value: this.text,
+                editable: false,
             };
         },
         methods: {
-            edit: function () {
+            handleChange(e) {
+                const value = e.target.value;
+                this.value = value;
+            },
+            check() {
+                this.editable = false;
+                this.$emit('change', this.value);
+            },
+            edit() {
+                this.editable = true;
+            },
+        },
+    };
+    export default {
+        components: {
+            CreateModal,
+            EditableCell,
+        },
+        data() {
+            return {
+                inputData: null,
+                tableData,
+                columns,
+                visible: false,
+                addvisible:false,
+                load:false,
+                loading: false,
+                showLine: true,
+                count:5,
+                formLayout:'horizontal',
+                form:this.$form.createForm(this,{name:'coordinated'}),
+            };
+        },
+        methods: {
+            editDays: function () {
                 this.visible = true;
             },
             add: function () {
-                this.visib = true;
+                this.addvisible = true;
             },
             change: function () {
                 this.visible = true;
@@ -311,23 +358,48 @@
                 this.visible = false
                 this.loading = false
             },
-            handleSubmit1: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
+            AddhandleSubmit: function () {
+                console.log(this.$refs.createForm)
+                this.load = true
                 setTimeout(() => {
-                    that.visible = false
-                    that.loading = false
-                }, 2000)
+                    this.addvisible = false
+                    this.load = false
+                }, 300)
+                const { count, tableData } = this;
+                const newData = {
+                    key: count,
+                    subject: `语文破碎带复活甲广佛而非`,
+                    priority:'1',
+                    opt:  `删除`,
+                };
+                this.tableData= [...tableData, newData];
+                this.count = count + 1;
             },
-            handleSubmit2: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.load = true
-                setTimeout(() => {
-                    that.visib = false
-                    that.load = false
-                }, 2000)
+            edithandleSubmit(e){
+                console.log(23456789)
+                e.preventDefault();
+                this.form.validateFields((err, values) => {
+                    console.log(err)
+                    if (!err) {
+                        //下面这个就没执行
+                        this.loading = true
+                        console.log(23456789)
+                        setTimeout(()=>{
+                            this.visible= false
+                            this.loading = false
+                        },200)
+                        console.log('Received values of form: ', values);
+                    }
+                });
+                this.$emit('change', this.values);
+                this.class_day=false
+
+            },
+            handleSelectChange(value){
+                console.log(value);
+                this.form.setFieldsValue({
+                    note: `3, ${value === '大于' ? '1' : '2'}!`,
+                });
             },
             onChange(e){
                 console.log('radio checked',e.target.value)
@@ -359,7 +431,21 @@
             },
             Next(){
                 this.$router.push('/schedule/detail/class_admin/class')
-            }
+            },
+            onDelete(){
+                const dataSource = [...this. tableData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this. tableData= dataSource
+            },
+            back(){
+                this.$router.go(-1)
+            },
+            value(){},
+            handleSubmit1(){},
+            submit(){},
+            handleSubmit(){},
+            record(){},
+
         }
     };
 </script>
@@ -414,5 +500,39 @@
     .buttons button{
         background-color:#e4e4e4;
         color:black;
+    }
+    .editable-cell {
+        position: relative;
+    }
+    .editable-cell-input-wrapper,
+    .editable-cell-text-wrapper {
+        padding-right: 24px;
+    }
+    .editable-cell-text-wrapper {
+        padding: 5px 24px 5px 5px;
+    }
+    .editable-cell-icon,
+    .editable-cell-icon-check {
+        position: absolute;
+        right: 0;
+        width: 20px;
+        cursor: pointer;
+    }
+    .editable-cell-icon {
+        line-height: 18px;
+        display: none;
+    }
+    .editable-cell-icon-check {
+        line-height: 28px;
+    }
+    .editable-cell:hover .editable-cell-icon {
+        display: inline-block;
+    }
+    .editable-cell-icon:hover,
+    .editable-cell-icon-check:hover {
+        color: #108ee9;
+    }
+    .editable-add-btn {
+        margin-bottom: 8px;
     }
 </style>

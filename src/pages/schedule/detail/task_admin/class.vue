@@ -35,57 +35,46 @@
                     <div class="title">
                         <a-row>
                             <a-col :span="18"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
+                            <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">删除已发布课表</button>
-                            </a-col>
-                            <a-col>
-                                <button style="background-color: #19b294;
+                        width: 150px">删除已发布课表</button></a-col>
+                            <a-col><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">返回</button>
-                            </a-col>
+                        width: 150px" @click="back">返回</button></a-col>
                         </a-row>
-                        <a-row>
-                            <a-col><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
-                        </a-row>
+                        <a-row><a-col><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col></a-row>
                     </div>
                     <div class="table-bg">
                         <a-row class="buttons">
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
+                            <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="teacherLook">按老师查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
+                        width: 110px" @click="teacherLook">按老师查看</button></a-col>
+                            <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="placeLook">按场地查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
+                        width: 110px" @click="placeLook">按场地查看</button></a-col>
+                            <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="subjectLook">按科目查看</button>
-                            </a-col>
+                        width: 110px" @click="subjectLook">按科目查看</button></a-col>
                         </a-row>
                         <a-table
+                                :key="'key'"
                                 :columns="columns"
                                 :data-source="tableData"
                                 :pagination="false"
@@ -145,19 +134,24 @@
     ];
     const tableData=[
         {
+            key:'1',
             num: '1',
         },
         {
+            key:'2',
             num: '2',
             one:'高二语文_车东明',
             two:'高二语文_车东明',
         },
         {
+            key:'3',
             num: '3',
             three:'高二数学_张凯元'
         },{
+            key:'4',
             num: '4',
         },{
+            key:'5',
             num:'5'
         }
     ];
@@ -215,6 +209,9 @@
             },
             subjectLook(){
                 this.$router.push('/schedule/detail/task_admin/class')
+            },
+            back(){
+                this.$router.go(-1)
             },
         },
     };

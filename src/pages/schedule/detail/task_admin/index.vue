@@ -53,37 +53,25 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">返回</button>
+                        width: 150px" @click="back">返回</button>
                             </a-col>
                         </a-row>
                         <a-row style="margin-top: 20px">
                             <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
-                            <a-col :span="3">
-                                <button @click="maxTime" style="background-color: #19b294;
+                            <button @click="maxTime" style="background-color: #19b294;margin-left: 50px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 150px">查看学生冲突</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <router-link to="/schedule/detail/sort_course/place">
-                                    <button style="background-color: #19b294;
+                            <button style="background-color: #19b294;margin-left: 50px; color: white;height: 40px;
+                    border: none;border-radius: 5px;width: 150px" @click="manualClass">手动调课</button>
+                            <button style="background-color: #19b294;margin-left: 50px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 150px">手动调课</button>
-                                </router-link>
-                            </a-col>
-                            <a-col>
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px">学生调班</button>
-                            </a-col>
+                        width: 150px" @click="changeClass">学生调班</button>
                         </a-row>
                         <a-row>
                             <a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col>
@@ -117,6 +105,7 @@
                             </a-col>
                         </a-row>
                         <a-table
+                                :key="'key'"
                                 :columns="columns"
                                 :data-source="tableData"
                                 :pagination="false"
@@ -176,19 +165,24 @@
     ];
     const tableData=[
         {
+            key:'1',
             num: '1',
         },
         {
+            key:'2',
             num: '2',
             one:'刘娟*_2018级高二1班 尹健*_2018级高二6班 罗梦*_2018级高二8班 罗洪*_2018级高二9班',
             two:'刘娟*_2018级高二1班 尹健*_2018级高二6班 罗梦*_2018级高二8班 罗洪*_2018级高二9班',
         },
         {
+            key:'3',
             num: '3',
             three:'刘娟*_2018级高二1班 尹健*_2018级高二6班 罗梦*_2018级高二8班 罗洪*_2018级高二9班'
         },{
+            key:'4',
             num: '4',
         },{
+            key:'5',
             num:'5'
         }
     ];
@@ -239,6 +233,18 @@
             subjectLook(){
                 this.$router.push('/schedule/detail/task_admin/class')
             },
+            manualClass(){
+                this.$router.push('/schedule/detail/task_mobile/integrate')
+            },
+            changeClass(){
+                this.$router.push('/schedule/detail/task_mobile/change_student')
+            },
+            back(){
+                this.$router.go(-1)
+            },
+            click(){},
+            maxTime(){},
+            onChange(){},
         },
     };
 </script>

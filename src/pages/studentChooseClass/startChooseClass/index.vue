@@ -35,38 +35,32 @@
                         margin-left: 50px;
                         border-radius: 5px;
                         border:1px solid black;">
-                            <a-col>
-                                <span style="float: left;padding: 10px;">张凯元待选课表</span>
-                            </a-col>
-                            <a-col>
-                                <span style="font-size: 20px;float: left;margin-left:150px;padding-top: 5px" >高二2019-2020第一学期</span>
-                            </a-col>
+                            <a-col><span style="float: left;padding: 10px;">张凯元待选课表</span></a-col>
+                            <a-col><span style="font-size: 20px;float: left;margin-left:150px;padding-top: 5px" >高二2019-2020第一学期</span></a-col>
                         </a-row>
                         <a-row class="buttons" style="margin-top: 10px">
-                            <a-col :span="4">
-                                <button style="background-color: #ff6600;
+                            <a-col :span="4"><button style="background-color: #ff6600;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">矫正规则</button>
-                            </a-col>
-                            <a-col :span="1">
-                                <button style="background-color: #ffcc00;
+                        width: 110px">矫正规则</button></a-col>
+                            <a-col :span="1"><button style="background-color: #ffcc00;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px">规则说明</button>
-                            </a-col>
-                            <a-col >
-                                <button style="background-color: #1abc9c;
+                        width: 110px">规则说明</button></a-col>
+                            <a-col ><button style="background-color: #1abc9c;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px"  @click="showSave">保存</button>
-                            </a-col>
+                        width: 110px"  @click="showSave">保存</button></a-col>
+                        </a-row>
+                        <a-row style="float: left;margin-left: 300px;margin-top: 50px"><h3>选中其中2科，语文必选</h3></a-row>
+                        <a-row>
+
                         </a-row>
 
                     </div>

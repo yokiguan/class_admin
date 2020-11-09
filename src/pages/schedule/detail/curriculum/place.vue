@@ -54,7 +54,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">返回</button>
+                        width: 150px" @click="back">返回</button>
                             </a-col>
                         </a-row>
                         <a-row style="margin-top: 20px">
@@ -251,6 +251,11 @@
             studentLook(){
                 this.$router.push('/schedule/detail/curriculum/student')
             },
+            back(){
+                this.$router.go(-1)
+            },
+            click(){},
+            maxTime(){},
         },
     };
 </script>

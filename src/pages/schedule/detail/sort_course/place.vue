@@ -18,8 +18,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px"
-                >返回</button>
+                        width: 100px" @click="back">返回</button>
                 </a-col>
             </a-row>
         </div>
@@ -51,7 +50,7 @@
                         英语
                     </a-select-option>
                 </a-select>
-                <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
+                <a slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</a>
             </a-table>
             <a-button icon="plus"
                     style="color:white;
@@ -71,14 +70,13 @@
                         下一步
                     </button>
             </router-link>
-
             <!--        添加教室弹窗-->
             <create-modal
                     :close="false"
                     :visible="visible"
                     :loading="loading"
                     @modalClosed="closed"
-                    @modalSubmit="handleSubmit">
+                    @modalSubmit="AddhandleSubmit">
                 <div slot="content">
                     <a-form v-bind="formItemLayout"
                             @submit="handleSubmit"
@@ -96,38 +94,32 @@
         {
             title: '序号',
             dataIndex: 'key',
-            key: 'key'
         },
         {
             title: '教室名称',
             dataIndex: 'name',
-            key: 'name'
+
         },
         {
             title: '所属教学楼',
             dataIndex: 'building',
-            key: 'building',
         },
         {
             title: '教室类型',
             dataIndex: 'type',
-            key: 'type',
             scopedSlots: { customRender: 'buildingType' }
         },
         {
             title: '楼层',
-            key: 'floor',
             dataIndex: 'floor'
         },
         {
             title: '容量',
-            key: 'capacity',
             dataIndex: 'capacity'
         },
         {
             title: '操作',
             dataIndex: 'opt',
-            key: 'opt',
             scopedSlots: { customRender: 'action' }
         },
     ];
@@ -139,7 +131,7 @@
             type: "0",
             floor: 4,
             capacity: 55,
-            opt: '编辑'
+            opt: '删除'
         },
         {
             key: 1,
@@ -148,7 +140,7 @@
             type: "1",
             floor: 4,
             capacity: 55,
-            opt: '编辑'
+            opt: '删除'
         },
         {
             key: 2,
@@ -157,7 +149,7 @@
             type: "2",
             floor: 4,
             capacity: 55,
-            opt: '编辑'
+            opt: '删除'
         },
     ];
     export default {
@@ -165,7 +157,9 @@
         data() {
             return {
                 tableData,
+                count:2,
                 columns,
+                formItemLayout:false,
                 visible: false,
                 loading: false,
                 treeData:[
@@ -206,16 +200,25 @@
             },
             closed: function () {
                 this.visible = false
-                this.loading = false
             },
-            handleSubmit: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
+            AddhandleSubmit: function () {
+                this.loading = true
                 setTimeout(() => {
-                    that.visible = false
-                    that.loading = false
-                }, 2000)
+                    this.visible = false
+                    this.loading = false
+                }, 200)
+                const { count, tableData} = this;
+                const newData = {
+                    key: count,
+                    name: '101',
+                    building: '逸夫楼',
+                    type: "0",
+                    floor: 4,
+                    capacity: 55,
+                    opt: '删除'
+                };
+                this.tableData= [...tableData, newData];
+                this.count = count + 1;
             },
             onChange(e){
                 console.log('radio checked',e.target.value)
@@ -242,6 +245,15 @@
             startArray(){
                 this.$router.push('/schedule/detail/start_class')
             },
+            onDelete(key){
+                const dataSource = [...this.tableData];
+                this.tableData = dataSource.filter(item => item.key !== key);
+            },
+            back(){
+              this.$router.go(-1)
+            },
+            handleSubmit(){},
+            click(){},
         }
     };
 </script>
@@ -272,7 +284,6 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-        height:500px;
     }
     .buttons{
         margin:5px 5px 20px 5px;

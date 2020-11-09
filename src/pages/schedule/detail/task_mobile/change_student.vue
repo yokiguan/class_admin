@@ -53,7 +53,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">返回</button>
+                        width: 150px" @click="back">返回</button>
                             </a-col>
                             <a-col><span style="font-size: 1.2em ">XXX-101</span></a-col>
                         </a-row>
@@ -324,6 +324,11 @@
             studentLook(){
                 this.$router.push('/schedule/detail/curriculum/student')
             },
+            back(){
+                this.$router.go(-1)
+            },
+            onChange(){},
+
         },
     };
 </script>

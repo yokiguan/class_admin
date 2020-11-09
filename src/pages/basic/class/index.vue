@@ -1,155 +1,298 @@
 <template>
-  <a-card>
-    <a-form layout="horizontal">
-      <a-row >
-        <a-col :md="8" :sm="24" >
-          <a-form-item
-                  label="级部"
-                  :labelCol="{span: 5}"
-                  :wrapperCol="{span: 18, offset: 1}"
-          >
-            <a-select placeholder="请选择">
-              <a-select-option value="1">高中部</a-select-option>
-              <a-select-option value="2">初中部</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :md="8" :sm="24" >
-          <a-form-item
-                  label="年级"
-                  :labelCol="{span: 5}"
-                  :wrapperCol="{span: 18, offset: 1}"
-          >
-            <a-select placeholder="请选择">
-              <a-select-option value="1">高一</a-select-option>
-              <a-select-option value="2">高二</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-      <span style="float: right; margin-top: 3px;">
-          <a-button type="primary">查询</a-button>
-          <a-button style="margin-left: 8px">重置</a-button>
-        </span>
-    </a-form>
-    <div>
-      <div class="operator">
-        <a-button @click="addNew" type="primary">新建</a-button>
-        <a-button >批量操作</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="audit">审批</a-menu-item>
-          </a-menu>
-          <a-button>
-            更多操作 <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
+  <EasyScrollbar :barOption="myBarOption">
+    <div id="wrapper" style="width: 600px">
+      <div style="width: 1800px">
+        <div class="result">
+          <a-breadcrumb>
+            <a-breadcrumb-item>首页</a-breadcrumb-item>
+            <a-breadcrumb-item><a href="">基础数据</a></a-breadcrumb-item>
+            <a-breadcrumb-item><a href="">行政班管理</a></a-breadcrumb-item>
+          </a-breadcrumb>
+        </div>
+        <div class="left">
+          <a-tree
+                  :tree-data="treeData"
+                  :default-expanded-keys="['0-0-0', '0-0-1']"
+                  :default-selected-keys="['0-0-0', '0-0-1']"
+                  :default-checked-keys="['0-0-0', '0-0-1']"
+                  :replace-fields="replaceFields"
+                  @select="onSelect"
+                  @check="onCheck"
+                  checkable
+                  style="font-size: 1.3em;"/>
+        </div>
+        <div class="right">
+          <a-card class="table-bg">
+            <a-row class="buttons">
+              <a-col :span="3">
+                <a-button @click="addClass" type="primary"
+                          style="background-color: #1abc9c">新增</a-button>
+              </a-col>
+              <a-col :span="3">
+                <a-button @click="Delete" style="background-color: #ff0000">删除</a-button>
+              </a-col>
+            </a-row>
+            <a-row>
+              <a-table :rowKey="'key'"
+                       :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+                       :selectedRows="selectedRows"
+                      :columns="columns"
+                       :data-source="data"
+                       :bordered="true"
+                       :pagination="false"
+                       style="width: 55%;margin-left: 20px;margin-top: 20px">
+                <a-checkbox slot="checkBox" @change="change"></a-checkbox>
+                <div slot="action">
+                  <button @click="personManage" style="float: left;background-color: #199ed8;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">人员管理</button>
+                  <button @click="editAdmin" style="background-color: #008000;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">修改</button>
+                </div>
+              </a-table>
+            </a-row>
+          </a-card>
+        </div>
+        <a-modal
+                :visible='addClassVisit'
+                width="600px"
+                :closable="false"
+                on-ok="handleOk">
+          <template slot="footer">
+            <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
+              保存
+            </a-button>
+            <a-button key="back" @click="handleCancel">
+              取消
+            </a-button>
+          </template>
+          <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint"
+                  style="margin-left: 70px">
+            <a-form-item label="名称">
+              <a-input placeholder="1班" v-decorator="['课程', { rules: [{ required: true, message: '请输入班级!' }] }]"/>
+            </a-form-item>
+          </a-form>
+        </a-modal>
+        <a-modal
+                :visible='editVisit'
+                width="600px"
+                :closable="false"
+                on-ok="handleOk">
+          <template slot="footer">
+            <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
+              保存
+            </a-button>
+            <a-button key="back" @click="handleCancel">
+              取消
+            </a-button>
+          </template>
+          <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="editHandleSubmint"
+                  style="margin-left: 70px">
+            <a-form-item label="名称">
+              <a-input placeholder="1班" v-decorator="['课程', { rules: [{ required: true, message: '请输入班级!' }] }]"/>
+            </a-form-item>
+          </a-form>
+        </a-modal>
       </div>
-      <standard-table
-              :columns="columns"
-              :dataSource="dataSource"
-              :subName="'人员管理'"
-              :subPath="'/basic/class/member'"
-              :selectedRows="selectedRows"
-              @change="onchange"
-      />
     </div>
-  </a-card>
-</template>
+  </EasyScrollbar>
 
+</template>
 <script>
-  import StandardTable from '../../../components/table/StandardTable'
-  const columns = [
+  const columns=[
     {
-      title: '班级序号',
-      dataIndex: 'no'
+      title:'序号',
+      dataIndex:'serialNum',
+      key:'serialNum',
+      align:'center',
+      width:'15%'
+    }, {
+      title:'班级',
+      dataIndex:'class',
+      key:'class',
+      align:'center',
+      width:'17%'
     },
     {
-      title: '班级',
-      dataIndex: 'name'
+      title:'所属年级',
+      dataIndex:'grade',
+      key:'grade',
+      align:'center',
+      width:'17%'
     },
     {
-      title: '所属年级',
-      dataIndex: 'grade',
+      title:'人数',
+      dataIndex:'num',
+      key:'num',
+      align:'center',
+      width:'17%'
     },
     {
-      title: '人数',
-      dataIndex: 'number',
+      title:'操作',
+      dataIndex:'opts',
+      key:'opts',
+      align:'center',
+      width:'37%',
+      scopedSlots: { customRender: 'action' },
+    },
+  ]
+  const data=[
+    {
+      key:'1',
+      serialNum:'1',
+      class:'高一1班',
+      grade:'高一',
+      num:'40'
     },
     {
-      title: '操作',
-      dataIndex: 'operation',
-      scopedSlots: { customRender: 'operation' },
+      key:'2',
+      serialNum:'2',
+      class:'高一2班',
+      grade:'高一',
+      num:'41'
+    },
+    {
+      key:'3',
+      serialNum:'3',
+    },
+    {
+      key:'4',
     }
   ]
-
-  const dataSource = [{
-    key:1,
-    no:1,
-    name:'高一1',
-    grade:'高一',
-    number:40
-  },{
-    key:2,
-    no:2,
-    name:'高二2',
-    grade:'高二',
-    number:41
-  }]
-
+  const treeData = [
+    {
+      name: '高中部',
+      key: '0-0',
+      child: [
+        { name: '高一', key: '0-0-0'},
+        { name: '高二', key: '0-0-1' },
+        { name: '高三', key: '0-0-2' },
+      ],
+    },{
+      name: '初中部',
+      key: '0-1',
+      child: [
+        { name: '初一', key: '0-1-0'},
+        { name: '初二', key: '0-1-1' },
+        { name: '初三', key: '0-1-2' },
+      ],
+    },
+  ];
   export default {
-    name: 'class',
-    components: {StandardTable},
-    data () {
+    data() {
       return {
-        columns: columns,
-        dataSource: dataSource,
-        selectedRowKeys: [],
-        selectedRows: []
-      }
+        columns,
+        data,
+        treeData,
+        loading:false,
+        addClassVisit: false,
+        editVisit: false,
+        myBarOption:{
+          barColor:'block'
+        },
+        disabled: false,
+        replaceFields: {
+          children: 'child',
+          title: 'name',
+        },
+        selectedRowKeys: [], // Check here to configure the default column
+        selectedRows:[],
+      };
     },
     methods: {
-      onchange (selectedRowKeys, selectedRows) {
-        this.selectedRowKeys = selectedRowKeys
-        this.selectedRows = selectedRows
+      addClass() {
+        this.addClassVisit = true;
       },
-      remove () {
-        this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+      editAdmin() {
+        this.editVisit = true;
+      },
+      personManage(){
+        this.$router.push('/basic/class/member')
+      },
+      editHandleSubmint(){
+      },
+      onSelectChange( selectedRowKeys,selectedRows) {
+        this.selectedRowKeys = selectedRowKeys;
+        this.selectedRows=selectedRows
+      },
+      Delete(){
+        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
         this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
       },
-      addNew () {
-        this.dataSource.unshift({
-          key:2,
-          no:2,
-          name:'高三2',
-          grade:'高三',
-          number:41
-        })
+      handleOk() {
+        this.loading = true;
+        setTimeout(() => {
+          this.addClassVisit = false;
+          this.editVisit = false;
+          this.loading = false;
+        }, 2000);
       },
-      handleMenuClick (e) {
-        if (e.key === 'delete') {
-          this.remove()
-        }
-      }
-    }
-  }
+      handleCancel() {
+        this.addClassVisit = false;
+        this.editVisit = false;
+      },
+      form(){},
+      onSelect(){},
+      onCheck(){},
+      change(){},
+      addClassHandleSubmint(){},
+    },
+  };
 </script>
 
 <style lang="less" scoped>
-  .search{
-    margin-bottom: 54px;
+  .result{
+    width: 100%;
+    background-color: white;
+    height:50px;
+    margin: 20px 0px 10px 0px;
+    padding-left: 25px;
+    padding-top: 15px;
+    vertical-align: top;
+    border-radius: 5px;
   }
-  .fold{
-    width: calc(100% - 216px);
-    display: inline-block
+  .left{
+    width: 300px;
+    height: 900px;
+    background-color: white;
+    margin: 0px 0px 20px 0px;
+    padding: 20px 25px;
+    border-radius: 10px;
   }
-  .operator{
-    margin-bottom: 18px;
+  .right{
+    border-radius: 5px;
+    margin-top: -935px;
+    margin-left: 320px;
+    height:700px;
   }
-  @media screen and (max-width: 900px) {
-    .fold {
-      width: 100%;
+  .title{
+    width: 100%;
+    background-color: #fff;
+    height: 170px;
+    padding: 20px 25px;
+    border-radius: 10px;
+    margin-bottom: 50px;
+  }
+  .table-bg{
+    background-color: white;
+    margin-top: 35px;
+    padding: 20px 25px;
+    border-radius: 5px;
+    text-align: center;
+    width: 100%;
+    height: 700px;
+  }
+  .buttons{
+    margin:0px 5px 20px 5px;
+    padding:2px 4px;
+    margin-left: 30px;
+  }
+  .buttons button{
+    width: 110px;
+    height: 45px;
+    color:white;
+  }
+  /deep/ Table {
+    .ant-table-thead > tr > th {
+      background-color: #f4f4f4;
     }
   }
 </style>
+

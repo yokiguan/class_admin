@@ -18,7 +18,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px">返回</button> </a-col>
+                        width: 100px" @click="back">返回</button> </a-col>
             </a-row>
         </div>
         <!-- /result -->
@@ -48,18 +48,16 @@
                     color: white;
                     height:40px;"
                           @click="add_course">添加课程</a-button>
-                <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
+                <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>
             </a-table>
             <div style="
                     margin-top: 20px;
                     margin-left: 55px;
                     float: left;
                     font-size: 1.0rem;
-                    color: blue;">
+                    color: blue;" @click="AddContent">
                 <a-icon type="plus" />
-                <span>
-                   添加一项
-               </span>
+                <span> 添加一项</span>
             </div>
             <router-link to="/schedule/detail/sort_course/course">
                 <button style="background-color: #00ccff;
@@ -137,50 +135,48 @@
         {
             title: ' ',
             dataIndex: 'blank',
-            key: 'blank',
             align:'center'
         },
         {
             title: '分组名称',
             dataIndex: 'sort',
-            key: 'sort',
             scopedSlots: { customRender: 'sort_name' },
             align:'center'
         },
         {
             title:'类型',
             dataIndex:'kinds',
-            key:'kinds',
             scopedSlots: { customRender: 'kind' },
             align:'center'
         },
         {
             title: '课程',
             dataIndex: 'subject',
-            key: 'subject',
             scopedSlots: { customRender: 'add_course' },
             align:'center'
         },
         {
             title: '操作',
             dataIndex: 'opt',
-            key: 'opt',
             scopedSlots: { customRender: 'action' },
             align:'center'
         },
     ];
     let tableData = [
         {
+            key:'0',
             blank:'1',
             kinds:true,
             opt: '删除'
         },
         {
+            key:'1',
             blank:'2',
             kinds:true,
             opt: '删除'
         },
         {
+            key:'2',
             blank:'3',
             kinds:true,
             opt: '删除'
@@ -192,6 +188,7 @@
             return {
                 tableData,
                 columns,
+                count:3,
                 visible: false,
                 loading: false,
             };
@@ -234,6 +231,26 @@
             startArray(){
                 this.$router.push('/schedule/detail/start_class')
             },
+            AddContent(){
+                const { count, tableData} = this;
+                const newData = {
+                    key: count,
+                    blank:'3',
+                    kinds:true,
+                    opt: '删除'
+                };
+                this.tableData= [...tableData, newData];
+                this.count = count + 1;
+            },
+            onDelete(){
+                const dataSource = [...this.tableData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this.tableData = dataSource
+            },
+            back(){
+                this.$router.go(-1)
+            },
+            click:function(){},
         }
     };
 </script>

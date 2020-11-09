@@ -29,8 +29,7 @@
                                 @select="onSelect"
                                 @check="onCheck"
                                 checkable
-                                style="font-size: 1.3em;"
-                        />
+                                style="font-size: 1.3em;"/>
                     </div>
                 </div>
                 <div class="right">
@@ -49,7 +48,7 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px">返回</button>
+                        width: 150px" @click="back">返回</button>
                         </a-row>
                     </div>
                     <div class="table-bg">
@@ -220,6 +219,11 @@
             subjectLook(){
                 this.$router.push('/schedule/detail/curriculum/subject')
             },
+            back(){
+                this.$router.go(-1)
+            },
+            click(){},
+            maxTime(){},
 
         },
     };

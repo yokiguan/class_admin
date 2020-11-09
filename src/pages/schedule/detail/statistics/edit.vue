@@ -10,12 +10,9 @@
         <div class="content">
             <a-row>
                 <a-col :span="12">
-                    <a-space>
                         <span style="font-size:1.5em">高一2019-2020第一学期选课结果</span>
-                        <br>
                         <span class="link-font-color" style="margin-left:2em">选课时间：2020/03/01 ——2020/03/15</span>
                         <span class="link-font-color" style="margin-left:2em">选课中</span>
-                    </a-space>
                 </a-col>
                 <a-col :span="12">
                     <a-row>
@@ -58,6 +55,7 @@
             <!-- statistics -->
             <!-- table -->
             <a-table
+                    :key="'key'"
                     :columns="columns"
                     :data-source="classData"
                     :bordered = "true"
@@ -107,13 +105,11 @@
         {
             title: '课程',
             dataIndex: 'name',
-            key: 'name',
             align:'center',
             width:'8%',
         },
         {
             title: '已选人数',
-            key: 'key',
             dataIndex: 'count',
             align:'center',
             width:'5%',
@@ -121,14 +117,12 @@
         {
             title: '课程组合',
             dataIndex: 'group',
-            key: 'group',
             align:'center',
             width:'80%',
         },
         {
             title: '操作',
             dataIndex: 'add',
-            key: 'add',
             align:'center',
             scopedSlots:{customRender:'add'},
             width:'7%',
@@ -136,6 +130,7 @@
     ]
     const classData = [
         {
+            key: 0,
             name: '政治学修',
             count: 600,
             group:`周翔 X  张敏钰 X  张凌玮 X  许家锘 X  徐弘达 X  徐鼎钦 X  肖若渝 X  吴静希 X  翁柳琪 X  王永畅 X
@@ -145,6 +140,7 @@
     林梓墉 X  林青云 X  梁嘉琪 X  李泉德 X  李朗鸣 X  李凯熙 X`,
         },
         {
+            key: 1,
             name: '政治选修',
             count: 200,
             group:`周翔 X  张敏钰 X  张凌玮 X  许家锘 X  徐弘达 X  徐鼎钦 X  肖若渝 X  吴静希 X  翁柳琪 X  王永畅 X
@@ -154,6 +150,7 @@
     林梓墉 X  林青云 X  梁嘉琪 X  李泉德 X  李朗鸣 X  李凯熙 X`,
         },
         {
+            key: 2,
             name: '物理学修',
             count: 100,
             group:`周翔 X  张敏钰 X  张凌玮 X  许家锘 X  徐弘达 X  徐鼎钦 X  肖若渝 X  吴静希 X  翁柳琪 X  王永畅 X
