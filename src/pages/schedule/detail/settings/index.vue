@@ -82,9 +82,9 @@
        <a-textarea placeholder="请输入" :rows="8" style="width: 1200px" />
      </div>
      <a-row style=" margin-left:500px;margin-top:50px;margin-bottom:10px">
-       <a-col :span="5"><a-button  style="width: 100px;height: 40px;background-color: #1abc9c;color: white">保存</a-button></a-col>
-       <a-col :span="5"><a-button style="width: 100px;height: 40px;background-color: red;color: white">清空</a-button></a-col>
-       <a-col> <a-button style="width: 100px;height: 40px;background-color:blue;color: white">返回</a-button></a-col>
+       <a-col :span="5"><a-button  style="width: 100px;height: 40px;background-color: #1abc9c;color: white" @click="Save">保存</a-button></a-col>
+       <a-col :span="5"><a-button style="width: 100px;height: 40px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>
+       <a-col> <a-button style="width: 100px;height: 40px;background-color:blue;color: white" @click="back">返回</a-button></a-col>
      </a-row>
      <a-modal
              :visible='addVisit'
@@ -374,6 +374,14 @@ export default {
     },
     addHandleSubmint(){},
     deleteTeacher(){},
+    Save(){
+    },
+    Clear(){
+      this.dataSource.subject=[]
+    },
+    back(){
+      this.$router.go(-1)
+    }
   },
 };
 </script>

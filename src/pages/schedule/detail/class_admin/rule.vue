@@ -53,13 +53,8 @@
                                     <a-icon  type="edit" @click="timeRegularSetting"  style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
                                 <div slot="action">
-                                    <a-popconfirm v-if="studyTimeData.length"
-                                                  title="确认删除?"
-                                                  ok-text="是" cancel-text="否"
-                                                  @confirm="() => subjectTimeDelete(record.key)">
-                                        <a href="javascript:;" style="color:blue;float:left">删除</a>
-                                    </a-popconfirm>
-                                    <span  style="color:blue;float:right" @click="() => save(record.key)">保存</span>
+                                    <span  style="color:blue;float:left" @click="subjectTimeDelete">删除</span>
+                                    <span  style="color:blue;float:right" @click="subjectTimeSave">保存</span>
                                 </div>
                             </a-table>
                             <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;color: blue;"  class="editable-add-btn"  @click="addSubjectTimeRegular">
@@ -84,8 +79,8 @@
                                     <a-icon type="edit" @click="timeRegularSetting" style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
                                 <div slot="action">
-                                    <span  style="color:blue;float:left">删除</span>
-                                    <span  style="color:blue;float:right">保存</span>
+                                    <span  style="color:blue;float:left" @click="teacherTimeDelete">删除</span>
+                                    <span  style="color:blue;float:right" @click="teacherTimeSave">保存</span>
                                 </div>
                             </a-table>
                             <div style=" margin-top: 10px;margin-bottom: -5px; float: left; font-size: 1.0rem;color: blue;"
@@ -134,8 +129,8 @@
                                     </a-select>
                                 </a-form-item>
                                 <div slot="action">
-                                    <span  style="color:blue;float:left">删除</span>
-                                    <span  style="color:blue;float:right">保存</span>
+                                    <span  style="color:blue;float:left" @click="classTimeDelete">删除</span>
+                                    <span  style="color:blue;float:right" @click="classTimeSave">保存</span>
                                 </div>
                             </a-table>
                             <div style="
@@ -155,8 +150,7 @@
                                     :columns="column4"
                                       :data-source="banData"
                                       :pagination="false"
-                                      :bordered="true"
-                                      :cell-class-name="addClass">
+                                      :bordered="true">
                                 <a-form-item slot="classTimes" >
                                     <a-input placeholder="1" style="width: 100px"/>
                                 </a-form-item>
@@ -174,8 +168,8 @@
                                     </a-select>
                                 </a-form-item>
                                 <div slot="action">
-                                    <span  style="color:blue;float:left">删除</span>
-                                    <span  style="color:blue;float:right">保存</span>
+                                    <span  style="color:blue;float:left" @click="banTimeDelete">删除</span>
+                                    <span  style="color:blue;float:right" @click="banTimeSave">保存</span>
                                 </div>
                             </a-table>
                             <div style="
@@ -214,8 +208,8 @@
                                     </a-select>
                                 </a-form-item>
                                 <div slot="action">
-                                    <span  style="color:blue;float:left">删除</span>
-                                    <span  style="color:blue;float:right">保存</span>
+                                    <span  style="color:blue;float:left" @click="weekTimeDelete">删除</span>
+                                    <span  style="color:blue;float:right" @click="weekTimeSave">保存</span>
                                 </div>
                             </a-table>
                             <div style="
@@ -729,32 +723,49 @@
                 setTimeout(() => {
                     this.timeRegularVisit = false;
                     this.teacherVisit = false;
-                    this.subjectTimeVisit=false;
                     this.loading = false;
                 }, 2000);
             },
             handleCancel() {
                 this.timeRegularVisit = false;
                 this.teacherVisit= false;
-                this.subjectTimeVisit=false;
             },
-            subjectTimeDelete(key){
-                console.log(1245)
-                console.log(key)
+            subjectTimeDelete(){
                 const dataSource = [...this.studyTimeData];
-                this.studyTimeData = dataSource.filter(item => item.key !== key);
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this. studyTimeData= dataSource
             },
+            subjectTimeSave(){},
+            teacherTimeDelete(){
+                const dataSource = [...this.teacherTimeData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this. teacherTimeData= dataSource
+            },
+            teacherTimeSave(){},
+            classTimeDelete(){
+                const dataSource = [...this.classTimeData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this. classTimeData= dataSource
+            },
+            classTimeSave(){},
+            banTimeDelete(){
+                const dataSource = [...this.banData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this. banData= dataSource
+            },
+            banTimeSave(){},
+            weekTimeDelete(){
+                const dataSource = [...this. weekData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this.  weekData= dataSource
+            },
+            weekTimeSave(){},
             back(){
                 this.$router.go(-1)
             },
-            teacherTimeVisit(){},
-            handleSelectChange3(){},
-            handleSelectChange2(){},
-            handleSubmit(){},
-            handleSubmit1(){},
-            handleSubmit2(){},
-            addClass(){},
-            onChange(){},
+
+
+
             form(){},
             classTimeKey(){},
             visible(){},

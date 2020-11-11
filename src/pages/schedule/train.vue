@@ -3,13 +3,15 @@
         <template
                 v-for="col in ['name', 'age', 'address']"
                 :slot="col"
-                slot-scope="text">
+                slot-scope="text"
+        >
             <div :key="col">
                 <a-input
                         v-if="record.editable"
                         style="margin: -5px 0"
                         :value="text"
-                        @change="e => handleChange(e.target.value, record.key, col)"/>
+                        @change="e => handleChange(e.target.value, record.key, col)"
+                />
                 <template v-else>
                     {{ text }}
                 </template>

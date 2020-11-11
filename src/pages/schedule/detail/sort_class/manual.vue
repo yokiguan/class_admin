@@ -10,13 +10,8 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="18">
-                    <span style="font-size:1.5em">高一2019-2020第一学期排课计划 -手动分班</span>
-                    <!-- <br>
-                    <span style="margin-left:2em">未分班人数<font style="color:red">100</font>人</span> -->
-                </a-col>
-                <a-col><button style="width: 100px;height: 40px;background-color: blue;color: white;border-radius: 5px;border: none" @click="back">返回</button>
-                </a-col>
+                <a-col :span="18"><span style="font-size:1.5em">高一2019-2020第一学期排课计划 -手动分班</span></a-col>
+                <a-col><button style="width: 100px;height: 40px;background-color: blue;color: white;border-radius: 5px;border: none" @click="back">返回</button></a-col>
             </a-row>
         </div>
         <div class="table-bg">
@@ -26,27 +21,41 @@
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true">
-                <div
-                        slot="situation"
-                        slot-scope="data">
+                <div slot="situation" slot-scope="data">
                     <div v-for="(item, index) in data" :key="index" class="situation">
                         <div class="situation-header">
                             {{item.class}}{{item.teacher}}（共有学生{{item.all}}人）
                             <span style="color:red;float:right">删除</span>
                             <span style="color:blue;float:right;margin-right:1em;" @click="change">修改</span>
                         </div>
+                            <template v-for="(tag, index) in tags">
+                                <a-tooltip v-if="tag.length > 20" :key="tag" :title="tag">
+                                    <a-tag :key="tag" :closable="index !== 0" @close="() => handleClose(tag)">
+                                        {{ `${tag.slice(0, 20)}...` }}
+                                    </a-tag>
+                                </a-tooltip>
+                                <a-tag v-else :key="tag" :closable="index !== 0" @close="() => handleClose(tag)">
+                                    {{ tag }}
+                                </a-tag>
+                            </template>
+                            <a-input
+                                    v-if="inputVisible"
+                                    ref="input"
+                                    type="text"
+                                    size="small"
+                                    :style="{ width: '78px' }"
+                                    :value="inputValue"
+                                    @change="handleInputChange"
+                                    @blur="handleInputConfirm"
+                                    @keyup.enter="handleInputConfirm"/>
+                            <a-tag v-else style="background: #fff; borderStyle: dashed;" @click="showInput">
+                                <a-icon type="plus" />
+                            </a-tag>
                         <div class="situation-body">
-                            <a-button v-for="(stu, sindex) in item.students" :key="sindex"
-                                >
-                                {{stu}}
-
-                            </a-button>
+                            <a-button v-for="(stu, sindex) in item.students" :key="sindex">{{stu}}</a-button>
                         </div>
                     </div>
-                    <a-button icon="plus"
-                              style="background-color: #169bd5;color:white;" @click="add">
-                        添加班级
-                    </a-button>
+                    <a-button icon="plus" style="background-color: #169bd5;color:white;" @click="add">添加班级</a-button>
                 </div>
             </a-table>
             <create-modal
@@ -81,7 +90,7 @@
             </create-modal>
             <div style="margin: 20px 0px 20px 40%">
                 <a-button type="primary" style="margin-right:40px">保存</a-button>
-                <a-button type="primary">返回</a-button>
+                <a-button type="primary" >返回</a-button>
             </div>
         </div>
     </div>
@@ -111,22 +120,6 @@
             key: 0,
             subject: '高一语文',
             unsorted: 10,
-            situation:[
-                {
-                    class:"语文一班",
-                    teacher:"张开源老师",
-                    all:100,
-                    students:[
-                        "张三","里斯","王麻子"," ... ","+"
-                    ]},
-                {
-                    class:"语文二班",
-                    teacher:"张源老师",
-                    all:100,
-                    students:[
-                        "张三","里斯","王麻子"," ... ","+"
-                    ]}
-            ]
         },
         {
             key: 1,
@@ -150,7 +143,11 @@
             return {
                 tableData,
                 columns,
+                loading:false,
                 visible: false,
+                tags: ['Unremovable', 'Tag 2', 'Tag 3Tag 3Tag 3Tag 3Tag 3Tag 3Tag 3'],
+                inputVisible: false,
+                inputValue: '',
             };
         },
         methods: {
@@ -165,19 +162,16 @@
                 this.loading = false
             },
             handleSubmit: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
+                console.log(this.$refs.createForm)
+                this.loading = true
                 setTimeout(() => {
-                    that.dataSource.push(
+                    this.dataSource.push(
                         {
-                            avatar:
-                                "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
                             content: "班级名称：请输入/任课教师：张凯元",
                         }
                     ),
-                        that.visible = false
-                    that.loading = false
+                        this.visible = false
+                    this.loading = false
                 }, 2000)
             },
             changeMax: function (key, val) {
@@ -193,11 +187,38 @@
                 console.log(key)
             },
             back(){
-              this.$router.push('/schedule/detail/sort_class/admin')
+              this.$router.go(-1)
             },
             form(){},
             handleSelectChange(){},
-            loading(){},
+            handleClose(removedTag) {
+                const tags = this.tags.filter(tag => tag !== removedTag);
+                console.log(tags);
+                this.tags = tags;
+            },
+            showInput() {
+                this.inputVisible = true;
+                this.$nextTick(function() {
+                    this.$refs.input.focus();
+                });
+            },
+            handleInputChange(e) {
+                this.inputValue = e.target.value;
+            },
+
+            handleInputConfirm() {
+                const inputValue = this.inputValue;
+                let tags = this.tags;
+                if (inputValue && tags.indexOf(inputValue) === -1) {
+                    tags = [...tags, inputValue];
+                }
+                console.log(tags);
+                Object.assign(this, {
+                    tags,
+                    inputVisible: false,
+                    inputValue: '',
+                });
+            },
         }
     };
 </script>

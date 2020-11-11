@@ -24,14 +24,12 @@
         </a-col>
       </a-row>
       <a-row>
-        <a-table  :rowKey="'key'"
-                  :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-                  :selectedRows="selectedRows"
-                 :columns="columns"
+        <a-table :columns="columns"
                  :data-source="data"
                  :bordered="true"
                  :pagination="false"
                  style="width: 50%;margin-left: 20px;">
+          <a-checkbox slot="checkBox" @change="change"></a-checkbox>
         </a-table>
       </a-row>
     </a-card>
@@ -108,58 +106,63 @@
 <script>
   const columns=[
     {
+      title:'',
+      dataIndex:'blank',
+      key:'blank',
+      scopedSlots:{customRender:'checkBox'},
+      align:'center',
+      width:'8%'
+    },
+    {
       title:'序号',
       dataIndex:'serialNum',
       key:'serialNum',
       align:'center',
-      width:'25%'
+      width:'23%'
     },
     {
       title:'教学楼名称',
       dataIndex:'name',
       key:'name',
       align:'center',
-      width:'25%'
+      width:'23%'
     },
     {
       title:'楼层数',
       dataIndex:'floor',
       key:'floor',
       align:'center',
-      width:'25%'
+      width:'23%'
     },
     {
       title:'状态',
       dataIndex:'situation',
       key:'situation',
       align:'center',
-      width:'25%'
+      width:'23%'
     },
   ]
   const data=[
     {
-      key:'1',
       serialNum:'1',
       name:'主楼',
       floor:'3',
       situation:'可用',
     },
     {
-      key:'2',
       serialNum:'2',
       name:'实验楼',
       floor:'6',
       situation:'不可用',
     },
     {
-      key:'3',
       serialNum:'3',
       name:'逸夫楼',
       floor:'3',
       situation:'可用',
     },
     {
-      key:'4',
+
     }
   ]
   export default {
@@ -170,8 +173,6 @@
         loading:false,
         addClassVisit: false,
         editVisit: false,
-        selectedRowKeys: [], // Check here to configure the default column
-        selectedRows:[],
       };
     },
     methods:{
@@ -183,13 +184,7 @@
       },
       editHandleSubmint(){
       },
-      onSelectChange( selectedRowKeys,selectedRows) {
-        this.selectedRowKeys = selectedRowKeys;
-        this.selectedRows=selectedRows
-      },
       Delete(){
-        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
       },
       handleOkAdd() {
         setTimeout(() => {
@@ -210,8 +205,6 @@
         this.addClassVisit = false;
         this.editVisit = false;
       },
-      addClassHandleSubmint(){},
-      form(){},
     }
   };
 </script>

@@ -245,9 +245,10 @@
             startArray(){
                 this.$router.push('/schedule/detail/start_class')
             },
-            onDelete(key){
-                const dataSource = [...this.tableData];
-                this.tableData = dataSource.filter(item => item.key !== key);
+            onDelete(){
+                const dataSource = [...this. tableData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this. tableData = dataSource
             },
             back(){
               this.$router.go(-1)

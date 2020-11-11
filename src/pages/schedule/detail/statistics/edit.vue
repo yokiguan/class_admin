@@ -17,9 +17,7 @@
                 <a-col :span="12">
                     <a-row>
                         <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changeTime">修改选课时间</a-button></a-col>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white">
-                            <router-link to="/schedule/detail/statistics/edit">修改选课结果</router-link></a-button></a-col>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white">清空</a-button></a-col>
+                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>
                         <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
                     </a-row>
                 </a-col>
@@ -59,8 +57,7 @@
                     :columns="columns"
                     :data-source="classData"
                     :bordered = "true"
-                    :pagination = "false"
-            >
+                    :pagination = "false">
                 <span slot="add" @click="addStudent">添加</span>
             </a-table>
             <!-- table -->
@@ -256,7 +253,10 @@
                 this.addVisit = false;
             },
             back(){
-                this.$router.push('/schedule/detail/statistics/index')
+                this.$router.go(-1)
+            },
+            Clear(){
+                this. classData=[]
             }
         }
     };

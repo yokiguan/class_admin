@@ -37,14 +37,12 @@
               </a-col>
             </a-row>
             <a-row>
-              <a-table :rowKey="'key'"
-                       :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-                       :selectedRows="selectedRows"
-                      :columns="columns"
+              <a-table :columns="columns"
                        :data-source="data"
                        :bordered="true"
                        :pagination="false"
-                       style="width: 70%;margin-left: 20px;margin-top: 20px">
+                       style="width: 75%;margin-left: 20px;margin-top: 20px">
+                <a-checkbox slot="checkBox" @change="change"></a-checkbox>
                 <div slot="action">
                   <span>操作</span>
                 </div>
@@ -140,6 +138,14 @@
   ];
   const columns=[
     {
+      title:'',
+      dataIndex:'blank',
+      key:'blank',
+      scopedSlots:{customRender:'checkBox'},
+      align:'center',
+      width:'8%'
+    },
+    {
       title:'序号',
       dataIndex:'serialNum',
       key:'serialNum',
@@ -151,51 +157,47 @@
       dataIndex:'num',
       key:'num',
       align:'center',
-      width:'17%'
+      width:'15%'
     },
     {
       title:'所属年级',
       dataIndex:'grade',
       key:'grade',
       align:'center',
-      width:'17%'
+      width:'15%'
     },{
       title:'班级',
       dataIndex:'class',
       key:'class',
       align:'center',
-      width:'17%'
+      width:'15%'
     },
     {
       title:'操作',
       dataIndex:'opts',
       key:'opts',
       align:'center',
-      width:'33%',
+      width:'31%',
       scopedSlots: { customRender: 'action' },
     },
   ]
   const data=[
     {
-      key:'1',
       serialNum:'1',
       name:'车东明',
       class:'高一1班',
       grade:'高一',
     },
     {
-      key:'2',
       serialNum:'2',
       class:'无',
       grade:'高一',
       name:'车西明',
     },
     {
-      key:'3',
       serialNum:'3',
     },
     {
-      key:'4'
     }
   ]
   const treeData = [
@@ -253,6 +255,7 @@
       title: '外语',
       key:'0-5',
       child: [],},];
+
   const generateData = (_level, _preKey, _tns) => {
     const preKey = _preKey || '0';
     const tns = _tns || gData;
@@ -275,6 +278,7 @@
     });
   };
   generateData(z);
+
   const dataList = [];
   const generateList = data => {
     for (let i = 0; i < data.length; i++) {
@@ -287,6 +291,7 @@
     }
   };
   generateList(gData);
+
   const getParentKey = (key, tree) => {
     let parentKey;
     for (let i = 0; i < tree.length; i++) {
@@ -322,12 +327,11 @@
           title: 'name',
         },
         showLine: true,
+
         expandedKeys: [],
         searchValue: '',
         autoExpandParent: true,
         gData,
-        selectedRowKeys: [], // Check here to configure the default column
-        selectedRows:[],
       };
     },
     methods: {
@@ -341,6 +345,8 @@
       addClassHandleSubmint(){
       },
       editHandleSubmint(){
+      },
+      Delete(){
       },
       handleOk() {
         this.loading = true;
@@ -358,6 +364,8 @@
       onCheck(checkedKeys, info) {
         console.log('onCheck', checkedKeys, info);
       },
+
+
       onExpand(expandedKeys) {
         this.expandedKeys = expandedKeys;
         this.autoExpandParent = false;
@@ -378,17 +386,6 @@
           autoExpandParent: true,
         });
       },
-      onSelectChange( selectedRowKeys,selectedRows) {
-        this.selectedRowKeys = selectedRowKeys;
-        this.selectedRows=selectedRows
-      },
-      Delete(){
-        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      },
-      No(){},
-      yes(){},
-      form(){},
     },
   };
 </script>

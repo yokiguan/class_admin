@@ -20,14 +20,12 @@
         </a-col>
       </a-row>
       <a-row>
-        <a-table  :rowKey="'key'"
-                  :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-                  :selectedRows="selectedRows"
-                :columns="columns"
+        <a-table :columns="columns"
                  :data-source="data"
                  :bordered="true"
                  :pagination="false"
-                 style="width: 55%;margin-left: 20px;">
+                 style="width: 57%;margin-left: 20px;">
+          <a-checkbox slot="checkBox" @change="change"></a-checkbox>
           <div slot="action">
             <button @click="lookCourse" style="float: left;background-color: #199ed8;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">查看课程</button>
             <button @click="editCourse" style="background-color: #008000;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">修改</button>
@@ -186,32 +184,40 @@
   ];
   const columns=[
     {
+      title:'',
+      dataIndex:'blank',
+      key:'blank',
+      scopedSlots:{customRender:'checkBox'},
+      align:'center',
+      width:'8%'
+    },
+    {
       title:'序号',
       dataIndex:'serialNum',
       key:'serialNum',
       align:'center',
-      width:'15%'
+      width:'13%'
     },
     {
       title:'年级',
       dataIndex:'grade',
       key:'grade',
       align:'center',
-      width:'17%'
+      width:'15%'
     },
     {
       title:'级部',
       dataIndex:'levelDepart',
       key:'levelDepart',
       align:'center',
-      width:'17%'
+      width:'15%'
     },
     {
       title:'课程名称',
       dataIndex:'name',
       key:'name',
       align:'center',
-      width:'20%'
+      width:'18%'
     },
 
     {
@@ -219,30 +225,27 @@
       dataIndex:'opts',
       key:'opts',
       align:'center',
-      width:'55%',
+      width:'53%',
       scopedSlots: { customRender: 'action' },
     },
   ]
   const data=[
     {
-      key:'1',
       serialNum:'1',
       grade:'高一',
       levelDepart:'高中部',
       name:'数学,语文,英语,日语',
     },
     {
-      key:'2',
       serialNum:'2',
       grade:'高二（文）',
       levelDepart:'高中部',
     },
     {
-      key:'3',
       serialNum:'3',
     },
     {
-      key:'4',
+
     }
   ]
   export default {
@@ -256,8 +259,6 @@
         value: ['语文'],
         treeData,
         SHOW_PARENT,
-        selectedRowKeys: [], // Check here to configure the default column
-        selectedRows:[],
       };
     },
     methods:{
@@ -272,13 +273,7 @@
       },
       editHandleSubmint(){
       },
-      onSelectChange( selectedRowKeys,selectedRows) {
-        this.selectedRowKeys = selectedRowKeys;
-        this.selectedRows=selectedRows
-      },
       Delete(){
-        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
       },
       handleOk() {
         this.loading = true;
@@ -292,8 +287,6 @@
         this.addClassVisit = false;
         this.editVisit = false;
       },
-      form(){},
-      addClassHandleSubmint(){},
     }
   };
 </script>

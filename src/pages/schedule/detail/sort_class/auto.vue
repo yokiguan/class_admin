@@ -42,8 +42,7 @@
                 </a-form>
             </div>
         </create-modal>
-        <create-modal
-                width="760px"
+        <create-modal width="760px"
                 :close="false"
                 :visible="timevisible"
                 :loading="loading"
@@ -92,10 +91,9 @@
             </div>
         </div>
 <!--        添加-->
-        <a-modal :visible='addVisit' width="800px" :closable="false" on-ok="handleOk">
+        <a-modal :visible='addVisit' width="800px" :closable="false">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleAdd">添加
-                </a-button>
+                <a-button key="Save" type="primary" :loading="loading" @click="handleAdd">添加</a-button>
                 <a-button key="back" @click="handleCancel">取消
                 </a-button>
             </template>
@@ -114,7 +112,7 @@
                                 <a-input placeholder="请输入" v-decorator="['选择老师', { rules: [{ required: true, message: '请选择老师' }] }]"/>
                             </a-form-item>
                         </a-form>
-                        <span style="float: right;margin-top: -50px">全部展开</span>
+                        <span style="float: right;margin-top: -30px">全部展开</span>
                     </a-row>
                     <a-divider style="background-color: black;margin-top: -50px"></a-divider>
                     <a-tree
@@ -132,7 +130,7 @@
                 <div class="right" style="position:relative;float: right;margin-top: -480px">
                     <a-row style="margin-left: 30px">
                         <a-col :span="10"><span style="font-size: 1.2em;font-weight: bold">已选教师：</span></a-col>
-                        <a-col> <span style="font-size: 1.2em;">全部清除</span></a-col>
+                        <a-col> <span style="font-size: 1.2em;" @click="allClear">全部清除</span></a-col>
                     </a-row>
                     <a-table
                         :columns="teacherColumns"
@@ -144,6 +142,7 @@
 
                     <a-input slot="classNums" placeholder="0"></a-input>
                      <button slot="delete"
+                             @click="teacherDelete"
                              style="background-color: red;color: white;border: none;width: 80px;height: 30px;border-radius: 5px">删除</button>
                 </a-table></div>
 
@@ -294,14 +293,16 @@
     ]
     const teacherData=[
         {
+            teacherCount:'0',
             teacherName:'李援朝',
         },
         {
+            teacherCount:'1',
             teacherName:'赵卫民',
         },{
-
+            teacherCount:'2',
         },{
-
+            teacherCount:'3',
         }
     ]
     export default {
@@ -313,10 +314,12 @@
                 treeData,
                 teacherColumns,
                 teacherData,
+                teacherCount:4,
                 numvisible: false,
                 timevisible: false,
                 addVisit:false,
                 visit:false,
+                loading:false,
                 replaceFields: {
                     children: 'child',
                     title: 'name',
@@ -365,13 +368,29 @@
                 console.log(`checked = ${e.target.checked}`);
             },
             back(){
-                this.$router.push('/schedule/detail/sort_class/admin')
+                this.$router.go(-1)
+            },
+            teacherDelete(){
+                const dataSource = [...this. teacherData];
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                this. teacherData= dataSource
+            },
+            allClear(){
+                this. teacherData= []
             },
             handleAdd() {
                 this.loading = true;
                 setTimeout(() => {
                     this.addVisit=false
-                },2000)
+                    this.loading =false
+                },20)
+                const {  teacherCount, teacherData} = this;
+                const newData = {
+                    teacherCount:teacherCount,
+                    teacherName:'赵卫民',
+                };
+                this.teacherData= [...teacherData, newData];
+                this. teacherCount =  teacherCount + 1;
             },
             handleCancel() {
                 this.addVisit=false;
@@ -380,7 +399,6 @@
             onCheck(){},
             onSelect(){},
             form(){},
-            loading(){},
             handlesubmit(){},
 
         }

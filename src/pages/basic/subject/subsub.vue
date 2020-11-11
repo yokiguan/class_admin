@@ -24,14 +24,12 @@
         </a-col>
       </a-row>
       <a-row>
-        <a-table :rowKey="'key'"
-                 :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-                 :selectedRows="selectedRows"
-                :columns="columns"
+        <a-table :columns="columns"
                  :data-source="data"
                  :bordered="true"
                  :pagination="false"
-                 style="width: 63%;margin-left: 20px;">
+                 style="width: 65%;margin-left: 20px;">
+          <a-checkbox slot="checkBox" @change="change"></a-checkbox>
         </a-table>
       </a-row>
     </a-card>
@@ -132,65 +130,70 @@
 <script>
   const columns=[
     {
+      title:'',
+      dataIndex:'blank',
+      key:'blank',
+      scopedSlots:{customRender:'checkBox'},
+      align:'center',
+      width:'5%'
+    },
+    {
       title:'序号',
       dataIndex:'serialNum',
       key:'serialNum',
       align:'center',
-      width:'20%'
+      width:'19%'
     },
     {
       title:'名称',
       dataIndex:'name',
       key:'name',
       align:'center',
-      width:'20%'
+      width:'19%'
     },
     {
       title:'年级',
       dataIndex:'grade',
       key:'grade',
       align:'center',
-      width:'20%'
+      width:'19%'
     },
     {
       title:'类型',
       dataIndex:'kinds',
       key:'kinds',
       align:'center',
-      width:'20%'
+      width:'19%'
     },
     {
       title:'图片管理',
       dataIndex:'picture',
       key:'picture',
       align:'center',
-      width:'20%'
+      width:'19%'
     },
   ]
   const data=[
     {
-      key:'1',
       serialNum:'1',
       name:'物理',
       grade:'高一',
       kinds:'行政班课',
     },
     {
-      key:'2',
       serialNum:'2',
       name:'物理选修',
       grade:'高二文，高二理',
       kinds:'走班课',
     },
     {
-      key:'3',
       serialNum:'3',
       name:'物理学修',
       grade:'高二文，高二理',
       kinds:'走班课',
     },
     {
-      key:'4'
+
     }
   ]
   export default {
@@ -201,8 +204,6 @@
         loading:false,
         addClassVisit: false,
         editVisit: false,
-        selectedRowKeys: [], // Check here to configure the default column
-        selectedRows:[],
       };
     },
     methods:{
@@ -214,13 +215,7 @@
       },
       editHandleSubmint(){
       },
-      onSelectChange( selectedRowKeys,selectedRows) {
-        this.selectedRowKeys = selectedRowKeys;
-        this.selectedRows=selectedRows
-      },
       Delete(){
-        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
       },
       handleOk() {
         this.loading = true;
@@ -234,8 +229,6 @@
         this.addClassVisit = false;
         this.editVisit = false;
       },
-      addClassHandleSubmint(){},
-      form(){},
     }
   };
 </script>

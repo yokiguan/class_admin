@@ -37,14 +37,12 @@
               </a-col>
             </a-row>
             <a-row>
-              <a-table :rowKey="'key'"
-                       :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-                       :selectedRows="selectedRows"
-                      :columns="columns"
+              <a-table :columns="columns"
                        :data-source="data"
                        :bordered="true"
                        :pagination="false"
-                       style="width: 70%;margin-left: 20px;margin-top: 20px">
+                       style="width: 75%;margin-left: 20px;margin-top: 20px">
+                <a-checkbox slot="checkBox" @change="change"></a-checkbox>
                 <div slot="action">
                   <button @click="lookStudent" style="float: left;background-color: #199ed8;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">查看</button>
                   <button @click="editStudent" style="background-color: #008000;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">修改</button>
@@ -131,6 +129,14 @@
 <script>
   const columns=[
     {
+      title:'',
+      dataIndex:'blank',
+      key:'blank',
+      scopedSlots:{customRender:'checkBox'},
+      align:'center',
+      width:'8%'
+    },
+    {
       title:'序号',
       dataIndex:'serialNum',
       key:'serialNum',
@@ -142,51 +148,47 @@
       dataIndex:'num',
       key:'num',
       align:'center',
-      width:'17%'
+      width:'15%'
     },
     {
       title:'所属年级',
       dataIndex:'grade',
       key:'grade',
       align:'center',
-      width:'17%'
+      width:'15%'
     },{
       title:'班级',
       dataIndex:'class',
       key:'class',
       align:'center',
-      width:'17%'
+      width:'15%'
     },
     {
       title:'操作',
       dataIndex:'opts',
       key:'opts',
       align:'center',
-      width:'33%',
+      width:'31%',
       scopedSlots: { customRender: 'action' },
     },
   ]
   const data=[
     {
-      key:'1',
       serialNum:'1',
       name:'车东明',
       class:'高一1班',
       grade:'高一',
     },
     {
-      key:'2',
       serialNum:'2',
       class:'无',
       grade:'高一',
       name:'车西明',
     },
     {
-      key:'3',
       serialNum:'3',
     },
     {
-      key:'4'
     }
   ]
   const treeData = [
@@ -234,8 +236,6 @@
           children: 'child',
           title: 'name',
         },
-        selectedRowKeys: [], // Check here to configure the default column
-        selectedRows:[],
       };
     },
     methods: {
@@ -253,6 +253,8 @@
       editHandleSubmint(){
       },
       lookHandleSubmint(){
+      },
+      Delete(){
       },
       input(){
       },
@@ -276,15 +278,6 @@
       onCheck(checkedKeys, info) {
         console.log('onCheck', checkedKeys, info);
       },
-      onSelectChange( selectedRowKeys,selectedRows) {
-        this.selectedRowKeys = selectedRowKeys;
-        this.selectedRows=selectedRows
-      },
-      Delete(){
-        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      },
-      form(){},
     },
   };
 </script>

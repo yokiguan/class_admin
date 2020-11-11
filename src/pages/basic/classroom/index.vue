@@ -12,8 +12,7 @@
     <a-card class="table-bg">
       <a-row class="buttons">
         <a-col :span="3">
-          <a-button @click="addClass" type="primary"
-                    style="background-color: #1abc9c">新增</a-button>
+          <a-button @click="addClass" type="primary" style="background-color: #1abc9c">新增</a-button>
         </a-col>
         <a-col :span="3">
           <a-button @click="edit" type="primary" style="background-color: #1abc9c">编辑</a-button>
@@ -302,10 +301,6 @@
         this.selectedRowKeys = selectedRowKeys;
         this.selectedRows=selectedRows
       },
-      Delete(){
-        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      },
       handleOkAdd() {
         setTimeout(() => {
           this.addClassVisit = false;
@@ -324,15 +319,16 @@
       handleCancel() {
         this.addClassVisit = false;
         this.editVisit = false;
+      },   Delete(){
+        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
       },
+
       addClassHandleSubmint(){},
       form(){},
       leadIn(){},
-      KindsOnChange(){
-        // if(e.value==='private'){
-
-        // }
-      }
+      KindsOnChange(){},
+      handleSubmit(){},
     }
   };
 </script>

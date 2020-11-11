@@ -21,14 +21,12 @@
                 </a-col>
             </a-row>
             <a-row>
-                <a-table :rowKey="'key'"
-                         :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-                         :selectedRows="selectedRows"
-                        :columns="columns"
+                <a-table :columns="columns"
                          :data-source="data"
                          :bordered="true"
                          :pagination="false"
-                         style="width: 30%;margin-left: 20px;">
+                         style="width: 35%;margin-left: 20px;">
+                    <a-checkbox slot="checkBox" @change="change"></a-checkbox>
                 </a-table>
             </a-row>
         </a-card>
@@ -114,48 +112,53 @@
     ];
     const columns=[
         {
+            title:'',
+            dataIndex:'blank',
+            key:'blank',
+            scopedSlots:{customRender:'checkBox'},
+            align:'center',
+            width:'10%'
+        },
+        {
             title:'序号',
             dataIndex:'serialNum',
             key:'serialNum',
             align:'center',
-            width:'23%'
+            width:'20%'
         },
         {
             title:'姓名',
             dataIndex:'name',
             key:'name',
             align:'center',
-            width:'38%'
+            width:'35%'
         },
         {
             title:'角色',
             dataIndex:'role',
             key:'role',
             align:'center',
-            width:'38%'
+            width:'35%'
         },
     ]
     const data=[
         {
-            key:'1',
             serialNum:'1',
             name:'车东明',
             role:'班主任'
         },
         {
-            key:'2',
             serialNum:'2',
             name:'车西明',
             role:'学生'
         },
         {
-            key:'3',
             serialNum:'3',
             name:'车南明',
             role:'学生'
         },
         {
-            key:'4',
+
         }
     ]
     export default {
@@ -168,21 +171,13 @@
                 value: ['车东明'],
                 treeData,
                 SHOW_PARENT,
-                selectedRowKeys: [], // Check here to configure the default column
-                selectedRows:[],
             };
         },
         methods:{
             addClass() {
                 this.addClassVisit = true;
             },
-            onSelectChange( selectedRowKeys,selectedRows) {
-                this.selectedRowKeys = selectedRowKeys;
-                this.selectedRows=selectedRows
-            },
             Delete(){
-                this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-                this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
             },
             handleOk() {
                 this.loading = true;
@@ -234,4 +229,5 @@
             background-color: #f4f4f4;
         }
     }
+
 </style>

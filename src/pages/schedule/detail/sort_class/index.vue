@@ -13,7 +13,7 @@
                             <router-link to="/schedule/detail/sort_class/auto">自动分班</router-link></a-button></a-col>
                         <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="manaulSortClass">
                             <router-link to="/schedule/detail/sort_class/manual">手动分班</router-link></a-button></a-col>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white">清空</a-button></a-col>
+                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="clearTable">清空</a-button></a-col>
                         <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
                     </a-row>
                 </a-col>
@@ -29,29 +29,23 @@
                             v-for="(s, index) in situation"
                             :key="index"
                             class="situation">
-                        <a-row style="width: 100%">
-                            <a-col :span="16">
-                                <span>{{s}}</span>
-                            </a-col>
-                            <a-col :span="4">
-                                <span style="color:blue; " @click="changeSituation" type="dashed">修改</span>
-                            </a-col>
-                            <a-col :span="4">
-                                <span style="color:red" @click="delSituation" type="dashed">删除</span>
-                            </a-col>
+                        <a-row>
+                            <a-col :span="16"><span>{{s}}</span></a-col>
+                            <a-col :span="4"><a style="color:blue" @click="changeSituation" type="dashed">修改</a></a-col>
+                            <a-col :span="4"><a style="color:red" @click="onDelete" type="dashed">删除</a></a-col>
                         </a-row>
                     </li>
                 </div>
             </a-table>
         </div>
-        <!--   添加新表-->
+        <!--   修改-->
         <create-modal
-                :visible="visible"
+                :visible="editvisible"
                 :close="false"
                 width="700px"
                 :loading="loading"
                 @modalClosed="closed"
-                @modalSubmit="handleSubmit">
+                @modalSubmit="save">
             <div slot="content">
                 <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:15}" @submit="addClassHandleSubmint"
                         style="margin-left: 30px">
@@ -75,24 +69,28 @@
             dataIndex: 'name',
             key: 'name',
             align:'center',
+            width:'10%',
         },
         {
             title: '总人数',
             dataIndex: 'all',
             key: 'all',
             align:'center',
+            width:'10%',
         },
         {
             title: '未分班人数',
             dataIndex: 'unsorted',
             key: 'unsorted',
             align:'center',
+            width:'10%',
         },
         {
             title: '分班个数',
             key: 'classNum',
             dataIndex: 'classNum',
             align:'center',
+            width:'10%',
         },
         {
             title: '分班情况',
@@ -144,40 +142,53 @@
             return {
                 tableData,
                 columns,
-                visible: false
+                editvisible: false,
+                loading:false
             };
         },
         methods: {
             changeSituation: function () {
-                this.visible = true;
+                this.editvisible = true;
             },
             closed: function () {
-                this.visible = false
-                this.loading = false
+                this.editvisible = false
+                this.loading= false
             },
-            handleSubmit: function () {
+            save: function () {
                 console.log(this.$refs.createForm)
                 this.loading = true
                 setTimeout(() => {
-                    this.dataSource.push({
-                        // avatar:
-                        //     "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-                        // content: "班级名称：请输入/任课教师：请选择",
-                    }),
-                        this.visible = false
+                    this.editvisible = false
                     this.loading = false
                 }, 2000)
-            },
-            delSituation: function () {
+                const { count, tableData} = this;
+                const newData = {
+                    key: count,
+                    name: '高一英语',
+                    all: 30,
+                    unsorted: 10,
+                    classNum: 4,
+                    situation: [
+                        "高一语文1班  张凯元   30人"]
+                };
+                this.tableData= [...tableData, newData];
+                this.count = count + 1;
             },
             back(){
-              this.$router.push('/schedule/detail/index')
+              this.$router.go(-1)
+            },
+            onDelete(){
+                const dataSource = [...this. tableData];
+                dataSource.situation.splice(event.target.getAttribute('dataIndex'),1);
+                this. tableData = dataSource
             },
             form(){},
             addClassHandleSubmint(){},
-            loading(){},
             manaulSortClass(){},
-            autoSortClass(){}
+            autoSortClass(){},
+            clearTable(){
+                this. tableData=[]
+            }
         }
     };
 </script>
@@ -193,20 +204,6 @@
         vertical-align: top;
         border-radius: 5px;
     }
-    .result-left{
-        width: 50%;
-    }
-    .link-font-color{
-        color: #0000ff;
-    }
-    .info{
-        height: 50px;
-        width: 100%;
-        margin: 0px 0px 10px 0px;
-        padding: 10px 5px;
-        background-color: white;
-        border-radius: 5px;
-    }
     .table-bg{
         background-color: white;
         margin: 0px 0px 20px 0px;
@@ -216,10 +213,11 @@
     .situation{
         border:1px solid black;
         margin:5px 10px;
-        padding:8px 4px;
+        padding:5px 4px;
         border-radius: 4px;
-        width:100%;
-        height: 40px;
+        width: 70%;
+        height: 35px;
+        font-size: 1.0em;
         margin-right: 1em;
     }
     /deep/ Table {
