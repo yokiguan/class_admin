@@ -1,249 +1,174 @@
 <template>
-  <div>
-    <!-- result -->
-    <div class="result">
-      <a-breadcrumb>
-        <a-breadcrumb-item>首页</a-breadcrumb-item>
-        <a-breadcrumb-item><a href="">基础数据</a></a-breadcrumb-item>
-        <a-breadcrumb-item><a href="">教学楼管理</a></a-breadcrumb-item>
-      </a-breadcrumb>
+  <a-card>
+    <div>
+      <div class="operator">
+        <a-button @click="showModal" type="primary">新建</a-button>
+      </div>
+      <a-table
+              rowKey="buildingId"
+              :columns="columns"
+              :dataSource="dataSource"
+              :selectedRows="selectedRows"
+              @change="onchange"
+      >
+      <span slot="operation" slot-scope="text, record">
+     <a @click="gotoNew(record.id)">编辑</a>
+     |
+     <a @click="deleteItem(record.buildingId)">删除</a>
+    </span></a-table>
     </div>
-    <!-- /result -->
-    <a-card class="table-bg">
-      <a-row class="buttons">
-        <a-col :span="3">
-          <a-button @click="addClass" type="primary"
-                    style="background-color: #1abc9c">新增</a-button>
-        </a-col>
-        <a-col :span="3">
-          <a-button @click="Delete" style="background-color: #ff0000">删除</a-button>
-        </a-col>
-        <a-col :span="3">
-          <a-button @click="edit" type="primary"
-                    style="background-color: #1abc9c">编辑</a-button>
-        </a-col>
-      </a-row>
-      <a-row>
-        <a-table :columns="columns"
-                 :data-source="data"
-                 :bordered="true"
-                 :pagination="false"
-                 style="width: 50%;margin-left: 20px;">
-          <a-checkbox slot="checkBox" @change="change"></a-checkbox>
-        </a-table>
-      </a-row>
-    </a-card>
     <a-modal
-            :visible='addClassVisit'
-            width="500px"
-            :closable="false"
-            on-ok="handleOk">
-      <template slot="footer">
-        <a-button key="SavaAdd" type="primary" :loading="loading" @click="handleOkAdd">
-          保存并增加
-        </a-button>
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-          保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">
-          取消
-        </a-button>
-      </template>
-      <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint">
-        <a-form-item label="类名名称：">
-          <a-input placeholder="请输入"
-                   v-decorate="['note',{rules:[{required:true,message:'请输入类名名称'}]}]"
-                   style="width: 275px"></a-input>
-        </a-form-item>
-        <a-form-item label="楼层数：">
+            title="新增教学楼"
+            :visible="show"
+            @ok="handleOk"
+            @cancel="handleCancel"
+    >
+      <a-form :form="form" v-bind="formItemLayout">
+        <a-form-item label="教学楼名称">
           <a-input
-                  :rows="4"
-                  placeholder="请输入"
-                  v-decorate="['note',{rules:[{required:true,message:'请输入楼层数'}]}]"
-                  style="width: 275px"></a-input>
+                  v-decorator="[
+              'name',
+              { rules: [{ required: true, message: '请输入教学楼名称' }] }
+            ]"
+                  placeholder="请输入你想要新增的教学楼名称"
+          ></a-input>
+        </a-form-item>
+        <a-form-item label="教学楼层数">
+          <a-input
+                  v-decorator="[
+              'floor',
+              { rules: [{ required: true, message: '请输入层数' }] }
+            ]"
+                  placeholder="请输入你想要新增的层数"
+          ></a-input>
         </a-form-item>
         <a-form-item label="是否启用">
-          <a-switch v-decorator="['switch', { valuePropName: 'checked' }]" />
+          <a-switch v-decorator="['status', { rules: [{ required: true }] }]" />
         </a-form-item>
       </a-form>
     </a-modal>
-    <a-modal
-            :visible='editVisit'
-            width="500px"
-            :closable="false"
-            on-ok="handleOk">
-      <template slot="footer">
-        <a-button key="SavaAdd" type="primary" :loading="loading" @click="handleOkAdd">
-          保存并增加
-        </a-button>
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-          保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">
-          取消
-        </a-button>
-      </template>
-      <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint">
-        <a-form-item label="类名名称：">
-          <a-input placeholder="请输入"
-                   v-decorate="['note',{rules:[{required:true,message:'请输入类名名称'}]}]"
-                   style="width: 275px"></a-input>
-        </a-form-item>
-        <a-form-item label="楼层数：">
-          <a-input
-                  :rows="4"
-                  placeholder="请输入"
-                  v-decorate="['note',{rules:[{required:true,message:'请输入楼层数'}]}]"
-                  style="width: 275px"></a-input>
-        </a-form-item>
-        <a-form-item label="是否启用">
-          <a-switch v-decorator="['switch', { valuePropName: 'checked' }]" />
-        </a-form-item>
-      </a-form>
-    </a-modal>
-  </div>
+  </a-card>
 </template>
-<script>
-  const columns=[
-    {
-      title:'',
-      dataIndex:'blank',
-      key:'blank',
-      scopedSlots:{customRender:'checkBox'},
-      align:'center',
-      width:'8%'
-    },
-    {
-      title:'序号',
-      dataIndex:'serialNum',
-      key:'serialNum',
-      align:'center',
-      width:'23%'
-    },
-    {
-      title:'教学楼名称',
-      dataIndex:'name',
-      key:'name',
-      align:'center',
-      width:'23%'
-    },
-    {
-      title:'楼层数',
-      dataIndex:'floor',
-      key:'floor',
-      align:'center',
-      width:'23%'
-    },
-    {
-      title:'状态',
-      dataIndex:'situation',
-      key:'situation',
-      align:'center',
-      width:'23%'
-    },
-  ]
-  const data=[
-    {
-      serialNum:'1',
-      name:'主楼',
-      floor:'3',
-      situation:'可用',
-    },
-    {
-      serialNum:'2',
-      name:'实验楼',
-      floor:'6',
-      situation:'不可用',
-    },
-    {
-      serialNum:'3',
-      name:'逸夫楼',
-      floor:'3',
-      situation:'可用',
-    },
-    {
 
+<script>
+  import {message} from 'ant-design-vue'
+  const columns = [
+    {
+      title: '教学楼编号',
+      dataIndex: 'buildingId'
+    },
+    {
+      title: '教学楼名称',
+      dataIndex: 'name'
+    },
+    {
+      title: '楼层',
+      dataIndex: 'floor',
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      customRender:(text)=>text==1?'可用':'已占用'
+    },
+    {
+      title: '操作',
+      dataIndex: 'operation',
+      scopedSlots: { customRender: 'operation' },
     }
   ]
+
   export default {
-    data() {
-      return {
-        columns,
-        data,
-        loading:false,
-        addClassVisit: false,
-        editVisit: false,
-      };
+    name: 'classroom',
+    async created() {
+      let { data } = await this.$api.basic.building.fetchList();
+      this.dataSource = data.rows;
+      console.log(data);
     },
-    methods:{
-      addClass() {
-        this.addClassVisit = true;
+    data () {
+      return {
+        show:false,
+        columns: columns,
+        dataSource: [],
+        selectedRowKeys: [],
+        selectedRows: [],
+        formItemLayout: {
+          labelCol: { span: 6 },
+          wrapperCol: { span: 14 }
+        }
+      }
+    },
+    beforeCreate() {
+      this.form = this.$form.createForm(this, { name: "building" });
+    },
+    methods: {
+      showModal() {
+        this.show = true;
       },
-      edit() {
-        this.editVisit = true;
-      },
-      editHandleSubmint(){
-      },
-      Delete(){
-      },
-      handleOkAdd() {
-        setTimeout(() => {
-          this.addClassVisit = false;
-          this.editVisit = false;
-          this.loading = false;
-        }, 2000);
-      },
-      handleOk() {
-        this.loading = true;
-        setTimeout(() => {
-          this.addClassVisit = false;
-          this.editVisit = false;
-          this.loading = false;
-        }, 2000);
+      async handleOk() {
+        let formData = this.form.getFieldsValue();
+        formData = {
+          ...formData,
+          floor: parseInt(formData.floor),
+          status: formData.status ? 1 : 0
+        };
+        let res = await this.$api.basic.building.saveBuilding(formData);
+        console.log(res);
+        this.show = false;
+        this.dataSource.unshift(formData);
       },
       handleCancel() {
-        this.addClassVisit = false;
-        this.editVisit = false;
+        this.show = false;
       },
+      onchange (selectedRowKeys, selectedRows) {
+        this.selectedRowKeys = selectedRowKeys
+        this.selectedRows = selectedRows
+      },
+      remove () {
+        this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+      },
+      addNew () {
+        this.dataSource.unshift({
+          key:3,
+          no:3,
+          name:'高一（1）',
+          floor:2,
+          type:'行政班级',
+          building:'逸夫楼101',
+          capacity:200,
+          status:2
+        })
+      },
+      async deleteItem(id){
+        let{data}=this.$api.basic.building.deleteBuilding({id})
+        if(data.success){
+          this.dataSource=this.dataSource.filter(item=>item.id==id)
+          message.info('删除成功')
+        }
+      },
+      handleMenuClick (e) {
+        if (e.key === 'delete') {
+          this.remove()
+        }
+      }
     }
-  };
+  }
 </script>
 
 <style lang="less" scoped>
-  .result{
-    width: 100%;
-    background-color: white;
-    height:50px;
-    margin: 20px 0px 10px 0px;
-    padding-left: 25px;
-    padding-top: 15px;
-    vertical-align: top;
-    border-radius: 5px;
+  .search{
+    margin-bottom: 54px;
   }
-  .table-bg{
-    background-color: white;
-    margin: 0px 0px 20px 0px;
-    padding: 20px 25px;
-    border-radius: 5px;
-    text-align: center;
-    width: 100%;
-    height: 500px;
-
+  .fold{
+    width: calc(100% - 216px);
+    display: inline-block
   }
-  .buttons{
-    margin:0px 5px 20px 5px;
-    padding:2px 4px;
-    margin-left: 30px;
+  .operator{
+    margin-bottom: 18px;
   }
-  .buttons button{
-    width: 110px;
-    height: 45px;
-    color:white;
-  }
-  /deep/ Table {
-    .ant-table-thead > tr > th {
-      background-color: #f4f4f4;
+  @media screen and (max-width: 900px) {
+    .fold {
+      width: 100%;
     }
   }
-
 </style>

@@ -1,210 +1,128 @@
 <template>
-  <div>
-    <!-- result -->
-    <div class="result">
-      <a-breadcrumb>
-        <a-breadcrumb-item>首页</a-breadcrumb-item>
-        <a-breadcrumb-item><a href="">选课规则</a></a-breadcrumb-item>
-      </a-breadcrumb>
+  <a-card>
+    <div>
+      <div class="operator">
+        <a-button @click="showModal" type="primary">新建</a-button>
+      </div>
+      <a-table rowKey="ruleId" :columns="columns" :dataSource="dataSource">
+        <span slot="operation" slot-scope="text, record"
+        ><a @click="showModal(record)">编辑</a> |
+          <a @click="gotoNew(record.ruleId)">查看</a> |
+          <a @click="remove(record.ruleId)">删除</a
+          ><a-modal
+                  title="修改规则名字"
+                  :visible="visible"
+                  @ok="editSubmit"
+                  @cancel="cancelSubmit"
+          >
+            <a-input
+                    label="规则初始名"
+                    disabled
+                    placeholder="请输入规则初始名"
+                    v-model="name"
+            ></a-input>
+            <a-input
+                    label="规则修改名"
+                    placeholder="请输入规则修改名"
+                    v-model="changeName"
+            ></a-input> </a-modal
+          ></span>
+      </a-table>
     </div>
-    <!-- /result -->
-    <a-card class="table-bg">
-      <a-row class="buttons">
-        <a-col :span="3">
-          <a-button @click="addClass" type="primary"
-                    style="background-color: #1abc9c">新增</a-button>
-        </a-col>
-        <a-col :span="3">
-          <a-button @click="Delete" style="background-color: #ff0000">删除</a-button>
-        </a-col>
-        <a-col :span="3">
-          <a-button @click="edit" type="primary"
-                    style="background-color: #1abc9c">编辑</a-button>
-        </a-col>
-      </a-row>
-      <a-row>
-        <a-table
-                :rowKey="'key'"
-                :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-                :selectedRows="selectedRows"
-                :columns="columns"
-                 :data-source="data"
-                 :bordered="true"
-                 :pagination="false"
-                 style="width: 35%;margin-left: 20px;">
-          <span slot="action" @click="onClickLook">点击查看</span>
-        </a-table>
-      </a-row>
-    </a-card>
-    <a-modal
-            :visible='addClassVisit'
-            width="600px"
-            :closable="false"
-            on-ok="handleOk">
-      <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-          保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">
-          取消
-        </a-button>
-      </template>
-      <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint">
-        <a-form-item label="规则名称：">
-          <a-input placeholder="请输入" v-decorator="['规则名称：', { rules: [{ required: true, message: '请输入规则名称!' }] }]"/>
-        </a-form-item>
-      </a-form>
-    </a-modal>
-    <a-modal
-            :visible='editVisit'
-            width="600px"
-            :closable="false"
-            on-ok="handleOk">
-      <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-          保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">
-          取消
-        </a-button>
-      </template>
-      <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="editHandleSubmint">
-        <a-form-item label="规则名称：">
-          <a-input placeholder="请输入" v-decorator="['规则名称：', { rules: [{ required: true, message: '请输入规则名称!' }] }]"/>
-        </a-form-item>
-      </a-form>
-    </a-modal>
-  </div>
+  </a-card>
 </template>
+
 <script>
-  const columns=[
+  const columns = [
     {
-      title:'序号',
-      dataIndex:'serialNum',
-      key:'serialNum',
-      align:'center',
-      width:'23%'
+      title: "序号",
+      dataIndex: "ruleId"
     },
     {
-      title:'名称',
-      dataIndex:'name',
-      key:'name',
-      align:'center',
-      width:'38%'
+      title: "名称",
+      dataIndex: "name"
     },
     {
-      title:'选课规则',
-      dataIndex:'chooseRegular',
-      key:'chooseRegular',
-      align:'center',
-      width:'41%',
-      scopedSlots: {customRender: 'action'}
-    },
-  ]
-  const data=[
-    {
-      key:'1',
-      serialNum:'1',
-      name:'6+3',
-    },
-    {
-      key:'2',
-      serialNum:'2',
-      name:'3+2+2',
-    },
-    {
-      key:'3',
-      serialNum:'3',
-      name:'高三选课规则（文）'
-    },
-    {
-      key:'4',
+      title: "选课规则",
+      key: "operation",
+      scopedSlots: { customRender: "operation" }
     }
-  ]
+  ];
+
   export default {
+    name: "rule",
     data() {
       return {
         columns,
-        data,
-        loading:false,
-        addClassVisit: false,
-        editVisit: false,
-        selectedRowKeys: [], // Check here to configure the default column
-        selectedRows:[],
+        dataSource: [],
+        visible: false,
+        name: "",
+        id:null,
+        changeName: ""
       };
     },
-    methods:{
-      addClass() {
-        this.addClassVisit = true;
+    async created() {
+      let { data } = await this.$api.basic.rule.fetchList();
+      this.dataSource = data.rows;
+    },
+    methods: {
+      remove(id) {
+        let { data } = this.$api.basic.rule.deleteRule({ ids: id });
+        if (data.success)
+          this.dataSource = this.dataSource.filter(item => item.ruleId == id);
       },
-      edit(){
-        this.editVisit = true;
+      gotoNew(id) {
+        this.$router.push("/basic/rule/detail?id=" + id);
       },
-      onSelectChange( selectedRowKeys,selectedRows) {
-        this.selectedRowKeys = selectedRowKeys;
-        this.selectedRows=selectedRows
+      showModal(value) {
+        this.visible = true;
+        console.log(value);
+        if (value.ruleId) {
+          this.name = value.name;
+          this.id=value.ruleId
+        }else this.id=null
       },
-      Delete(){
-        this.data = this.data.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+      async editSubmit() {
+        if (this.id) {
+          let { success } = await this.$api.basic.rule.saveRule({
+            ruleId: this.id,
+            name: this.changeName
+          });
+          if(success)
+            this.dataSource=this.dataSource.forEach(item => {
+              if (item.id == this.id) item.name = this.changeName;
+            });
+        } else {
+          let res=await this.$api.basic.rule.saveRule({ name: this.changeName });
+          if(res.success)
+            this.dataSource.unshift({ name: this.changeName })
+        }
+
+        this.visible = false;
+
       },
-      handleOk() {
-        this.loading = true;
-        setTimeout(() => {
-          this.addClassVisit = false;
-          this.editVisit = false;
-          this.loading = false;
-        }, 2000);
-      },
-      handleCancel() {
-        this.addClassVisit = false;
-        this.editVisit = false;
-      },
-      editHandleSubmint(){},
-      addClassHandleSubmint(){},
-      onClickLook(){
-        this.$router.push('/basic/rule/detail')
-      },
-      form(){},
+      cancelSubmit() {
+        this.changeName = "";
+        this.visible = false;
+      }
     }
   };
 </script>
 
 <style lang="less" scoped>
-  .result{
-    width: 100%;
-    background-color: white;
-    height:50px;
-    margin: 20px 0px 10px 0px;
-    padding-left: 25px;
-    padding-top: 15px;
-    vertical-align: top;
-    border-radius: 5px;
+  .search {
+    margin-bottom: 54px;
   }
-  .table-bg{
-    background-color: white;
-    margin: 0px 0px 20px 0px;
-    padding: 20px 25px;
-    border-radius: 5px;
-    text-align: center;
-    width: 100%;
-    height: 500px;
-
+  .fold {
+    width: calc(100% - 216px);
+    display: inline-block;
   }
-  .buttons{
-    margin:0px 5px 20px 5px;
-    padding:2px 4px;
-    margin-left: 30px;
+  .operator {
+    margin-bottom: 18px;
   }
-  .buttons button{
-    width: 110px;
-    height: 45px;
-    color:white;
-  }
-  /deep/ Table {
-    .ant-table-thead > tr > th {
-      background-color: #f4f4f4;
+  @media screen and (max-width: 900px) {
+    .fold {
+      width: 100%;
     }
   }
-
 </style>

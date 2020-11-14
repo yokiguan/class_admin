@@ -1,440 +1,310 @@
+
 <template>
-  <EasyScrollbar :barOption="myBarOption">
-    <div id="wrapper" style="width: 600px">
-      <div style="width: 1800px">
-        <div class="result">
-          <a-breadcrumb>
-            <a-breadcrumb-item>首页</a-breadcrumb-item>
-            <a-breadcrumb-item><a href="">基础数据</a></a-breadcrumb-item>
-            <a-breadcrumb-item><a href="">教师排课规则</a></a-breadcrumb-item>
-          </a-breadcrumb>
-        </div>
-        <div class="left">
-          <a-row class="left_title">
-            <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
-                    font-weight: bold"/></a-col>
-            <a-col :span="12"><span style="font-size: 1.2em">刷新菜单</span></a-col>
-            <a-col><span style="font-size: 1.2em">全部展开</span></a-col>
-          </a-row>
-          <div style="width: 100%; height: 1px;
-            margin-top: 10px;
-            border-top: solid black 1px;"></div>
-          <a-tree
-                  :tree-data="treeData"
-                  :default-expanded-keys="['0-0-0', '0-0-1']"
-                  :default-selected-keys="['0-0-0', '0-0-1']"
-                  :default-checked-keys="['0-0-0', '0-0-1']"
-                  :replace-fields="replaceFields"
-                  @select="onSelect"
-                  @check="onCheck"
-                  checkable
-                  style="font-size: 1.3em;"/>
-        </div>
-        <div class="right">
-          <a-card class="table-bg1">
-            <a-row style="height: 40px;width: 1300px;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black;margin-left: -35px;margin-top: -30px">
-              <a-col>
-                <span style="float: left;padding: 10px;">场地规则</span>
-              </a-col>
-            </a-row>
-            <a-row>
-              <a-form :form="form" :label-col="{span:2}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint">
-                <a-form-item label="选择课表模板" has-feedback>
-                  <a-select v-decorator="['选择课表模板',{ rules: [{ required: true, message: '请选择课表模板!' }] },]"
-                            placeholder="高一组课表模板">
-                    <a-select-option value="one">高一组课表模板</a-select-option>
-                    <a-select-option value="two">高二组课表模板</a-select-option>
-                    <a-select-option value="three">高三组课表模板</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-form>
-            </a-row>
-            <a-row>
-              <a-table :columns="columnsPlace"
-                       :data-source="placeData"
-                       :bordered="true"
-                       :pagination="false"
-                       style="width: 45%;margin-left: 50px;margin-top: 20px">
-                <a-checkbox slot="checkBox" @change="change"></a-checkbox>
-                <span slot="action">查看</span>
-              </a-table>
-            </a-row>
-          </a-card>
-          <a-card class="table-bg2">
-            <a-row style="height: 40px;width: 1300px;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black;margin-left: -35px;margin-top: -30px">
-              <a-col>
-                <span style="float: left;padding: 10px;">课表</span>
-              </a-col>
-            </a-row>
-            <a-row class="buttons-sub">
-              <a-col :span="2">
-                <a-button type="danger" style="color:white;
-                              width: 100px;
-                                height: 40px;">禁选</a-button>
-              </a-col>
-              <a-col :span="2">
-                <a-button style="background-color:grey;
-                      width: 100px;
-                        height: 40px;color:white">普通</a-button>
-              </a-col>
-              <a-col :span="3">
-                <a-button style="color:white;background-color: #1abc9c;width: 100px;
-                              height: 40px;">优先</a-button>
-              </a-col>
-              <a-col :span="6" >
-                <h3 style="float:left;">未设置默认为普通</h3>
-              </a-col>
-              <a-col :span="3">
-                <a-button style="background-color:#1abc9c;
-                              width: 100px;
-                              height: 40px;color:white">保存</a-button>
-              </a-col>
-              <a-col :span="1">
-                <a-button style="background-color:#1abc9c;
-                              width: 100px;
-                              height: 40px;color:white">重置</a-button>
-              </a-col>
-              <a-col >
-                <a-button type="danger" style="color:white;
-                              width: 100px;
-                                height: 40px;">删除</a-button>
-              </a-col>
-            </a-row>
-            <a-row>
-              <a-table id="Table"
-                       :columns="columns"
-                       :data-source="tableData"
-                       :pagination="false"
-                       :bordered="true"
-                       style="margin-top: 30px">
-              </a-table>
-            </a-row>
-          </a-card>
-        </div>
-        <a-modal
-                :visible='addClassVisit'
-                width="600px"
-                :closable="false"
-                on-ok="handleOk">
-          <template slot="footer">
-            <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-              保存
-            </a-button>
-            <a-button key="back" @click="handleCancel">
-              取消
-            </a-button>
-          </template>
-          <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint"
-                  style="margin-left: 70px">
-            <a-form-item label="学生姓名">
-              <a-input style="width: 300px" placeholder="车东明" v-decorator="['学生姓名', { rules: [{ required: true, message: '请输入学生姓名!' }] }]"/>
-            </a-form-item>
-            <a-form-item label="学号">
-              <a-input style="width: 300px" placeholder="007" v-decorator="['学号', { rules: [{ required: true, message: '请输入学号!' }] }]"/>
-            </a-form-item>
-          </a-form>
-        </a-modal>
-
-      </div>
-    </div>
-  </EasyScrollbar>
-
+  <a-card>
+    <a-form-model
+            layout="horizontal"
+            ref="ruleForm"
+            :model="form"
+            :rules="rules"
+            style="overflow: hidden; margin: 0 auto"
+            :label-col="{ span: 4 }"
+            :wrapper-col="{ span: 10 }"
+    >
+      <a-form-model-item label="职责" prop="school">
+        <a-select placeholder="请选择" v-model="form.school">
+          <a-select-option v-for="b in school" :key="b.name" :value='b.value'>{{
+            b.name
+            }}</a-select-option>
+        </a-select>
+      </a-form-model-item>
+      <a-form-model-item label="年级" prop="grade">
+        <a-select placeholder="请选择" v-model="form.grade">
+          <a-select-option
+                  v-for="f in findPosition(keyNameGrade).grade"
+                  :key="form.school + f.number"
+                  :value='f.number'
+          >{{ f.name }}</a-select-option
+          >
+        </a-select>
+      </a-form-model-item>
+      <a-form-model-item label="科目" prop="subject">
+        <a-select placeholder="请选择" v-model="form.subject">
+          <a-select-option
+                  v-for="r in findPosition(keyNameSubject).subject"
+                  :key="form.school + form.grade + r"
+                  :value='r.value'
+          >{{ r.name }}</a-select-option
+          >
+        </a-select>
+      </a-form-model-item>
+      <a-form-model-item label="老师" prop="teacher">
+        <a-select placeholder="请选择" v-model="form.teacher" mode="tags">
+          <a-select-option
+                  v-for="t in findPosition(keyNameTeacher).teacher"
+                  :key="form.school + form.grade + form.subject + t"
+          >{{ t }}</a-select-option
+          >
+        </a-select>
+      </a-form-model-item>
+      <a-form-model-item label="场地规则" prop="subject">
+        <a-select placeholder="请选择" v-model="form.rule" mode="tags">
+          <a-select-option
+                  v-for="tr in rulesOptions"
+                  :key="tr.value"
+                  :value="tr.name"
+          >{{ tr.name }}</a-select-option
+          >
+        </a-select>
+      </a-form-model-item>
+      <a-table
+              style="width: 80%; margin: 0 auto"
+              :pagination="false"
+              :columns="rulesColumns"
+              :dataSource="ruleData"
+              rowKey="name"
+      >
+        <span slot="operation">
+          <a @click="goDetail">查看</a> | <a style="color: red">删除</a></span
+        >
+      </a-table>
+      <a-row style="float: right; margin-bottom: 10px">
+        <a-button type="primary" style="margin-left: 8px">选择教室</a-button>
+        <a-button type="primary" style="margin-left: 8px">清空</a-button>
+      </a-row>
+    </a-form-model>
+  </a-card>
 </template>
+
 <script>
-  const columnsPlace=[
+  const rulesOptions = [
     {
-      title:'',
-      dataIndex:'blank',
-      key:'blank',
-      scopedSlots:{customRender:'checkBox'},
-      align:'center',
-      width:'8%'
+      name: "高一课表模板",
+      value: "1-1",
     },
     {
-      title:'序号',
-      dataIndex:'serialNum',
-      key:'serialNum',
-      align:'center',
-      width:'13%'
+      name: "高二课表模板",
+      value: "2-1",
     },
     {
-      title:'规则名称',
-      dataIndex:'regularName',
-      key:'regularName',
-      align:'center',
-      width:'40%'
+      name: "物理老师规则",
+      value: "0-1",
     },
     {
-      title:'包含老师数量',
-      dataIndex:'num',
-      key:'num',
-      align:'center',
-      width:'24%'
+      name: "化学老师规则",
+      value: "0-2",
     },
     {
-      title:'操作',
-      dataIndex:'opts',
-      key:'opts',
-      align:'center',
-      width:'15%',
-      scopedSlots: { customRender: 'action' },
-    },
-  ]
-  const placeData=[
-    {
-      serialNum:'1',
-      regularName:'英语老师时间规则',
-      num:'2',
+      name: "生物老师规则",
+      value: "0-3",
     },
     {
-      serialNum:'2',
-      regularName:'数学老师时间规则',
-      num:'1',
+      name: "体育老师规则",
+      vale: "0-4",
+    },
+  ];
+  const rulesColumns = [
+    {
+      title: "规则名称",
+      dataIndex: "name",
     },
     {
-      serialNum:'3',
-      regularName:'体育老师时间规则',
-      num:'1',
+      title: "包含老师数",
+      dataIndex: "teacherNum",
     },
     {
-    }
-  ]
-  const treeData = [
+      title: "操作",
+      dataIndex: "operation",
+      scopedSlots: { customRender: "operation" },
+    },
+  ];
+  const ruleData = [
     {
-      name: '教学组',
-      key: '0-0',
-      child: [
-        { name: '高一',
-          key: '0-0-0',
-          child:[{name:'语文',key:'0-0-0-0'}]
+      name: "物理老师时间规则",
+      teacherNum: 2,
+    },
+    {
+      name: "化学老师时间规则",
+      teacherNum: 2,
+    },
+    {
+      name: "生物老师时间规则",
+      teacherNum: 2,
+    },
+    {
+      name: "体育老师时间规则",
+      teacherNum: 1,
+    },
+  ];
+  const school = [
+    {
+      name: "教学组",
+      value: "jiaoxue",
+      grade: [
+        {
+          number: 1,
+          name: "高一",
+          subject: [
+            {
+              name: "语文",
+              value: "yuwen",
+              teacher: ["赵", "钱", "孙", "李"],
+            },
+            {
+              name: "数学",
+              value: "shuxue",
+              teacher: ["赵", "钱", "孙", "李"],
+            },
+            {
+              name: "体育",
+              value: "pe",
+              teacher: ["赵", "钱", "孙", "李"],
+            },
+          ],
         },
-        { name: '高二', key: '0-0-1' ,
-          child:[
-            { name:'语文', key: '0-0-2-0',},
-            {name:'数学',key:'0-0-2-1'},
-            {name:'英语',key:'0-0-2-2',
-              child:[{
-                name:'赵卫民',key:'0-0-0-2-0'},
-                {name:'李援朝',key: '0-0-0-2-1'}]},
-          ],},
-        { name: '高三', key: '0-0-2' },
+        {
+          number: 2,
+          name: "高二",
+          subject: [
+            {
+              name: "语文",
+              value: "yuwen",
+              teacher: ["赵", "钱", "孙", "李"],
+            },
+            {
+              name: "数学",
+              value: "shuxue",
+              teacher: ["赵", "钱", "孙", "李"],
+            },
+            {
+              name: "体育",
+              value: "pe",
+              teacher: ["赵", "钱", "孙", "李"],
+            },
+          ],
+        },
       ],
-    },{
-      name: '教务组',
-      key: '0-1',
-      child: [
-        { name: '初一', key: '0-1-0'},
-        { name: '初二', key: '0-1-1' },
-        { name: '初三', key: '0-1-2' },
+    },
+    {
+      name: "教务组",
+      value: "jiaowu",
+      grade: [
+        {
+          number: 1,
+          name: "高一",
+          subject: [],
+        },
+        {
+          number: 2,
+          name: "高二",
+          subject: [{
+            name: "财务",
+            value: "jz",
+            teacher: ["赵", "钱", "孙", "李"],
+          },],
+        },
       ],
-    },
-  ];
-  const columns = [
-    {
-      align: "center",
-      title: " ",
-      dataIndex: 'key',
-      width:'12.5%',
-
-    },
-    {
-      title: '星期一',
-      dataIndex: 'one',
-      key:'one',
-      width:'12.5%',
-      align:'center'
-    },
-    {
-      title: '星期二',
-      dataIndex: 'two',
-      key:'two',
-      width:'12.5%',
-      align:'center'
-    },
-    {
-      title: '星期三',
-      dataIndex: 'three',
-      key:'three',
-      width:'12.5%',
-      align:'center'
-    },
-    {
-      title: '星期四',
-      dataIndex: 'four',
-      key: 'four',
-      width:'12.5%',
-      align:'center'
-    },
-    {
-      title: '星期五',
-      dataIndex: 'five',
-      key: 'five',
-      width:'12.5%',
-      align:'center'
-    },
-    {
-      title: '星期六',
-      dataIndex: 'six',
-      key:'six',
-      width:'12.5%',
-      align:'center'
-    },
-    {
-      title: '星期日',
-      dataIndex: 'seven',
-      key:'seven',
-      width:'12.5%',
-      align:'center'
-    },
-  ];
-  const tableData=[
-    {
-      key: '早读1',
-      one:'6：00-7：00'
-
-    },
-    {
-      key: '上午1',
-      one:'8：30-9：00'
-    },
-    {
-      key: '上午2',
-      one:'9：00-10：00'
-    },
-    {
-      key: '上午3',
-      one:'10：30-11：30'
-    },
-    {
-      key: '上午4',
-      one:'11：30-12：30'
-    },
-    {
-      key: '下午1',
-    },
-    {
-      key: '下午2',
-    },
-    {
-      key: '下午3',
-    },
-    {
-      key: '下午4',
-    },
-    {
-      key: '晚自习1',
     },
   ];
   export default {
+    name: "QueryList",
+    components: {},
     data() {
       return {
-        columnsPlace,
-        placeData,
-        treeData,
-        columns,
-        tableData,
-        myBarOption:{
-          barColor:'block'
+        rulesOptions,
+        ruleData,
+        rulesColumns,
+        school,
+        keyNameGrade: "grade",
+        keyNameSubject: "subject",
+        keyNameTeacher: "teacher",
+        form: {
+          school: "jiaoxue",
+          grade: 2,
+          subject: "yuwen",
+          teacher: ["赵", "钱"],
+          rule: ["物理老师规则", "化学老师规则"],
         },
-        disabled: false,
-        replaceFields: {
-          children: 'child',
-          title: 'name',
+        rules: {
+          school: [
+            {
+              required: true,
+              message: "请选择教学楼",
+              trigger: "blur",
+            },
+          ],
+          grade: [
+            {
+              required: true,
+              message: "请选择楼层",
+              trigger: "blur",
+            },
+          ],
+          subject: [
+            {
+              required: true,
+              message: "请选择教室",
+              trigger: "change",
+            },
+          ],
         },
       };
     },
     methods: {
-      onSelect(selectedKeys, info) {
-        console.log('selected', selectedKeys, info);
-      },
-      onCheck(checkedKeys, info) {
-        console.log('onCheck', checkedKeys, info);
+      goDetail() {},
+      findPosition(key) {
+        let list = this.school;
+        for (let i = 0; i < list.length; i++) {
+          if (list[i].value == this.form.school){
+            if (key == "grade") return list[i];
+            else
+              for (let o = 0; o < list[i].grade.length; o++) {
+                if (key == "subject") {
+                  if (list[i].grade[o].number == this.form.grade)
+                    return list[i].grade[o];
+                } else {
+                  for (let p = 0; p < list[i].grade[o].subject.length; p++) {
+                    if (list[i].grade[o].subject[p].value == this.form.subject)
+                      return list[i].grade[o].subject[p];
+                  }
+                }
+              }
+          }
+        }
       },
     },
   };
 </script>
 
 <style lang="less" scoped>
-  .result{
-    width: 100%;
-    background-color: white;
-    height:50px;
-    margin: 20px 0px 10px 0px;
-    padding-left: 25px;
-    padding-top: 15px;
-    vertical-align: top;
-    border-radius: 5px;
+  .search {
+    margin-bottom: 54px;
   }
-  .left{
-    width: 300px;
-    height: 900px;
-    background-color: white;
-    margin: 0px 0px 20px 0px;
-    padding: 20px 25px;
-    border-radius: 10px;
+  .fold {
+    width: calc(100% - 216px);
+    display: inline-block;
   }
-  .right{
-    border-radius: 5px;
-    margin-top: -935px;
-    margin-left: 320px;
-    height:700px;
+  .operator {
+    margin-bottom: 18px;
   }
-  .title{
-    width: 100%;
-    background-color: #fff;
-    height: 170px;
-    padding: 20px 25px;
-    border-radius: 10px;
-    margin-bottom: 50px;
+  .teacher {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 5px;
   }
-  .table-bg1{
-    background-color: white;
-    margin-top: 35px;
-    padding: 20px 25px;
-    border-radius: 10px;
-    text-align: center;
-    width: 100%;
-    height: 440px;
+  .add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100px;
+    margin: 10px auto 0 auto;
+    padding: 5px;
+    border: 1px solid;
+    border-radius: 6px;
   }
-  .table-bg2{
-    background-color: white;
-    margin-top: 10px;
-    padding: 20px 25px;
-    border-radius: 10px;
-    text-align: center;
-    width: 100%;
-    height: 800px;
-  }
-  .buttons{
-    margin:0px 5px 20px 5px;
-    padding:2px 4px;
-    margin-left: 30px;
-  }
-  .buttons button{
-    width: 110px;
-    height: 45px;
-    color:white;
-  }
-  .buttons-sub{
-    margin-top: 10px;
-    padding:2px 4px;
-  }
-  /deep/ Table {
-    .ant-table-thead > tr > th {
-      background-color: #f4f4f4;
-    }
-    .ant-table-tbody > tr:nth-child(2) > td:nth-child(2){
-      background-color: #f00;
-      color: white;
-    }
-    .ant-table-tbody > tr:first-child > td:nth-child(5),
-    .ant-table-tbody > tr:first-child > td:nth-child(4),
-    .ant-table-tbody > tr:first-child > td:nth-child(3){
-      background-color: #bcbcbc;
-    }
-    .ant-table-tbody > tr:nth-child(2) > td:nth-child(3){
-      background-color: #1abc9c;
+  @media screen and (max-width: 900px) {
+    .fold {
+      width: 100%;
     }
   }
 </style>
-

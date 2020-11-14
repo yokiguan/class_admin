@@ -1,331 +1,215 @@
 <template>
-  <div>
-    <!-- result -->
-    <div class="result">
-      <a-breadcrumb>
-        <a-breadcrumb-item>首页</a-breadcrumb-item>
-        <a-breadcrumb-item><a href="">基础数据</a></a-breadcrumb-item>
-        <a-breadcrumb-item><a href="">年级管理</a></a-breadcrumb-item>
-      </a-breadcrumb>
+  <a-card>
+    <div>
+      <a-table
+              rowKey="gradeId"
+              :columns="columns"
+              :subName="'查看课程'"
+              :dataSource="dataSource"
+              :selectedRows="selectedRows"
+              @change="onchange"
+      >
+        <span slot="operation" slot-scope="text, record">
+          <a @click="showModal(record)">编辑</a>
+          |
+          <a @click="deleteItem(record.gradeId)">删除</a>
+          |
+          <a @click="gotoNew(record.id)">查看课程</a>
+        </span></a-table
+      >
     </div>
-    <!-- /result -->
-    <a-card class="table-bg">
-      <a-row class="buttons">
-        <a-col :span="3">
-          <a-button @click="addClass" type="primary"
-                    style="background-color: #1abc9c">新增</a-button>
-        </a-col>
-        <a-col :span="3">
-          <a-button @click="Delete" style="background-color: #ff0000">删除</a-button>
-        </a-col>
-      </a-row>
-      <a-row>
-        <a-table :columns="columns"
-                 :data-source="data"
-                 :bordered="true"
-                 :pagination="false"
-                 style="width: 57%;margin-left: 20px;">
-          <a-checkbox slot="checkBox" @change="change"></a-checkbox>
-          <div slot="action">
-            <button @click="lookCourse" style="float: left;background-color: #199ed8;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">查看课程</button>
-            <button @click="editCourse" style="background-color: #008000;color: white;border-radius: 5px;width:75px;height:20px;border: 0px">修改</button>
-          </div>
-        </a-table>
-      </a-row>
-    </a-card>
     <a-modal
-            :visible='addClassVisit'
-            width="600px"
-            :closable="false"
-            on-ok="handleOk">
-      <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-          保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">
-          取消
-        </a-button>
-      </template>
-      <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint"
-              style="margin-left: 70px">
-        <a-form-item label="级部" has-feedback>
-          <a-select v-decorator="['级部',{ rules: [{ required: true, message: 'Please select your country!' }] },]"
-                    placeholder="高中">
-            <a-select-option value="junior">
-              小学
-            </a-select-option>
-            <a-select-option value="middle">
-              初中
-            </a-select-option>
-            <a-select-option value="senior">
-              高中
+            title="新增年级"
+            :visible="show"
+            @ok="handleOk"
+            @cancel="handleCancel"
+    >
+      <a-form :form="form" v-bind="formItemLayout">
+        <a-form-item label="级部">
+          <a-select
+                  v-decorator="[
+              'gradeId',
+              { rules: [{ required: true, message: '请选择年级所在级部' }] }
+            ]"
+                  placeholder="请选择年级所在级部"
+          >
+            <a-select-option
+                    v-for="b in this.adminGrades"
+                    :key="b.value"
+                    :value="b.label"
+            >
+              {{ b.label }}
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item label="年级名称" has-feedback>
-          <a-select v-decorator="['年级名称',{ rules: [{ required: true, message: 'Please select your country!' }] },]"
-                    placeholder="高一">
-            <!--            <a-select-option value="junior">-->
-            <!--              小学-->
-            <!--            </a-select-option>-->
-            <!--            <a-select-option value="middle">-->
-            <!--              初中-->
-            <!--            </a-select-option>-->
-            <!--            <a-select-option value="senior">-->
-            <!--              高中-->
-            <!--            </a-select-option>-->
-          </a-select>
+        <a-form-item label="年级名称">
+          <a-input
+                  v-decorator="[
+              'name',
+              { rules: [{ required: true, message: '请输入年级名称' }] }
+            ]"
+                  v-model='this.grade.gradeName'
+                  placeholder="请输入你想要新增的年级名称"
+          ></a-input>
         </a-form-item>
-        <a-form-item label="课程" has-feedback>
-          <a-tree-select
-                  v-model="value"
-                  :tree-data="treeData"
-                  tree-checkable
-                  :show-checked-strategy="SHOW_PARENT"
-                  search-placeholder="Please select"
-          />
+        <a-form-item label="课程">
+          <a-select
+                  v-decorator="[
+              'subject',
+              { rules: [{ required: true, message: '请选择年级所需课程' }] }
+            ]"
+                  v-model='this.grade.subjectEntities'
+                  placeholder="请选择年级所需课程"
+          >
+            <a-select-option
+                    v-for="b in this.adminGrades"
+                    :key="b.adminId"
+                    :value="b.adminId"
+            >
+              {{ b.adminName }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
       </a-form>
     </a-modal>
-    <a-modal
-            :visible='editVisit'
-            width="600px"
-            :closable="false"
-            on-ok="handleOk">
-      <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-          保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">
-          取消
-        </a-button>
-      </template>
-      <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" @submit="editHandleSubmint"
-              style="margin-left: 70px">
-        <a-form-item label="级部" has-feedback>
-          <a-select v-decorator="['级部',{ rules: [{ required: true, message: 'Please select your country!' }] },]"
-                    placeholder="高中">
-            <a-select-option value="junior">
-              小学
-            </a-select-option>
-            <a-select-option value="middle">
-              初中
-            </a-select-option>
-            <a-select-option value="senior">
-              高中
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="年级名称" has-feedback>
-          <a-select v-decorator="['年级名称',{ rules: [{ required: true, message: 'Please select your country!' }] },]"
-                    placeholder="高一">
-            <!--            <a-select-option value="junior">-->
-            <!--              小学-->
-            <!--            </a-select-option>-->
-            <!--            <a-select-option value="middle">-->
-            <!--              初中-->
-            <!--            </a-select-option>-->
-            <!--            <a-select-option value="senior">-->
-            <!--              高中-->
-            <!--            </a-select-option>-->
-          </a-select>
-        </a-form-item>
-        <a-form-item label="课程" has-feedback>
-          <a-tree-select
-                  v-model="value"
-                  :tree-data="treeData"
-                  tree-checkable
-                  :show-checked-strategy="SHOW_PARENT"
-                  search-placeholder="Please select"
-          />
-        </a-form-item>
-      </a-form>
-    </a-modal>
-  </div>
+  </a-card>
 </template>
+
 <script>
-  import { TreeSelect } from 'ant-design-vue';
-  const SHOW_PARENT = TreeSelect.SHOW_PARENT;
-  const treeData = [
+  import { message } from "ant-design-vue";
+  const columns = [
     {
-      title: '物理',
-      value: '0-0',
-      key: '0-0',
-      children: [
-        {
-          title: '物理学修',
-          value: '0-0-0',
-          key: '0-0-0',
-        },
-        {
-          title: '物理选修',
-          value: '0-0-1',
-          key: '0-0-1',
-        },
-      ],
+      title: "年级编号",
+      dataIndex: "gradeId"
     },
     {
-      title: '生物',
-      value: '0-1',
-      key: '0-1',
-      children: [
-        {
-          title: '生物学修',
-          value: '0-1-0',
-          key: '0-1-0',
-        },
-        {
-          title: '生物选修',
-          value: '0-1-1',
-          key: '0-1-1',
-        },
-      ],
-    },
-  ];
-  const columns=[
-    {
-      title:'',
-      dataIndex:'blank',
-      key:'blank',
-      scopedSlots:{customRender:'checkBox'},
-      align:'center',
-      width:'8%'
+      title: "名称",
+      dataIndex: "gradeName"
     },
     {
-      title:'序号',
-      dataIndex:'serialNum',
-      key:'serialNum',
-      align:'center',
-      width:'13%'
+      title: "级部",
+      dataIndex: "adminName"
     },
     {
-      title:'年级',
-      dataIndex:'grade',
-      key:'grade',
-      align:'center',
-      width:'15%'
+      title: "课程",
+      dataIndex: "subjectEntities",
+      customRender: (text, record) => {
+        let t = record.subjectEntities
+                ? record.subjectEntities.forEach(item => (item = item.name))?.join(",")
+                : "";
+        console.log(t);
+        return t;
+      }
     },
     {
-      title:'级部',
-      dataIndex:'levelDepart',
-      key:'levelDepart',
-      align:'center',
-      width:'15%'
-    },
-    {
-      title:'课程名称',
-      dataIndex:'name',
-      key:'name',
-      align:'center',
-      width:'18%'
-    },
-
-    {
-      title:'操作',
-      dataIndex:'opts',
-      key:'opts',
-      align:'center',
-      width:'53%',
-      scopedSlots: { customRender: 'action' },
-    },
-  ]
-  const data=[
-    {
-      serialNum:'1',
-      grade:'高一',
-      levelDepart:'高中部',
-      name:'数学,语文,英语,日语',
-    },
-    {
-      serialNum:'2',
-      grade:'高二（文）',
-      levelDepart:'高中部',
-    },
-    {
-      serialNum:'3',
-    },
-    {
-
+      title: "操作",
+      key: "operation",
+      scopedSlots: { customRender: "operation" }
     }
-  ]
+  ];
+
   export default {
+    name: "grade",
     data() {
       return {
-        columns,
-        data,
-        loading:false,
-        addClassVisit: false,
-        editVisit: false,
-        value: ['语文'],
-        treeData,
-        SHOW_PARENT,
+        columns: columns,
+        show: false,
+        adminGrades: [
+          { label: "高中部", value: "highschool" },
+          { label: "初中部", value: "juniorhigh" },
+          { label: "小学部", value: "primary" }
+        ],
+        grade:{},
+        dataSource: [],
+        selectedRowKeys: [],
+        selectedRows: [],
+        formItemLayout: {
+          labelCol: { span: 6 },
+          wrapperCol: { span: 14 }
+        }
       };
     },
-    methods:{
-      addClass() {
-        this.addClassVisit = true;
+    async created() {
+      let {
+        data: { result, success }
+      } = await this.$api.basic.grade.fetchGradeList();
+      console.log(result, success);
+      if (success) {
+        this.dataSource = result;
+      }
+    },
+    beforeCreate() {
+      this.form = this.$form.createForm(this, { name: "grade" });
+    },
+    methods: {
+      showModal(record) {
+        this.show = true;
+        this.grade=record
       },
-      editCourse() {
-        this.editVisit = true;
-      },
-      lookCourse(){
-        this.$router.push('/basic/grade/subject')
-      },
-      editHandleSubmint(){
-      },
-      Delete(){
-      },
-      handleOk() {
-        this.loading = true;
-        setTimeout(() => {
-          this.addClassVisit = false;
-          this.editVisit = false;
-          this.loading = false;
-        }, 2000);
+      async handleOk() {
+        let formData = this.form.getFieldsValue();
+        let temptQuery={gradeId:this.grade.gradeId,gradeSubChildIds:[]}
+        let res = await this.$api.basic.grade.saveGrade(temptQuery);
+        console.log(formData,res);
+        this.show = false;
       },
       handleCancel() {
-        this.addClassVisit = false;
-        this.editVisit = false;
+        this.show = false;
       },
+      onchange(selectedRowKeys, selectedRows) {
+        this.selectedRowKeys = selectedRowKeys;
+        this.selectedRows = selectedRows;
+      },
+      remove() {
+        this.dataSource = this.dataSource.filter(
+                item => this.selectedRowKeys.indexOf(item.key) < 0
+        );
+        this.selectedRows = this.selectedRows.filter(
+                item => this.selectedRowKeys.indexOf(item.key) < 0
+        );
+      },
+      addNew() {
+        this.dataSource.unshift({
+          key: 4,
+          no: 4,
+          name: "物理选修",
+          grade: "高二文;高二理",
+          type: "走班课"
+        });
+      },
+      gotoNew(id) {
+        this.$router.push("/basic/grade/subject?id=" + id);
+      },
+      async deleteItem(id) {
+        let { data } = this.$api.basic.grade.deleteGrade({ id });
+        if (data.success) {
+          this.dataSource = this.dataSource.filter(item => item.gradeId == id);
+          message.info("删除成功");
+        }
+      },
+      handleMenuClick(e) {
+        if (e.key === "delete") {
+          this.remove();
+        }
+      }
     }
   };
 </script>
 
 <style lang="less" scoped>
-  .result{
-    width: 100%;
-    background-color: white;
-    height:50px;
-    margin: 20px 0px 10px 0px;
-    padding-left: 25px;
-    padding-top: 15px;
-    vertical-align: top;
-    border-radius: 5px;
+  .search {
+    margin-bottom: 54px;
   }
-  .table-bg{
-    background-color: white;
-    margin: 0px 0px 20px 0px;
-    padding: 20px 25px;
-    border-radius: 5px;
-    text-align: center;
-    width: 100%;
-    height: 500px;
-
+  .fold {
+    width: calc(100% - 216px);
+    display: inline-block;
   }
-  .buttons{
-    margin:0px 5px 20px 5px;
-    padding:2px 4px;
-    margin-left: 30px;
+  .operator {
+    margin-bottom: 18px;
   }
-  .buttons button{
-    width: 110px;
-    height: 45px;
-    color:white;
-  }
-  /deep/ Table {
-    .ant-table-thead > tr > th {
-      background-color: #f4f4f4;
+  @media screen and (max-width: 900px) {
+    .fold {
+      width: 100%;
     }
   }
-
 </style>
