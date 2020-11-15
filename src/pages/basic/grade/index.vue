@@ -14,7 +14,7 @@
           |
           <a @click="deleteItem(record.gradeId)">删除</a>
           |
-          <a @click="gotoNew(record.id)">查看课程</a>
+          <a @click="gotoNew(record.gradeId)">查看课程</a>
         </span></a-table
       >
     </div>

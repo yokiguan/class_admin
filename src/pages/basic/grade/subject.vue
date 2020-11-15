@@ -66,7 +66,7 @@ export default {
     let queryString=window.location.hash.split('?')[1]
     let id=queryString.split('=')[1]
     if(id){
-      let { data } = await this.$api.basic.grade.fetchGrade({id});
+      let { data } = await this.$api.basic.grade.fetchGrade({gradeId:id});
       this.dataSource=data.result?.subjectEntities
       this.gradeId=id
     }   
