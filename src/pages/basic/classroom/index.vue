@@ -9,13 +9,11 @@
               :columns="columns"
               :dataSource="dataSource"
               :selectedRows="selectedRows"
-              @change="onchange"
-      >
+              @change="onchange">
         <span slot="operation" slot-scope="text, record">
           <a @click="addNew(record.id)">编辑</a>
-          |
           <a @click="deleteItem(record.roomId)">删除</a>
-          |<a @click="gotoNew(record.roomId)">规则设置</a>
+          <a @click="gotoNew(record.roomId)">规则设置</a>
         </span>
       </a-table>
     </div>
@@ -28,28 +26,22 @@
       <a-form :form="form" v-bind="formItemLayout">
         <a-form-item label="教学楼">
           <a-select
-                  v-decorator="[
-              'buildingId',
-              { rules: [{ required: true, message: '请选择场地所在教学楼' }] }
-            ]"
+                  v-decorator="['buildingId',
+              { rules: [{ required: true, message: '请选择场地所在教学楼' }] }]"
                   placeholder="请选择场地所在教学楼"
-                  @change="changeBuilding"
-          >
+                  @change="changeBuilding">
             <a-select-option
                     v-for="b in this.buildings"
                     :key="b.buildingId"
-                    :value="b.buildingId"
-            >
+                    :value="b.buildingId">
               {{ b.name }}
             </a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="楼层">
           <a-select
-                  v-decorator="[
-              'floor',
-              { rules: [{ required: true, message: '请选择场地所在楼层' }] }
-            ]"
+                  v-decorator="['floor',
+              { rules: [{ required: true, message: '请选择场地所在楼层' }] }]"
                   placeholder="请选择场地所在楼层"
           >
             <a-select-option v-for="f of this.floor" :key="f" :value="f">
@@ -61,17 +53,13 @@
           <a-input
                   v-decorator="[
               'name',
-              { rules: [{ required: true, message: '请输入场地名称' }] }
-            ]"
-                  placeholder="请输入你想要新增的场地名称"
-          ></a-input>
+              { rules: [{ required: true, message: '请输入场地名称' }] }]"
+                  placeholder="请输入你想要新增的场地名称"></a-input>
         </a-form-item>
         <a-form-item label="容纳人数">
           <a-input
-                  v-decorator="[
-              'capacity',
-              { rules: [{ required: true, message: '请输入场地容量' }] }
-            ]"
+                  v-decorator="['capacity',
+              { rules: [{ required: true, message: '请输入场地容量' }] }]"
                   placeholder="请输入你想要新增的场地容量"
           ></a-input>
         </a-form-item>
@@ -81,8 +69,7 @@
               'type',
               { rules: [{ required: true, message: '请选择场地类型' }] }
             ]"
-                  :options="placeOptions"
-          />
+                  :options="placeOptions"/>
         </a-form-item>
         <a-form-item label="是否启用">
           <a-switch v-decorator="['status', { rules: [{ required: true }] }]" />
@@ -130,7 +117,6 @@
       scopedSlots: { customRender: "operation" }
     }
   ];
-
   export default {
     name: "classroom",
     data() {

@@ -6,16 +6,14 @@
             ref="ruleForm"
             :model="form"
             :rules="rules"
-            style="overflow:hidden"
-    >
+            style="overflow:hidden">
       <a-row>
         <a-col :md="24" :sm="24">
           <a-form-model-item
                   label="模板名称"
                   prop="templetName"
                   :labelCol="{ span: 2 }"
-                  :wrapperCol="{ span: 5 }"
-          >
+                  :wrapperCol="{ span: 5 }">
             <a-input v-model="form.templet_name" placeholder="请输入" />
           </a-form-model-item>
         </a-col>
@@ -25,8 +23,7 @@
                     label="工作日"
                     prop="workday"
                     :labelCol="{ span: 10 }"
-                    :wrapperCol="{ span: 14 }"
-            >
+                    :wrapperCol="{ span: 14 }">
               <a-select placeholder="请选择" v-model="form.workday">
                 <a-select-option value="5">5</a-select-option>
               </a-select>
@@ -37,8 +34,7 @@
                     label="假期"
                     prop="restday"
                     :labelCol="{ span: 10 }"
-                    :wrapperCol="{ span: 14 }"
-            >
+                    :wrapperCol="{ span: 14 }">
               <a-select placeholder="请选择" v-model="form.rest">
                 <a-select-option value="2">2</a-select-option>
               </a-select>
@@ -50,8 +46,7 @@
                   :label="item.name"
                   :prop="item.value"
                   :labelCol="{ span: 10 }"
-                  :wrapperCol="{ span: 14 }"
-          >
+                  :wrapperCol="{ span: 14 }">
             <a-select placeholder="请选择" v-model="form[item.value]">
               <a-select-option v-for="option in item.options" :key="option">{{
                 option
@@ -61,34 +56,25 @@
         </a-col>
       </a-row>
       <a-row style="float: right;">
-        <a-button type="primary" style="margin-left: 8px" @click="setInfo"
-        >设置</a-button
-        >
+        <a-button type="primary" style="margin-left: 8px" @click="setInfo">设置</a-button>
         <a-button @click="clearInfo" style="margin-left: 8px">清空</a-button>
-
         <a-button
                 type="primary"
                 style="margin-left: 8px"
-                @click="showPublicModal"
-        >公共时段设置</a-button
-        >
-        <a-button type="primary" style="margin-left: 8px" @click="showTimeModal"
-        >节次时间设置</a-button
-        >
+                @click="showPublicModal">公共时段设置</a-button>
+        <a-button type="primary" style="margin-left: 8px" @click="showTimeModal">节次时间设置</a-button>
       </a-row>
     </a-form-model>
     <a-table
             :columns="columns"
             :dataSource="dataSource"
             :rowKey="`activity`"
-            :pagination='false'
-    />
+            :pagination='false'/>
     <a-row>
-      <a-button @click="saveInfo" type="primary" style="margin-left: 8px"
-      >保存</a-button
-      >
+      <a-button @click="saveInfo" type="primary" style="margin-left: 8px">保存</a-button>
       <a-button @click="goBackAdmin" style="margin-left: 8px">返回</a-button>
     </a-row>
+<!--    节次时间段设置-->
     <a-modal
             :visible="timeModal"
             title="节次时间设置"
@@ -101,7 +87,7 @@
               rowKey="value"
               :pagination="false"
       >
-        <span slot="time" slot-scope="time,record">
+        <span slot="time" slot-scope="time">
           <a-time-picker v-model="time[0]" format="hh:mm" /> -
           <a-time-picker
                   v-model="time[1]"
@@ -111,12 +97,44 @@
         </span>
       </a-table>
     </a-modal>
+<!--    公共时间段设置-->
     <a-modal
             :visible="publicModal"
             title="公共时段设置"
-            @ok="handleOkPublic"
-            @cancel="handleCancelPublic"
-    >
+            :closable="false">
+      <a-form-model :label-col="{span:5}" :wrapper-col="{span:15}">
+        <a-form-model-item label="时间段位置" >
+          <a-input v-model="addTimeLocation" placeholder="早读1之后"/>
+        </a-form-model-item>
+        <a-row>
+          <a-col>
+            <a-form-model-item label="时间段名称">
+              <a-input v-model="addTimeName" placeholder="早饭"/>
+            </a-form-model-item>
+          </a-col>
+          <a-col><a style="color:blue;float: right;margin-top: -60px;font-size: 1.1em;margin-right: 20px" @click="addTime">添加</a>
+          </a-col>
+        </a-row>
+      </a-form-model>
+      <a-table
+              :Key="'key'"
+              :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+              :selectedRows="selectedRows"
+              :columns="publicColumns"
+              :data-source="publicData"
+              :bordered = "true"
+              :pagination = "false"></a-table>
+      <template slot="footer">
+        <a-button key="submit" type="primary" :loading="loading" @click="handlePublicok">
+          保存
+        </a-button>
+        <a-button key="back" @click="handlePublicCancel">
+          取消
+        </a-button>
+        <a-button key="delete" @click="handlePublicDelete">
+          删除
+        </a-button>
+      </template>
     </a-modal>
   </a-card>
 </template>
@@ -185,7 +203,28 @@
       value: "evening"
     }
   ];
-
+  const  publicColumns=[
+    {
+      title:'时间段位置',
+      dataIndex:'timeLocate',
+      align:'center',
+    },
+    {
+      title:'时间段名称',
+      dataIndex:'timeName',
+      align:'center',
+    },];
+  const publicData=[
+    {
+      key:'0',
+      timeLocate:'早读1之后',
+      timeName:'早餐时间',
+    }, {
+      key:'1',
+      timeLocate:'上午4之后',
+      timeName:'午餐时间',
+    }
+  ];
   const timeColumns = [
     {
       title: "时间段名",
@@ -208,6 +247,8 @@
         timeQuery:{},
         dataSource: [],
         activity,
+        publicColumns,
+        publicData,
         publicModal: false,
         timeModal: false,
         form: {
@@ -277,7 +318,12 @@
               trigger: "change"
             }
           ]
-        }
+        },
+        selectedRowKeys: [], // Check here to configure the default column
+        selectedRows:[],
+        addTimeLocation:'',
+        addTimeName:'',
+        loading:false
       };
     },
     async created() {
@@ -330,10 +376,10 @@
       showPublicModal() {
         this.publicModal = true;
       },
-      handleOkPublic() {
+      handlePublicok() {
         this.publicModal = false;
       },
-      handleCancelPublic() {
+      handlePublicCancel() {
         this.publicModal = false;
       },
       showTimeModal() {
@@ -350,7 +396,23 @@
       },
       handleCancelTime() {
         this.timeModal = false;
-      }
+      },
+      onSelectChange( selectedRowKeys,selectedRows) {
+        this.selectedRowKeys = selectedRowKeys;
+        this.selectedRows=selectedRows
+      },
+      handlePublicDelete(){
+        this. publicData = this. publicData.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+        console.log(publicData)
+        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+        console.log(this.selectedRow)
+      },
+      addTime(){
+         this.publicData.push({
+           timeLocate:this.addTimeLocation,
+           timeName:this.addTimeName,
+         })
+      },
     }
   };
 </script>

@@ -179,7 +179,7 @@
             },
             onDelete(){
                 const dataSource = [...this. tableData];
-                dataSource.situation.splice(event.target.getAttribute('dataIndex'),1);
+                dataSource.splice(event.target.getAttribute('dataIndex'),1);
                 this. tableData = dataSource
             },
             form(){},
