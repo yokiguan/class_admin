@@ -17,7 +17,7 @@ const classroom = {
     },
 
     // 教室新增接口
-    saveBuilding(params){
+    saveClassRoom(params){
         return axios.post(`${baseUrl}/saveData.json`,params);    
     },
 

@@ -8,7 +8,7 @@ const gradeUrl=base.root+'/a/grade'
 const grade = {    
     // 查询全部级部的简要信息
     fetchList(params){
-        return axios.get(`${baseUrl}/getAdminGradeDataList.json`,params);    
+        return axios.post(`${baseUrl}/getAdminGradeDataList.json`,params);    
     },
 
     // 查询年级的简要信息
@@ -18,7 +18,7 @@ const grade = {
 
     // 查询指定年级信息
     fetchGrade(params){
-        return axios.get(`${gradeUrl}/getGradeDataInfo.json`,params);    
+        return axios.post(`${gradeUrl}/getGradeDataInfo.json?gradeId=${params.gradeId}`);    
     },
 
     // 年级新增接口

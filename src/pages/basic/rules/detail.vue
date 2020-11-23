@@ -85,109 +85,35 @@
   </div>
 </template>
 <script>
-  const treeData = [
-    {
-      name: '高一',
-      key: '0-0',
-      child: [
-        {
-          name: '物理',
-          key: '0-0-0',
-        },
-        {
-          name: '语文',
-          key: '0-0-1',
-        },{
-          name:'外语',
-          key:'0-0-2',
-          child: [
-            { name: '英语', key: '0-0-0-0'},
-            { name: '日语', key: '0-0-0-1' },
-          ],
-        }
-      ],
-    },{
-      name: '高二',
-      key: '0-1',
-      child:[{
-        name: '语文',
-        key:'0-1-0',
-      },{
-        name: '数学',
-        key:'0-1-1',
-      },{
-        name: '政治',
-        key:'0-1-2',
-      }]
+let dataSource = [
+  {
+    title: "必选课程",
+    content: "高一语文<br/>高一数学<br/>",
+  },
+  {
+    title: "必选外语课",
+    content: "高一英语<br/>高一日语<br/>高一法语<br/>",
+  }
+];
+dataSource.push({
+  add: true,
+});
+export default {
+  name: "CardList",
+  async created(){
+    let queryString=window.location.hash.split('?')[1]
+    let id=queryString.split('=')[1]
+    if(id){
+      let { data } = await this.$api.basic.rule.fetchRule({id});
+      console.log(data);
     }
-  ];
-  let dataSource = [
-    {
-      title: "必选课程",
-      content: "高一语文<br/>高一数学<br/>",
-    },
-    {
-      title: "必选外语课",
-      content: "高一英语<br/>高一日语<br/>高一法语<br/>",
-    }
-  ];
-  dataSource.push({
-    add: true,
-  });
-  export default {
-    name: "CardList",
-    data() {
-      return {
-        dataSource,
-        treeData,
-        editVisit: false,
-        addVisit:false,
-        loading:false,
-        replaceFields: {
-          children: 'child',
-          title: 'name',
-        },
-      };
-    },
-    methods: {
-      onSelect(selectedKeys, info) {
-        console.log('selected', selectedKeys, info);
-      },
-      onCheck(checkedKeys, info) {
-        console.log('onCheck', checkedKeys, info);
-      },
-      edit(){
-        this.editVisit = true;
-      },
-      addNew(){
-        this.addVisit=true
-      },
-      Delete(){
-      },
-      handleOk() {
-        this.loading = true;
-        setTimeout(() => {
-          this.dataSource.push(
-                  {
-                    title: "必选外语课",
-                    content: "高一英语<br/>高一日语<br/>高一法语<br/>",
-                  }
-          ),
-          this.editVisit = false;
-          this.addVisit=false;
-          this.loading = false;
-        }, 2000);
-      },
-      handleCancel() {
-        this.editVisit = false;
-        this.addVisit=false;
-      },
-      editHandleSubmint(){},
-      addHandleSubmint(){},
-      form(){},
-      submit(){},
-    },
-  };
+  },
+  data() {
+    return {
+      dataSource,
+    };
+  },
+};
 </script>
 
 <style lang="less" scoped>

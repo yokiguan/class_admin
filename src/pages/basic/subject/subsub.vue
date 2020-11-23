@@ -70,18 +70,17 @@
     grade:'高二文;高二理',
     type:'走班课'
   }]
-
-  export default {
-    name: 'subsubject',
-    components: {StandardTable},
-    data () {
-      return {
-        columns: columns,
-        dataSource: dataSource,
-        selectedRowKeys: [],
-        selectedRows: []
-      }
-    },
+export default {
+  name: 'subsubject',
+  components: {StandardTable},
+  data () {
+    return {
+      columns: columns,
+      dataSource: dataSource,
+      selectedRowKeys: [],
+      selectedRows: []
+    }
+  },
     async created() {
       let queryString=window.location.hash.split('?')[1]
       let id=queryString.split('=')[1]

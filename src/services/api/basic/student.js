@@ -37,11 +37,9 @@ const student = {
     },
 
     // 行政班人员编辑
-    // eslint-disable-next-line no-dupe-keys
-    addClassMember(params){
+    updateClassMember(params){
         return axios.post(`${basicUrl}/updateMainclassMember`,params);
     },
-
     // 行政班人员删除
     deleteClassMember(params){
         return axios.post(`${basicUrl}/delMainclassMember`,params)
