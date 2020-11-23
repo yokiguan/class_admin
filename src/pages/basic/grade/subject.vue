@@ -39,14 +39,17 @@
     const dataSource = [
         {
             no: 1,
+            subChildId:'1',
             name: "语文",
         },
         {
             no: 2,
+            subChildId:'2',
             name: "化学选修",
         },
         {
             no: 3,
+            subChildId:'3',
             name: "物理选修",
         },
     ];
@@ -75,8 +78,14 @@
             remove(id){
                 let{data}=this.$api.basic.grade.deleteGradeSubject({gradeId:this.gradeId,subChildIds:[id]})
                 if(data.success){
-                    this.dataSource=this.dataSource.filter(item=>item.subChildId==id)
+                    const dataSource = [...this.dataSource];
+                    dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                    this.dataSource = dataSource
                 }
+                // const dataSource = [...this.tableData];
+                // dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                // this.tableData = dataSource
+
             },
             addNew() {
                 this.showSubject=true
@@ -88,6 +97,7 @@
             handleOk(){
                 this.dataSource.push({
                     no:this.dataSource.length-1,
+                    subChildId:this.dataSource.length+1,
                     name:this.addSub
                 })
                 this.showSubject=false

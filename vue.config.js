@@ -25,7 +25,7 @@ module.exports = {
     port:8080,
     proxy: {
       '/api': {
-        target: 'http://zbpk.tgk12.cn/',
+        target: 'http://zbpk.tgk12.cn',
         ws: true,
         changeOrigin: true,
         pathRewrite: {

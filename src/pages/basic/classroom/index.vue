@@ -80,43 +80,100 @@
 </template>
 
 <script>
-  const columns = [
+  const columns=[
     {
-      title: "教室编号",
-      dataIndex: "roomId"
+      title:'序号',
+      dataIndex:'serialNum',
+      key:'serialNum',
+      align:'center',
+      width:'7%'
     },
     {
-      title: "教室名称",
-      dataIndex: "name"
+      title:'教室名称',
+      dataIndex:'className',
+      key:'className',
+      align:'center',
+      width:'12%'
     },
     {
-      title: "楼层",
-      dataIndex: "floor"
+      title:'楼层',
+      dataIndex:'floor',
+      key:'floor',
+      align:'center',
+      width:'12%'
     },
     {
-      title: "类型",
-      dataIndex: "type"
+      title:'类型',
+      dataIndex:'kinds',
+      key:'kinds',
+      align:'center',
+      width:'14%'
     },
     {
-      title: "容纳人数",
-      dataIndex: "capacity"
+      title:'所属教学楼',
+      dataIndex:'teachBuilding',
+      key:'teachBuilding',
+      align:'center',
+      width:'14%'
     },
     {
-      title: "所属教学楼",
-      dataIndex: "buildingEntity",
-      customRender: (text, record) => record.buildingEntity.name
+      title:'容纳人数',
+      dataIndex:'nums',
+      key:'nums',
+      align:'center',
+      width:'12%'
     },
     {
-      title: "状态",
-      dataIndex: "status",
-      customRender: text => (text == 1 ? "可用" : "已占用")
+      title:'状态',
+      dataIndex:'situation',
+      key:'situation',
+      align:'center',
+      width:'12%'
     },
     {
       title: "操作",
       dataIndex: "operation",
-      scopedSlots: { customRender: "operation" }
+      scopedSlots: { customRender: "operation" },
+      align:'center',
+      width:'18%'
     }
-  ];
+  ]
+  const dataSource=[
+    {
+      key:'1',
+      serialNum:'1',
+      className:'主楼101',
+      floor:'1',
+      kinds:'公共教学楼',
+      teachBuilding:'主楼101',
+      nums:'200',
+      situation:'可用',
+      timeRegular:'操作'
+    },
+    {
+      key:'2',
+      serialNum:'2',
+      className:'化学实验室',
+      floor:'2',
+      kinds:'专用场所',
+      teachBuilding:'实验楼201',
+      nums:'20',
+      situation:'不可用',
+    },
+    {
+      key:'3',
+      serialNum:'3',
+      className:'高一1班教室',
+      floor:'3',
+      kinds:'行政班教室',
+      teachBuilding:'逸夫楼201',
+      nums:'无',
+      situation:'不可用',
+    },
+    {
+      key:'4',
+    }
+  ]
   export default {
     name: "classroom",
     data() {
@@ -131,7 +188,7 @@
           { label: "公共教学场地", valeu: 1 },
           { label: "行政班教室", value: 2 }
         ],
-        dataSource: [],
+        dataSource,
         selectedRowKeys: [],
         selectedRows: [],
         formItemLayout: {
