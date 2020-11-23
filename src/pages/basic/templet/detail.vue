@@ -1,4 +1,3 @@
-
 <template>
   <a-card>
     <a-form-model
@@ -60,18 +59,14 @@
       </a-row>
       <a-row style="float: right;">
         <a-button type="primary" style="margin-left: 8px" @click="setInfo"
-          >设置</a-button
-        >
+          >设置</a-button>
         <a-button @click="clearInfo" style="margin-left: 8px">清空</a-button>
-
         <a-button
           type="primary"
           style="margin-left: 8px"
           @click="showPublicModal"
-          >公共时段设置</a-button
-        >
-        <a-button type="primary" style="margin-left: 8px" @click="showTimeModal"
-          >节次时间设置</a-button
+          >公共时段设置</a-button>
+        <a-button type="primary" style="margin-left: 8px" @click="showTimeModal">节次时间设置</a-button
         >
       </a-row>
     </a-form-model>
@@ -91,8 +86,7 @@
       :visible="timeModal"
       title="节次时间设置"
       @ok="handleOkTime"
-      @cancel="handleCancelTime"
-    >
+      @cancel="handleCancelTime">
       <a-table
         :columns="timeColumns"
         :dataSource="timeData"

@@ -75,6 +75,7 @@ export default {
   },
   methods: {
     remove(id){
+
       let{data}=this.$api.basic.grade.deleteGradeSubject({gradeId:this.gradeId,subChildIds:[id]})
       if(data.success){
       this.dataSource=this.dataSource.filter(item=>item.subChildId==id)
@@ -90,6 +91,7 @@ export default {
     handleOk(){
         this.dataSource.push({
             no:this.dataSource.length-1,
+            subChildId:this.dataSource.length+1,
             name:this.addSub
         })
         this.showSubject=false
