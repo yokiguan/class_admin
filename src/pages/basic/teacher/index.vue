@@ -42,15 +42,10 @@
           <a-input style="width: 300px" placeholder="请输入" v-model="form.connection_number"/>
         </a-form-model-item>
         <a-form-model-item label="其他授课年级" prop="class_grade">
-          <a-select v-model="form.class_grade" placeholder="请选择" style="width: 300px" class="gradeId" @change="getGrade(grade_id)">
+          <a-select v-model="form.class_grade" placeholder="请选择" style="width: 300px">
                             <a-select-option value="高一">高一</a-select-option>
                             <a-select-option value="高二">高二</a-select-option>
                             <a-select-option value="高三">高三</a-select-option>
-<!--              <a-select-option-->
-<!--              v-for="item in gradeOptions"-->
-<!--              :key="item.id"-->
-<!--              :label="item.grade_name"-->
-<!--              :value="item.id"></a-select-option>-->
           </a-select>
         </a-form-model-item>
         <a-form-model-item label="是否是班主任" prop="isManagement">
@@ -198,7 +193,7 @@
   }]
   export default {
     name: 'student',
-    components: { RegularTable},
+    components: {RegularTable},
     data () {
       return {
         columns: columns,
@@ -281,10 +276,9 @@
         this.selectedRows = selectedRows
       },
       remove() {
-
-
         this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
         this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+
       },
       addNew() {
         this.addClassVisit = true
@@ -295,7 +289,7 @@
             this.loading = true
             setTimeout(() => {
               this.dataSource.push({
-                key: this.dataSource.length - 1,
+                key: this.dataSource.length + 1,
                 no: this.dataSource.length + 1,
                 name: this.form.teacher_name,
                 phone: this.form.connection_number,

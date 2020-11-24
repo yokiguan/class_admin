@@ -130,9 +130,7 @@ export default {
     };
   },
   async created() {
-    let {
-      data: { result, success }
-    } = await this.$api.basic.grade.fetchGradeList();
+    let {data: { result, success }} = await this.$api.basic.grade.fetchGradeList();
     console.log(result, success);
     if (success) {
       this.dataSource = result;

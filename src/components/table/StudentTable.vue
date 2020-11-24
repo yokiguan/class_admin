@@ -1,5 +1,5 @@
 <template>
-    <div class="regular-table">
+    <div class="student-table">
         <div class="alert">
             <a-alert type="info" :show-icon="true">
                 <div slot="message">
@@ -26,7 +26,11 @@
                 :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: updateSelect}"
         >
             <template slot="operation" slot-scope="text,record">
-                <a @click="regular(text,record)">规则设置</a>
+                <a @click="edit(text,record)">编辑</a>
+                <a-divider type="vertical"/>
+                <a @click="deleteItem(text,record)">查看</a>
+                <a-divider type="vertical"/>
+                <a v-if='subName' @click="subItem(text,record)">{{subName}}</a>
             </template>
         </a-table>
     </div>
@@ -34,18 +38,17 @@
 
 <script>
     export default {
-        name: 'RegularTable',
-        props: ['bordered', 'loading', 'columns', 'dataSource', 'rowKey', 'pagination', 'selectedRows', 'subName', 'subPath'],
-        data() {
+        name: 'StandardTable',
+        props: ['bordered', 'loading', 'columns', 'dataSource', 'rowKey', 'pagination', 'selectedRows','subName','subPath'],
+        data () {
             return {
                 needTotalList: [],
                 selectedRowKeys: []
             }
         },
         methods: {
-            updateSelect(selectedRowKeys, selectedRows) {
+            updateSelect (selectedRowKeys, selectedRows) {
                 this.selectedRowKeys = selectedRowKeys
-                console.log(selectedRowKeys);
                 let list = this.needTotalList
                 this.needTotalList = list.map(item => {
                     return {
@@ -55,16 +58,16 @@
                         }, 0)
                     }
                 })
-                console.log(selectedRowKeys, selectedRows, this.needTotalList);
+                console.log(selectedRowKeys,selectedRows,this.needTotalList);
 
                 this.$emit('change', selectedRowKeys, selectedRows)
             },
-            clearSelect() {
+            clearSelect () {
                 this.selectedRowKeys = []
                 this.needTotalList = []
-                this.$emit('change', [], [])
+                this.$emit('change',[],[])
             },
-            initTotalList(columns) {
+            initTotalList (columns) {
                 const totalList = []
                 columns.forEach(column => {
                     if (column.needTotal) {
@@ -73,28 +76,35 @@
                 })
                 return totalList
             },
-            regular() {
-                this.$router.push('/basic/teacher/rule')
+            edit(text,record){
+                console.log(text,record);
             },
+            deleteItem(text,record){
+                console.log(text,record);
+            },
+            subItem(){
+                if(this.subPath)
+                    this.$router.push(this.subPath)
+                else
+                    this.$emit('showModal',true)
+            }
         },
-        created() {
-                this.needTotalList = this.initTotalList(this.columns)
-            },
-
+        created () {
+            this.needTotalList = this.initTotalList(this.columns)
+        },
         watch: {
-                'selectedRows': function (selectedRows) {
-                    this.needTotalList = this.needTotalList.map(item => {
-                        return {
-                            ...item,
-                            total: selectedRows.reduce((sum, val) => {
-                                return sum + val[item.dataIndex]
-                            }, 0)
-                        }
-                    })
-                }
-            },
+            'selectedRows': function (selectedRows) {
+                this.needTotalList = this.needTotalList.map(item => {
+                    return {
+                        ...item,
+                        total: selectedRows.reduce((sum, val) => {
+                            return sum + val[item.dataIndex]
+                        }, 0)
+                    }
+                })
+            }
         }
-
+    }
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
 <template>
-    <div class="regular-table">
+    <div class="admin-table">
         <div class="alert">
             <a-alert type="info" :show-icon="true">
                 <div slot="message">
@@ -23,10 +23,12 @@
                 :dataSource="dataSource"
                 :rowKey="rowKey"
                 :pagination="pagination"
-                :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: updateSelect}"
-        >
+                :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: updateSelect}">
             <template slot="operation" slot-scope="text,record">
-                <a @click="regular(text,record)">规则设置</a>
+
+                <a @click="edit(text,record)" style="float: left">编辑</a>
+                <a @click="deleteItem(text,record)" style="margin-left: 50px">删除</a>
+                <a @click="regular(text,record)" style="margin-left: 50px">人员管理</a>
             </template>
         </a-table>
     </div>
@@ -73,27 +75,33 @@
                 })
                 return totalList
             },
-            regular() {
-                this.$router.push('/basic/teacher/rule')
+            edit(text,record){
+                console.log(text,record);
+            },
+            regular(id) {
+                this.$router.push("/basic/class/member?id=" + id);
+            },
+            deleteItem(text,record){
+                console.log(text,record);
             },
         },
         created() {
-                this.needTotalList = this.initTotalList(this.columns)
-            },
+            this.needTotalList = this.initTotalList(this.columns)
+        },
 
         watch: {
-                'selectedRows': function (selectedRows) {
-                    this.needTotalList = this.needTotalList.map(item => {
-                        return {
-                            ...item,
-                            total: selectedRows.reduce((sum, val) => {
-                                return sum + val[item.dataIndex]
-                            }, 0)
-                        }
-                    })
-                }
-            },
-        }
+            'selectedRows': function (selectedRows) {
+                this.needTotalList = this.needTotalList.map(item => {
+                    return {
+                        ...item,
+                        total: selectedRows.reduce((sum, val) => {
+                            return sum + val[item.dataIndex]
+                        }, 0)
+                    }
+                })
+            }
+        },
+    }
 
 </script>
 
