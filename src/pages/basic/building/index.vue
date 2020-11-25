@@ -20,31 +20,22 @@
       @ok="handleOk"
       @cancel="handleCancel"
     >
-      <a-form :form="form" v-bind="formItemLayout">
-        <a-form-item label="教学楼名称">
-          <a-input
-            v-decorator="[
-              'name',
-              { rules: [{ required: true, message: '请输入教学楼名称' }] }
-            ]"
+      <a-form-model v-bind="formItemLayout"  ref="ruleForm" :model="form"
+                    :rules="rules">
+        <a-form-model-item label="教学楼名称" prop="classRoom_name" ref="classRoom.name">
+          <a-input v-model="form.classRoom_name"
             placeholder="请输入你想要新增的教学楼名称"
->>>>>>> upstream/master
           ></a-input>
-        </a-form-item>
-        <a-form-item label="教学楼层数">
-          <a-input
-            v-decorator="[
-              'floor',
-              { rules: [{ required: true, message: '请输入层数' }] }
-            ]"
-            placeholder="请输入你想要新增的层数"
-          >
+        </a-form-model-item>
+        <a-form-model-item label="教学楼层数" prop="classRoom_floor" ref="classRoom_floor">
+          <a-input v-model="form.classRoom_floor"
+            placeholder="请输入你想要新增的层数">
           </a-input>
-        </a-form-item>
-        <a-form-item label="是否启用">
-          <a-switch v-decorator="['status', { rules: [{ required: true }] }]" />
-        </a-form-item>
-      </a-form>
+        </a-form-model-item>
+        <a-form-model-item label="是否启用" prop="switch">
+          <a-switch v-model="form.switch" />
+        </a-form-model-item>
+      </a-form-model>
     </a-modal>
   </a-card>
 </template>
@@ -93,6 +84,28 @@ export default {
             formItemLayout: {
                 labelCol: {span: 6},
                 wrapperCol: {span: 14}
+            },
+            form:{
+                classroom_name:undefined,
+                classroom_floor:'',
+                switch:false,
+            },
+            rules:{
+                classroom_name:[
+                    {
+                        required:true,
+                        message:"请输入教学楼名称！",
+                        trigger:"blur"
+                    }
+                ],
+                clssroom_floor:[
+                    {
+                        required:true,
+                        message:"请输入楼层！",
+                        trigger:"blur"
+                    }
+                ]
+
             }
         }
     },
@@ -106,14 +119,14 @@ export default {
         async handleOk() {
             let formData = this.form.getFieldsValue();
             formData = {
-                ...formData,
+                buildingId: this.dataSource.length + 1,
+                name:this.form.classroom_name,
                 floor: parseInt(formData.floor),
                 status: formData.status ? 1 : 0
             };
             let res = await this.$api.basic.building.saveBuilding(formData);
             console.log(res);
             this.show = false;
-            this.dataSource.unshift(formData);
         },
         handleCancel() {
             this.show = false;
@@ -121,6 +134,9 @@ export default {
         onchange(selectedRowKeys, selectedRows) {
             this.selectedRowKeys = selectedRowKeys
             this.selectedRows = selectedRows
+        },
+        gotoNew(){
+          this.show=true
         },
         data() {
             return {

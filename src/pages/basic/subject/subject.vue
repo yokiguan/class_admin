@@ -81,13 +81,13 @@ export default {
     this.form = this.$form.createForm(this, { name: "subject" });
   },
   methods: {
-    showModal(){
-      this.show=true
+    showModal() {
+      this.show = true
     },
     async handleOk() {
       let formData = this.form.getFieldsValue();
       let res = await this.$api.basic.subject.saveMain(formData);
-      console.log(formData,res);
+      console.log(formData, res);
       this.dataSource.unshift(formData)
       this.show = false;
     },
@@ -102,10 +102,9 @@ export default {
       this.$router.push("/basic/subject/subsubject?id=" + id);
     },
     deleteItem(id) {
-      let { data } = this.$api.basic.subject.deleteMain({ ids:[id] });
-      if (data.success)
-        this.dataSource = this.dataSource.filter(i => i.roomId == id);
-    },
+      let {data} = this.$api.basic.subject.deleteMain({ids: [id]});
+      this.dataSource = this.dataSource.filter(i => i.roomId == id);
+    }
   }
 };
 </script>

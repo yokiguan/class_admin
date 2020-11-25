@@ -2,13 +2,12 @@
   <a-card>
       <div class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
+        <a-button @click='remove(subChildId)' type="primary">删除</a-button>
       </div>
       <a-table
         :rowKey="'no'"
         :columns="columns"
-        :dataSource="dataSource"
-      >
-      <span slot="operation" slot-scope="text,value"><a @click='remove(value.subChildId)'>删除</a></span>
+        :dataSource="dataSource">
       </a-table>
       <a-modal title="新增课程"
       :visible='showSubject'
@@ -65,8 +64,8 @@ export default {
     };
   },
    async created() {
-    let queryString=window.location.hash.split('?')[1]
-    let id=queryString.split('=')[1]
+    let queryString=(window.location.hash || " ").split('?')[1]
+    let id=(queryString || " ").split('=')[1]
     if(id){
       let { data } = await this.$api.basic.grade.fetchGrade({gradeId:id});
       this.dataSource=data.result?.subjectEntities
@@ -75,11 +74,9 @@ export default {
   },
   methods: {
     remove(id){
-
       let{data}=this.$api.basic.grade.deleteGradeSubject({gradeId:this.gradeId,subChildIds:[id]})
-      if(data.success){
+        console.log(data)
       this.dataSource=this.dataSource.filter(item=>item.subChildId==id)
-      }
     },
     addNew() {
         this.showSubject=true
@@ -90,7 +87,7 @@ export default {
     },
     handleOk(){
         this.dataSource.push({
-            no:this.dataSource.length-1,
+            no:this.dataSource.length+1,
             subChildId:this.dataSource.length+1,
             name:this.addSub
         })

@@ -6,7 +6,7 @@
         <a-dropdown>
           <a-menu @click="handleMenuClick" slot="overlay">
             <a-menu-item key="delete">删除</a-menu-item>
-            <a-menu-item key="edit">编辑</a-menu-item>
+            <a-menu-item key="edit(text,record)">编辑</a-menu-item>
           </a-menu>
           <a-button>
             更多操作
@@ -312,6 +312,10 @@
       handleMenuClick(e) {
         if (e.key === 'delete') {
           this.remove()
+        }else if(e.key=='edit(text,record)'){
+          this.addClassVisit=true
+          this.form.te
+
         }
       },
       courseChange(value) {

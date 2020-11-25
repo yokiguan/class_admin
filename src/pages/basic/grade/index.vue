@@ -132,9 +132,7 @@ export default {
   async created() {
     let {data: { result, success }} = await this.$api.basic.grade.fetchGradeList();
     console.log(result, success);
-    if (success) {
       this.dataSource = result;
-    }
   },
   beforeCreate() {
     this.form = this.$form.createForm(this, { name: "grade" });
@@ -167,29 +165,17 @@ export default {
       );
     },
     addNew() {
-      this.dataSource.unshift({
-        key: 4,
-        no: 4,
-        name: "物理选修",
-        grade: "高二文;高二理",
-        type: "走班课"
-      });
+      this.addNew=true
     },
     gotoNew(id) {
       this.$router.push("/basic/grade/subject?id=" + id);
     },
     async deleteItem(id) {
       let { data } = this.$api.basic.grade.deleteGrade({ id });
-      if (data.success) {
-        this.dataSource = this.dataSource.filter(item => item.gradeId == id);
-        message.info("删除成功");
-      }
+      this.dataSource = this.dataSource.filter(item => item.gradeId == id);
+      console.log(this.dataSource.gradeId)
+      message.info("删除成功");
     },
-    handleMenuClick(e) {
-      if (e.key === "delete") {
-        this.remove();
-      }
-    }
   }
 };
 </script>
