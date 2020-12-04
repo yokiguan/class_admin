@@ -3,28 +3,24 @@
     <div>
       <div class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-          </a-menu>
-          <a-button>
-            更多操作 <a-icon type="down" />
-          </a-button>
-        </a-dropdown>
       </div>
-      <regular-table
+      <a-table
               :rowKey="'key'"
               :columns="columns"
               :dataSource="dataSource"
               :selectedRows="selectedRows"
               @change="onchange"
-      />
+      >
+        <span slot="operation" slot-scope="text, record">
+          <a @click="gotoNew(record.id)">编辑</a>
+          <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
+    </span>
+      </a-table>
     </div>
     <a-modal
             :visible='addClassVisit'
             width="600px"
-            :closable="false"
-            on-ok="handleOk">
+            :closable="false">
       <template slot="footer">
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
           保存
@@ -33,15 +29,15 @@
           取消
         </a-button>
       </template>
-      <a-form-model ref="ruleForm" :model="form"
+      <a-form-model :model="form"
               :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}"
               style="margin-left: 70px">
-        <a-form-model-item label="子科目名称：" prop="subjectName" ref="subjectName">
-          <a-input placeholder="请输入" v-model="form.subjectName"
+        <a-form-model-item label="子科目名称：" prop="name" ref="name">
+          <a-input placeholder="请输入" v-model="form.name"
                    style="width: 275px"></a-input>
         </a-form-model-item>
-        <a-form-model-item label="所属年级：" prop="grad" ref="grad">
-          <a-select v-model="form.grad"
+        <a-form-model-item label="所属年级：" prop="gradeIds" ref="gradeIds">
+          <a-select v-model="form.gradeIds"
                     placeholder="请选择" style="width: 275px">
             <a-select-option value="高一">
               高一
@@ -54,26 +50,19 @@
         <a-form-model-item label="所属类别：" prop="type" ref="type">
           <a-select v-model="form.type"
                     placeholder="请选择" style="width: 275px">
-                        <a-select-option value="行政班课">
-                          行政班课
-                        </a-select-option>
-                        <a-select-option value="走班课">
-                          走班课
-                        </a-select-option>
+            <a-select-option value="1">行政班课</a-select-option>
+            <a-select-option value="0">走班课</a-select-option>
           </a-select>
         </a-form-model-item>
       </a-form-model>
     </a-modal>
   </a-card>
 </template>
-
 <script>
-
-  import RegularTable from "../../../components/table/MainCourseTable";
   const columns = [
     {
       title: '子课程编号',
-      dataIndex: 'no'
+      dataIndex: 'id'
     },
     {
       title: '名称',
@@ -81,58 +70,39 @@
     },
     {
       title: '年级',
-      dataIndex: 'grade',
+      dataIndex: 'gradeIds',
     },
     {
       title: '类型',
       dataIndex: 'type',
+      customRender:(text)=>text==1?'行政班课':'走班课'
     },
   ]
 
-  const dataSource = [{
-    key:1,
-    no:1,
-    name:'物理',
-    grade:'高一',
-    type:'行政班课'
-  },{
-    key:2,
-    no:2,
-    name:'物理选修',
-    grade:'高二文;高二理',
-    type:'走班课'
-  },{
-    key:3,
-    no:3,
-    name:'物理学修',
-    grade:'高二文;高二理',
-    type:'走班课'
-  }]
 export default {
   name: 'subsubject',
-  components: {RegularTable},
   data () {
     return {
       columns: columns,
-      dataSource: dataSource,
+      dataSource: [],
       selectedRowKeys: [],
       selectedRows: [],
       addClassVisit:false,
       loading:false,
       form:{
-        subjectName:'',
-        grad:'',
+        name:"",
+        gradeIds:[],
         type:''
       },
       rules:{
-        subjectName:[
+        name:[
           {
             required:true,
             message:"请输入课程名称！",
             trigger:"blur"
           }
         ],
-        grad:[
+        gradeIds:[
           {
             required:true,
             message:"请输入年级！",
@@ -151,55 +121,48 @@ export default {
     }
   },
     async created() {
-      let queryString=(window.location.hash || " ").split('?')[1]
-      let id=(queryString || " ").split('=')[1]
-      if(id){
+      // let queryString=(window.location.hash || " ").split('?')[1]
+      // let id=(queryString || " ").split('=')[1]
+      // if(id){
         let { data } = await this.$api.basic.subject.fetchChildList({id});
+        this.dataSource=data.rows;
         console.log(data);
-      }
+      // }
     },
-    methods: {
+   beforeCreate() {
+    this.form=this.$form.createForm(this,{name:"subject"})
+   },
+  methods: {
       onchange (selectedRowKeys, selectedRows) {
         this.selectedRowKeys = selectedRowKeys
         this.selectedRows = selectedRows
       },
-      remove () {
-        this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      },
       addNew () {
-        this.addClassVisit=true
+        this.addClassVisit=true;
       },
-      handleOk() {
-        this.$refs.ruleForm.validate(valid => {
-          if (valid) {
-            this.loading = true
-            setTimeout(() => {
-              this.dataSource.push({
-                key: this.dataSource.length + 1,
-                no: this.dataSource.length + 1,
-                name: this.form.subjectName,
-                grade: this.form.grad,
-                type: this.form.type,
-              })
-              this.loading = false
-              this.addClassVisit = false
-              this.$refs.ruleForm.resetFields();
-            }, 300)
-          } else {
-            console.log('error submit!!');
-            return false
-          }
-        });
+      gotoNew(){
+        this.addClassVisit=true;
+      },
+      async handleOk() {
+        let formData={
+          name: this.form.name,
+          gradeIds: this.form.gradeIds,
+          type: this.form.type,
+        };
+        let addData={...formData};
+        let {res} = await this.$api.basic.subject.saveChildrenSubject(addData);
+        console.log(res);
+        this.addClassVisit = false;
+        this.dataSource.unshift(addData);
+        // this.$refs.ruleForm.resetFields();
       },
       handleCancel() {
         this.addClassVisit = false
       },
-      handleMenuClick (e) {
-        if (e.key === 'delete') {
-          this.remove()
-        }
-      }
+      async deleteItem(id) {
+        let {data} = this.$api.basic.building.deleteBuilding({ids:id})
+        this.dataSource = this.dataSource.filter(item => item.id === id)
+    },
     }
   }
 </script>

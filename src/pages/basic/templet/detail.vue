@@ -1,4 +1,3 @@
-
 <template>
   <a-card>
     <a-form-model
@@ -14,7 +13,7 @@
                   prop="templetName"
                   :labelCol="{ span: 2 }"
                   :wrapperCol="{ span: 5 }">
-            <a-input v-model="form.templet_name" placeholder="请输入" />
+            <a-input v-model="form.templateName" placeholder="请输入" />
           </a-form-model-item>
         </a-col>
         <a-col :md="24" :sm="24">
@@ -35,7 +34,7 @@
                     prop="restday"
                     :labelCol="{ span: 10 }"
                     :wrapperCol="{ span: 14 }">
-              <a-select placeholder="请选择" v-model="form.rest">
+              <a-select placeholder="请选择" v-model="form.restday">
                 <a-select-option value="2">2</a-select-option>
               </a-select>
             </a-form-model-item>
@@ -58,10 +57,10 @@
       <a-row style="float: right;">
         <a-button type="primary" style="margin-left: 8px" @click="setInfo">设置</a-button>
         <a-button @click="clearInfo" style="margin-left: 8px">清空</a-button>
-        <a-button
-                type="primary"
-                style="margin-left: 8px"
-                @click="showPublicModal">公共时段设置</a-button>
+<!--        <a-button-->
+<!--                type="primary"-->
+<!--                style="margin-left: 8px"-->
+<!--                @click="showPublicModal">公共时段设置</a-button>-->
         <a-button type="primary" style="margin-left: 8px" @click="showTimeModal">节次时间设置</a-button>
       </a-row>
     </a-form-model>
@@ -97,42 +96,42 @@
       </a-table>
     </a-modal>
     <!--    公共时间段设置-->
-    <a-modal
-            :visible="publicModal"
-            title="公共时段设置"
-            :closable="false">
-      <a-form-model ref="publicForm" :rules="publicRules" :model="public" :label-col="{span:5}" :wrapper-col="{span:15}">
-        <a-form-model-item label="时间段位置" prop="addTimeLocation" ref="addTimeLocation">
-          <a-input v-model="public.addTimeLocation" placeholder="早读1之后"/>
-        </a-form-model-item>
-        <a-row>
-          <a-col>
-            <a-form-model-item label="时间段名称" prop="addTimeName" ref="addTimeName">
-              <a-input v-model="public.addTimeName" placeholder="早饭"/>
-            </a-form-model-item>
-          </a-col>
-          <a-col><a style="color:blue;float: right;margin-top: -60px;font-size: 1.1em;margin-right: 20px" @click="addTime">添加</a>
-          </a-col>
-        </a-row>
-      </a-form-model>
-      <standard-table
-              :Key="'no'"
-              :columns="publicColumns"
-              :data-source="publicData"
-              :selectedRows="selectedRows"
-              @change="onchange"></standard-table>
-      <template slot="footer">
-        <a-button key="submit" type="primary" :loading="loading" @click="handlePublicok">
-          保存
-        </a-button>
-        <a-button key="back" @click="handlePublicCancel">
-          取消
-        </a-button>
-        <a-button key="delete" @click="handlePublicDelete" slot="overlay">
-          删除
-        </a-button>
-      </template>
-    </a-modal>
+<!--    <a-modal-->
+<!--            :visible="publicModal"-->
+<!--            title="公共时段设置"-->
+<!--            :closable="false">-->
+<!--      <a-form-model ref="publicForm" :rules="publicRules" :model="public" :label-col="{span:5}" :wrapper-col="{span:15}">-->
+<!--        <a-form-model-item label="时间段位置" prop="addTimeLocation" ref="addTimeLocation">-->
+<!--          <a-input v-model="public.addTimeLocation" placeholder="早读1之后"/>-->
+<!--        </a-form-model-item>-->
+<!--        <a-row>-->
+<!--          <a-col>-->
+<!--            <a-form-model-item label="时间段名称" prop="addTimeName" ref="addTimeName">-->
+<!--              <a-input v-model="public.addTimeName" placeholder="早饭"/>-->
+<!--            </a-form-model-item>-->
+<!--          </a-col>-->
+<!--          <a-col><a style="color:blue;float: right;margin-top: -60px;font-size: 1.1em;margin-right: 20px" @click="addTime">添加</a>-->
+<!--          </a-col>-->
+<!--        </a-row>-->
+<!--      </a-form-model>-->
+<!--      <standard-table-->
+<!--              :Key="'no'"-->
+<!--              :columns="publicColumns"-->
+<!--              :data-source="publicData"-->
+<!--              :selectedRows="selectedRows"-->
+<!--              @change="onchange"></standard-table>-->
+<!--      <template slot="footer">-->
+<!--        <a-button key="submit" type="primary" :loading="loading" @click="handlePublicok">-->
+<!--          保存-->
+<!--        </a-button>-->
+<!--        <a-button key="back" @click="handlePublicCancel">-->
+<!--          取消-->
+<!--        </a-button>-->
+<!--        <a-button key="delete" @click="handlePublicDelete" slot="overlay">-->
+<!--          删除-->
+<!--        </a-button>-->
+<!--      </template>-->
+<!--    </a-modal>-->
   </a-card>
 </template>
 
@@ -253,9 +252,9 @@
         publicModal: false,
         timeModal: false,
         form: {
-          templet_name: undefined,
+          templateName: undefined,
           workday: undefined,
-          rest: undefined,
+          restday: undefined,
           morningread: undefined,
           morning: undefined,
           noon: undefined,
@@ -283,7 +282,7 @@
           ]
         },
         rules: {
-          templet_name: [
+          templateName: [
             {
               required: true,
               message: "请输入课表模板名称",
@@ -297,7 +296,7 @@
               trigger: "change"
             }
           ],
-          rest: [
+          restday: [
             {
               required: true,
               message: "请选择休息天数",
@@ -385,9 +384,11 @@
         });
       },
       async saveInfo(){
-        let query={...this.form,timeSetting:this.timeQuery}
-        let {data}=await this.$api.basic.template.saveTemplate(query)
+        let query={...this.form,timeSetting:this.timeQuery};
+        let {data}=await this.$api.basic.template.saveTemplate(query);
         console.log(data);
+        this.$router.push("/basic/template/admin");
+        this.$refs.ruleForm.resetFields();
       },
       clearInfo() {
         this.$refs.ruleForm.resetFields();

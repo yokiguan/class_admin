@@ -2,18 +2,27 @@
   <a-card>
       <div class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
-        <a-button @click='remove(subChildId)' type="primary">删除</a-button>
       </div>
       <a-table
         :rowKey="'no'"
         :columns="columns"
-        :dataSource="dataSource">
+        :dataSource="dataSource"
+        closable="false">
+          <span slot="operation" slot-scope="text, record">
+            <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
+          </span>
       </a-table>
-      <a-modal title="新增课程"
-      :visible='showSubject'
-      @ok="handleOk"
-      @cancel="handleCancel">
-          <a-input placeholder='请输入你想要新增的课程名' label='课程名' v-model="addSub"></a-input>
+      <a-modal title="新增课程" :visible='showSubject'>
+          <template slot="footer">
+              <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+              <a-button key="back" @click="handleCancel">取消
+              </a-button>
+          </template>
+         <a-form-model :model="form" :rules="rules">
+             <a-form-model-item label='课程名' prop="addsub" ref="addsub">
+                 <a-input placeholder='请输入你想要新增的课程名'  v-model="form.addSub"></a-input>
+             </a-form-model-item>
+         </a-form-model>
       </a-modal>
   </a-card>
 </template>
@@ -34,24 +43,6 @@ const columns = [
     scopedSlots: { customRender: "operation" },
   },
 ];
-
-    const dataSource = [
-        {
-            no: 1,
-            subChildId:'1',
-            name: "语文",
-        },
-        {
-            no: 2,
-            subChildId:'2',
-            name: "化学选修",
-        },
-        {
-            no: 3,
-            subChildId:'3',
-            name: "物理选修",
-        },
-    ];
 export default {
   name: "grade·subjects",
   data() {
@@ -60,7 +51,7 @@ export default {
       dataSource,
       gradeId:'',
       showSubject:false,
-      addSub:''
+      dataSource:[],
     };
   },
    async created() {
@@ -72,27 +63,25 @@ export default {
       this.gradeId=id
     }
   },
-  methods: {
-    remove(id){
-      let{data}=this.$api.basic.grade.deleteGradeSubject({gradeId:this.gradeId,subChildIds:[id]})
-        console.log(data)
-      this.dataSource=this.dataSource.filter(item=>item.subChildId==id)
+    beforeCreate() {
+        this.form = this.$form.createForm(this, {name: "grade"});
     },
+  methods: {
     addNew() {
         this.showSubject=true
     },
     handleCancel(){
         this.showSubject=false
-        this.addSub=''
     },
-    handleOk(){
-        this.dataSource.push({
-            no:this.dataSource.length+1,
-            subChildId:this.dataSource.length+1,
-            name:this.addSub
-        })
-        this.showSubject=false
-    }
+    async handleOk(){
+        let formDat={
+            ...this.form,
+            name:this.form.addSub,
+        }
+      let {res}=await this.$api.basic.building.saveGradeSubject(this.form.addSub);
+          this.showSubject=false;
+          this.dataSource.unshift()
+      }
   },
 };
 </script>

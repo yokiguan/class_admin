@@ -5,7 +5,7 @@
         <a-button @click="showModal" type="primary">新建</a-button>
       </div>
       <a-table
-              rowKey="roomId"
+              :rowKey="'roomId'"
               :columns="columns"
               :dataSource="dataSource"
               :selectedRows="selectedRows"
@@ -14,7 +14,7 @@
         <span slot="operation" slot-scope="text, record">
           <a @click="addNew(record.id)">编辑</a>
           |
-          <a @click="deleteItem(record.roomId)">删除</a>
+          <a @click="deleteItem(record.id)">删除</a>
           |<a @click="gotoNew(record.roomId)">规则设置</a>
         </span>
       </a-table>
@@ -22,80 +22,61 @@
     <a-modal
             title="新增教室"
             :visible="show"
-            @ok="handleOk"
-            @cancel="handleCancel"
-    >
-      <a-form :form="form" v-bind="formItemLayout">
-        <a-form-item label="教学楼">
-          <a-select
-                  v-decorator="[
-              'buildingId',
-              { rules: [{ required: true, message: '请选择场地所在教学楼' }] }
-            ]"
-                  placeholder="请选择场地所在教学楼"
-                  @change="changeBuilding"
-          >
-            <a-select-option
-                    v-for="b in this.buildings"
-                    :key="b.buildingId"
-                    :value="b.buildingId"
-            >
-              {{ b.name }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="楼层">
-          <a-select
-                  v-decorator="[
-              'floor',
-              { rules: [{ required: true, message: '请选择场地所在楼层' }] }
-            ]"
-                  placeholder="请选择场地所在楼层"
-          >
+            :closable="false">
+      <template slot="footer">
+        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存
+        </a-button>
+        <a-button key="back" @click="handleCancel">取消
+        </a-button>
+      </template>
+      <a-form-model :model="form" :rules="rules" ref="ruleForm">
+        <a-form-model-item label="教室名称" ref="name" prop="name">
+          <a-input v-model="form.name"
+                  v-decorator="['name',{ rules: [{ required: true, message: '请输入场地名称' }] }]"
+                  placeholder="请输入你想要新增的场地名称"
+          ></a-input>
+        </a-form-model-item>
+        <a-form-model-item label="楼层" ref="floor" prop="floor">
+          <a-select v-model="form.floor" placeholder="请选择场地所在楼层">
             <a-select-option v-for="f of this.floor" :key="f" :value="f">
               {{ f }}
             </a-select-option>
           </a-select>
+        </a-form-model-item>
+        <a-form-model-item label="类型" ref="type" prop="type">
+          <a-radio-group v-model="form.type">
+            <a-radio value="专用教学场地">专用教学场地</a-radio>
+            <a-radio value="公共教学场地">公共教学场地</a-radio>
+            <a-radio value="行政班教室">行政班教室</a-radio>
+          </a-radio-group>
+        </a-form-model-item>
+        <a-form-model-item label="容纳人数" ref="capacity" prop="capacity">
+          <a-input v-model="form.capacity" placeholder="请输入你想要新增的场地容量"></a-input>
+        </a-form-model-item>
+        <a-form-item label="所属教学楼" ref="buildingId" prop="buildingEntity">
+          <a-select v-model="form.buildingEntity" placeholder="请选择场地所在教学楼" @change="changeBuilding">
+            <a-select-option
+                    v-for="b in this.buildings"
+                    :key="b.buildingId"
+                    :value="b.buildingId">
+              {{ b.name }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
-        <a-form-item label="场地名称">
-          <a-input
-                  v-decorator="[
-              'name',
-              { rules: [{ required: true, message: '请输入场地名称' }] }
-            ]"
-                  placeholder="请输入你想要新增的场地名称"
-          ></a-input>
-        </a-form-item>
-        <a-form-item label="容纳人数">
-          <a-input
-                  v-decorator="[
-              'capacity',
-              { rules: [{ required: true, message: '请输入场地容量' }] }
-            ]"
-                  placeholder="请输入你想要新增的场地容量"
-          ></a-input>
-        </a-form-item>
-        <a-form-item label="场地类型">
-          <a-radio-group
-                  v-decorator="[
-              'type',
-              { rules: [{ required: true, message: '请选择场地类型' }] }
-            ]"
-                  :options="placeOptions"
-          />
-        </a-form-item>
-        <a-form-item label="是否启用">
-          <a-switch v-decorator="['status', { rules: [{ required: true }],initiaValue:true,valuePropName:'checked'}]" >
+        <a-form-item label="状态" ref="status" prop="status">
+          <a-switch v-model="form.status" v-decorator="['status', { rules: [{ required: true }],initiaValue:true,valuePropName:'checked'}]" >
             <a-icon slot="checkedChildren" type="check"></a-icon>
             <a-icon slot="unCheckedChildren" type="close"></a-icon>
           </a-switch>
         </a-form-item>
-      </a-form>
+      </a-form-model>
     </a-modal>
   </a-card>
 </template>
 
 <script>
+  import {message} from "ant-design-vue";
+
   const columns = [
     {
       title: "教室编号",
@@ -139,29 +120,65 @@
     data() {
       return {
         show: false,
+        loading:false,
         placeName: "",
         columns: columns,
         buildings: [],
         floor: 1,
-        placeOptions: [
-          { label: "专用教学场地", value:0 },
-          { label: "公共教学场地", value: 1 },
-          { label: "行政班教室", value: 2 }
-        ],
         dataSource: [],
         selectedRowKeys: [],
         selectedRows: [],
         formItemLayout: {
           labelCol: { span: 6 },
           wrapperCol: { span: 14 }
+        },
+        form:{
+          name:"",
+          floor:'',
+          type: '',
+          buildingEntity:" ",
+          capacity:'',
+          status:''
+        },
+        rules:{
+          name:[
+            {
+              required:true,
+              message:"请输入教室名称！",
+              trigger:"blur"
+            }
+          ],
+          floor:[
+            {
+              required:true,
+              message:"请输入楼层！",
+              trigger:"blur"
+            }
+          ],
+          type: [
+            { required: true, message: '请选择教室类型', trigger: 'change' }
+          ],
+          buildingEntity:[
+            {
+              required:true,
+              message:"请输入教室名称！",
+              trigger:"blur"
+            }
+          ],
+          capacity:[
+            {
+              required:true,
+              message:"请输入教室容纳人数！",
+              trigger:"blur"
+            }
+          ],
+
         }
       };
     },
     async created() {
       let { data } = await this.$api.basic.classroom.fetchList();
       this.dataSource = data.rows;
-      let res = await this.$api.basic.building.fetchList();
-      this.buildings = res.data.rows;
     },
     beforeCreate() {
       this.form = this.$form.createForm(this, { name: "classroom" });
@@ -170,24 +187,28 @@
       showModal() {
         this.show = true;
       },
-      async handleOk() {
-        let formData = this.form.getFieldsValue();
-        formData = {
-          ...formData,
-          roodId:formData.length+1,
-          capacity: parseInt(formData.capacity),
-          buildingEntity:formData.placeOptions,
-          status: formData.status ? 1 : 0
+      async handleOk(e) {
+        let formData = {
+          ...this.form,
+          capacity: parseInt(this.form.capacity),
+          type:this.form.type,
+          status: this.form.status ? 1 : 0,
+          buildingEntity:this.form.buildingEntity
         };
-        let htId = this.buildings.filter(
-                b => b.buildingId == formData.buildingId
-        )[0].htId;
-        let addData = { ...formData, htId };
+        console.log(formData)
+        let addData = { ...formData,timeSetting:this.timeQuery};
         let res = await this.$api.basic.classroom.saveClassRoom(addData);
         console.log(res);
         this.show = false;
-        this.dataSource.push(addData);
+        this.dataSource.unshift(addData);
       },
+      // async handleOk(){
+      //   let query={...this.form}
+      //   let {data}=await this.$api.basic.classroom.saveClassRoom(query)
+      //   console.log(data);
+      //   this.show = false;
+      //   this.dataSource.push(addData);
+      // },
       handleCancel() {
         this.show = false;
       },
@@ -198,14 +219,6 @@
       changeBuilding(value) {
         this.floor = this.buildings.filter(b => b.buildingId == value)[0].floor;
       },
-      remove() {
-        this.dataSource = this.dataSource.filter(
-                item => this.selectedRowKeys.indexOf(item.key) < 0
-        );
-        this.selectedRows = this.selectedRows.filter(
-                item => this.selectedRowKeys.indexOf(item.key) < 0
-        );
-      },
       addNew(id) {
         this.show=true
         console.log(id);
@@ -214,14 +227,14 @@
         this.$router.push("/basic/classroom/rule?id=" + id);
       },
       deleteItem(id) {
-        let { data } = this.$api.basic.classroom.deleteBuilding({ id });
-          this.dataSource = this.dataSource.filter(i => i.roomId == id);
-      },
-      handleMenuClick(e) {
-        if (e.key === "delete") {
-          this.remove();
+        let {data} = this.$api.basic.classroom.deleteBuilding({ids: id});
+        if(data.success){
+          this.dataSource=this.dataSource.filter(item => item.roomId == id)
+          console.log(data)
+          message.info('删除成功')
         }
-      }
+        return success
+      },
     }
   };
 </script>

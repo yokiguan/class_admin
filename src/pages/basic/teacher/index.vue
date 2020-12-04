@@ -24,8 +24,7 @@
     <a-modal
             :visible='addClassVisit'
             width="600px"
-            :closable="false"
-            on-ok="handleOk">
+            :closable="false">
       <template slot="footer">
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存
         </a-button>

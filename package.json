@@ -13,6 +13,7 @@
     "antd": "^4.6.6",
     "axios": "^0.19.2",
     "clipboard": "^2.0.6",
+    "cookie_js": "^1.4.0",
     "core-js": "^3.6.5",
     "date-fns": "^2.14.0",
     "easyscroll": "^1.0.1",

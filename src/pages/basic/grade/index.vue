@@ -1,8 +1,11 @@
 <template>
   <a-card>
+    <div class="operator">
+      <a-button @click="showModal" type="primary">新建</a-button>
+    </div>
     <div>
       <a-table
-        rowKey="gradeId"
+        :rowKey="'gradeId'"
         :columns="columns"
         :subName="'查看课程'"
         :dataSource="dataSource"
@@ -15,75 +18,104 @@
           <a @click="deleteItem(record.gradeId)">删除</a>
           |
           <a @click="gotoNew(record.gradeId)">查看课程</a>
-        </span></a-table
-      >
+        </span>
+      </a-table>
     </div>
     <a-modal
       title="新增年级"
       :visible="show"
-      @ok="handleOk"
-      @cancel="handleCancel"
-    >
-      <a-form :form="form" v-bind="formItemLayout">
-        <a-form-item label="级部">
-          <a-select
-            v-decorator="[
-              'gradeId',
-              { rules: [{ required: true, message: '请选择年级所在级部' }] }
-            ]"
-            placeholder="请选择年级所在级部"
-          >
-            <a-select-option
-              v-for="b in this.adminGrades"
-              :key="b.value"
-              :value="b.label"
-            >
-              {{ b.label }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="年级名称">
-          <a-input
-            v-decorator="[
-              'name',
-              { rules: [{ required: true, message: '请输入年级名称' }] }
-            ]"
-            v-model='this.grade.gradeName'
-            placeholder="请输入你想要新增的年级名称"
-          ></a-input>
-        </a-form-item>
-        <a-form-item label="课程">
-          <a-select
-            v-decorator="[
-              'subject',
-              { rules: [{ required: true, message: '请选择年级所需课程' }] }
-            ]"
-            v-model='this.grade.subjectEntities'
-            placeholder="请选择年级所需课程"
-          >
-            <a-select-option
-              v-for="b in this.adminGrades"
-              :key="b.adminId"
-              :value="b.adminId"
-            >
-              {{ b.adminName }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-      </a-form>
+      :closable="false">
+      <template slot="footer">
+        <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+        <a-button key="back" @click="handleCancel">取消</a-button>
+      </template>
+      <a-form-model :model="form" v-bind="formItemLayout">
+        <a-form-model-item label="级部" ref="adminName" prop="adminName">
+          <a-row>
+            <a-select placeholder="请选择年级所在级部" v-model="form.adminName"  @change="handleAdminChange">
+              <a-select-option v-for="admin in adminData" :key="admin">
+                {{ admin }}
+              </a-select-option>
+            </a-select>
+          </a-row>
+          <a-row>
+            <a-col :span="5"><label style="margin-left: -30px">年级:</label></a-col>
+            <a-col>
+              <a-select placeholder="请选择年级所在年级" v-model="form.gradeName">
+                <a-select-option v-for="grade in senior" :key="grade">
+                  {{ grade }}
+                </a-select-option>
+              </a-select>
+            </a-col>
+
+          </a-row>
+        </a-form-model-item>
+        <a-form-model-item label="课程" ref="subjectEntities" prop="subjectEntities">
+          <a-tree-select
+                  v-model="subjectEntities"
+                  style="width: 100%"
+                  :tree-data="treeData"
+                  tree-checkable
+                  :show-checked-strategy="SHOW_PARENT"
+                  show-search
+                  :search-placeholder="请选择课程"
+          />
+        </a-form-model-item>
+      </a-form-model>
     </a-modal>
   </a-card>
 </template>
 
 <script>
 import { message } from "ant-design-vue";
+import { TreeSelect } from 'ant-design-vue';
+const SHOW_PARENT = TreeSelect.SHOW_PARENT;
+const treeData = [
+  {
+    title: '物理',
+    value: '物理',
+    key: '0-0',
+    children: [
+      {
+        title: '物理学修',
+        value: '0-0-0',
+        key: '0-0-0',
+      },  {
+        title: '物理选修',
+        value: '0-0-1',
+        key: '0-0-1',
+      },
+    ],
+  },
+  {
+    title: '生物',
+    value: '生物',
+    key: '0-1',
+    children: [
+      {
+        title: '生物学修',
+        value: '生物学修',
+        key: '0-1-0',
+      },
+      {
+        title: '生物选修',
+        value: '生物选修',
+        key: '0-1-1',
+      },
+    ],
+  },{
+    title: '语文',
+    value: '语文',
+    key: '0-2',
+  }
+];
 const columns = [
   {
-    title: "年级编号",
+    title: "序号",
     dataIndex: "gradeId"
   },
   {
-    title: "名称",
+    title: "年级",
     dataIndex: "gradeName"
   },
   {
@@ -92,14 +124,7 @@ const columns = [
   },
   {
     title: "课程",
-    dataIndex: "subjectEntities",
-    customRender: (text, record) => {
-      let t = record.subjectEntities
-        ? record.subjectEntities.forEach(item => (item = item.name))?.join(",")
-        : "";
-      console.log(t);
-      return t;
-    }
+    dataIndex: "subject",
   },
   {
     title: "操作",
@@ -107,18 +132,23 @@ const columns = [
     scopedSlots: { customRender: "operation" }
   }
 ];
+const adminData=['小学','初中','高中'];
+const gradeData={
+  小学: ['一年级','二年级','三年级','四年级','五年级','六年级'],
+  初中:['初一','初二','初三'],
+  高中:['高一','高二','高三'],
+}
 
 export default {
   name: "grade",
   data() {
     return {
+      adminData,
+      gradeData,
+      senior:gradeData[adminData[0]],
       columns: columns,
       show: false,
-      adminGrades: [
-        { label: "高中部", value: "highschool" },
-        { label: "初中部", value: "juniorhigh" },
-        { label: "小学部", value: "primary" }
-      ],
+      loading:false,
       grade:{},
       dataSource: [],
       selectedRowKeys: [],
@@ -126,28 +156,58 @@ export default {
       formItemLayout: {
         labelCol: { span: 6 },
         wrapperCol: { span: 14 }
+      },
+      subjectEntities:['0-0-0'],
+      treeData,
+      SHOW_PARENT,
+      form:{
+        adminName:" ",
+        gradeName:" ",
+      },
+      rules:{
+        adminName:[
+          {
+            required:true,
+            message:"请选择年级所属级部！",
+            trigger:"change"
+          }
+        ],
+        gradeName:[
+          {
+            required:true,
+            message:"请选择年级！",
+            trigger:"change"
+          }
+        ],
       }
     };
   },
   async created() {
-    let {data: { result, success }} = await this.$api.basic.grade.fetchGradeList();
-    console.log(result, success);
-      this.dataSource = result;
+    let {data} = await this.$api.basic.grade.fetchGradeList();
+      console.log(data);
+      this.dataSource = data;
   },
   beforeCreate() {
     this.form = this.$form.createForm(this, { name: "grade" });
   },
   methods: {
-    showModal(record) {
+    showModal() {
       this.show = true;
-      this.grade=record
+      // this.grade=record
     },
     async handleOk() {
-      let formData = this.form.getFieldsValue();
-      let temptQuery={gradeId:this.grade.gradeId,gradeSubChildIds:[]}
-      let res = await this.$api.basic.grade.saveGrade(temptQuery);
-      console.log(formData,res);
+      let formData = {
+        ...this.form,
+        adminName:this.form.adminName,
+        gradeName:this.form.gradeName,
+        subject:this.subjectEntities,
+      }
+      let addData={...formData}
+      // let temptQuery={gradeId:this.grade.gradeId,seniorubChildIds:[]}
+      let {res} = await this.$api.basic.grade.saveGrade(addData);
+      console.log(res);
       this.show = false;
+      this.dataSource.unshift(addData);
     },
     handleCancel() {
       this.show = false;
@@ -171,10 +231,18 @@ export default {
       this.$router.push("/basic/grade/subject?id=" + id);
     },
     async deleteItem(id) {
-      let { data } = this.$api.basic.grade.deleteGrade({ id });
-      this.dataSource = this.dataSource.filter(item => item.gradeId == id);
+      let { data } = this.$api.basic.grade.deleteGrade({ gradeIds:id });
+      console.log(id);
+      this.dataSource = this.dataSource.filter(item => item.gradeId === id);
       console.log(this.dataSource.gradeId)
-      message.info("删除成功");
+    },
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.label.indexOf(value) !== -1;
+    },
+    handleAdminChange(value) {
+      this.senior = gradeData[value];
+      this.gradeName= gradeData[value][0];
     },
   }
 };

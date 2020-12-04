@@ -4,48 +4,51 @@
       <div class="operator">
         <a-button @click="showModal" type="primary">新建</a-button>
       </div>
-      <a-table rowKey="buildingId" :columns="columns"
+      <a-table
+         :rowKey="'id'"
+         :columns="columns"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
         @change="onchange">
       <span slot="operation" slot-scope="text, record">
      <a @click="gotoNew(record.id)">编辑</a>
-     <a @click="deleteItem(record.buildingId)">删除</a>
+     <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
     </span>
       </a-table>
     </div>
      <a-modal
       title="新增教学楼"
       :visible="show"
-      @ok="handleOk"
-      @cancel="handleCancel"
-    >
-      <a-form-model v-bind="formItemLayout"  ref="ruleForm" :model="form"
+      :closable="false">
+       <template slot="footer">
+         <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存
+         </a-button>
+         <a-button key="back" @click="handleCancel">取消
+         </a-button>
+       </template>
+      <a-form-model ref="formName" :model="form"
                     :rules="rules">
-        <a-form-model-item label="教学楼名称" prop="classRoom_name" ref="classRoom.name">
-          <a-input v-model="form.classRoom_name"
-            placeholder="请输入你想要新增的教学楼名称"
-          ></a-input>
+        <a-form-model-item label="教学楼名称" prop="name" ref="name">
+          <a-input v-model="form.name" placeholder="请输入你想要新增的教学楼名称"></a-input>
         </a-form-model-item>
-        <a-form-model-item label="教学楼层数" prop="classRoom_floor" ref="classRoom_floor">
-          <a-input v-model="form.classRoom_floor"
+        <a-form-model-item label="教学楼层数" prop="floor" ref="floor">
+          <a-input v-model.number="form.floor"
             placeholder="请输入你想要新增的层数">
           </a-input>
         </a-form-model-item>
-        <a-form-model-item label="是否启用" prop="switch">
-          <a-switch v-model="form.switch" />
+        <a-form-model-item label="是否启用" >
+            <a-switch v-model="form.status"/>
         </a-form-model-item>
       </a-form-model>
     </a-modal>
   </a-card>
 </template>
-
 <script>
 import {message} from 'ant-design-vue'
 const columns = [
   {
     title: '教学楼编号',
-    dataIndex: 'buildingId'
+    dataIndex: 'id'
   },
   {
     title: '教学楼名称',
@@ -66,7 +69,6 @@ const columns = [
     scopedSlots: { customRender: 'operation' },
   }
 ]
-
 export default {
     name: 'classroom',
     async created() {
@@ -79,31 +81,40 @@ export default {
             show: false,
             columns: columns,
             dataSource: [],
+            loading:false,
             selectedRowKeys: [],
             selectedRows: [],
             formItemLayout: {
                 labelCol: {span: 6},
                 wrapperCol: {span: 14}
             },
+          // type:[
+          //   {status:true,value:"可用"},
+          //   {status:false,value:"不可用"},
+          // ],
             form:{
-                classroom_name:undefined,
-                classroom_floor:'',
-                switch:false,
+               name:" ",
+               floor:'',
+               status:false,
             },
             rules:{
-                classroom_name:[
+               name:[
                     {
                         required:true,
                         message:"请输入教学楼名称！",
                         trigger:"blur"
                     }
                 ],
-                clssroom_floor:[
+                floor:[
                     {
                         required:true,
                         message:"请输入楼层！",
                         trigger:"blur"
-                    }
+                    },
+                  {
+                    type:'number',
+                    message: "请输入数字"
+                  }
                 ]
 
             }
@@ -117,17 +128,25 @@ export default {
             this.show = true;
         },
         async handleOk() {
-            let formData = this.form.getFieldsValue();
-            formData = {
-                buildingId: this.dataSource.length + 1,
-                name:this.form.classroom_name,
-                floor: parseInt(formData.floor),
-                status: formData.status ? 1 : 0
+            let formData = {
+                ...this.form,
+                name:this.form.name,
+                floor: parseInt(this.form.floor),
+                status: this.form.status ? 1 : 0
             };
-            let res = await this.$api.basic.building.saveBuilding(formData);
+          console.log(res);
+            let addData={...formData}
+            let {res} = await this.$api.basic.building.saveBuilding(addData);
             console.log(res);
             this.show = false;
+            this.dataSource.unshift(addData);
         },
+      // async saveInfo(){
+      //   let query={...this.form,timeSetting:this.timeQuery}
+      //   let {data}=await this.$api.basic.template.saveTemplate(query)
+      //   console.log(data);
+      //   this.$router.push("/basic/template/admin")
+      // },
         handleCancel() {
             this.show = false;
         },
@@ -138,33 +157,13 @@ export default {
         gotoNew(){
           this.show=true
         },
-        data() {
-            return {
-                show: false,
-                columns: columns,
-                dataSource: [],
-                selectedRowKeys: [],
-                selectedRows: [],
-                formItemLayout: {
-                    labelCol: {span: 6},
-                    wrapperCol: {span: 14}
-                }
-            }
-        },
-        beforeCreate() {
-            this.form = this.$form.createForm(this, {name: "building"});
-        },
         async deleteItem(id) {
-            let {data} = this.$api.basic.building.deleteBuilding({id})
+            let {data} = this.$api.basic.building.deleteBuilding({ids:id})
             if (data.success) {
                 this.dataSource = this.dataSource.filter(item => item.id == id)
                 message.info('删除成功')
             }
-        },
-        handleMenuClick(e) {
-            if (e.key === 'delete') {
-                this.remove()
-            }
+            return success
         },
     }
 }

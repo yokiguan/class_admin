@@ -41,6 +41,7 @@
 </template>
 
 <script>
+
 const columns = [
   {
     title: "课程编号",
@@ -90,6 +91,7 @@ export default {
       console.log(formData, res);
       this.dataSource.unshift(formData)
       this.show = false;
+      this.$refs.ruleForm.resetFields();
     },
     handleCancel() {
       this.show = false;
@@ -101,10 +103,12 @@ export default {
     gotoNew(id) {
       this.$router.push("/basic/subject/subsubject?id=" + id);
     },
-    deleteItem(id) {
-      let {data} = this.$api.basic.subject.deleteMain({ids: [id]});
-      this.dataSource = this.dataSource.filter(i => i.roomId == id);
-    }
+    async deleteItem(id) {
+      let {data} = this.$api.basic.subject.deleteMain({ids: id});
+        this.dataSource = this.dataSource.filter(i => i.id == id);
+        console.log(data)
+    },
+
   }
 };
 </script>

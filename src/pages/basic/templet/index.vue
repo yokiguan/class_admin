@@ -20,6 +20,7 @@
 
 <script>
 import{message} from 'ant-design-vue'
+// import {success} from  '@/'
 const columns = [
   {
     title: "模板编号",
@@ -45,7 +46,6 @@ const columns = [
     scopedSlots: { customRender: "operation" },
   },
 ];
-
 export default {
   name: "templet",
   data() {
@@ -61,18 +61,14 @@ export default {
     this.dataSource=data.rows
   },
   methods: {
-
-    newModal(){
-
-    },
-    remove() {
-      this.dataSource = this.dataSource.filter(
-        (item) => this.selectedRowKeys.indexOf(item.key) < 0
-      );
-      this.selectedRows = this.selectedRows.filter(
-        (item) => this.selectedRowKeys.indexOf(item.key) < 0
-      );
-    },
+    // remove() {
+    //   this.dataSource = this.dataSource.filter(
+    //     (item) => this.selectedRowKeys.indexOf(item.key) < 0
+    //   );
+    //   this.selectedRows = this.selectedRows.filter(
+    //     (item) => this.selectedRowKeys.indexOf(item.key) < 0
+    //   );
+    // },
     gotoNew(id) {
       this.$router.push('/basic/template/detail?id='+id)
     },
@@ -80,14 +76,16 @@ export default {
       let{data}=this.$api.basic.template.deleteTemplate({ids:id})
       if(data.success){
       this.dataSource=this.dataSource.filter(item=>item.id==id)
+       console.log(data)
       message.info('删除成功')
       }
+      return success
     },
-    handleMenuClick(e) {
-      if (e.key === "delete") {
-        this.remove();
-      }
-    },
+    // handleMenuClick(e) {
+    //   if (e.key === "delete") {
+    //     this.remove();
+    //   }
+    // },
   },
 };
 </script>
