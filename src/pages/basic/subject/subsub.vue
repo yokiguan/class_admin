@@ -121,17 +121,14 @@ export default {
     }
   },
     async created() {
-      // let queryString=(window.location.hash || " ").split('?')[1]
-      // let id=(queryString || " ").split('=')[1]
-      // if(id){
+        let queryString=(window.location.hash || " ").split('?')[1]
+        let id=(queryString || " ").split('=')[1]
+        if(id){
         let { data } = await this.$api.basic.subject.fetchChildList({id});
         this.dataSource=data.rows;
         console.log(data);
-      // }
+      }
     },
-   beforeCreate() {
-    this.form=this.$form.createForm(this,{name:"subject"})
-   },
   methods: {
       onchange (selectedRowKeys, selectedRows) {
         this.selectedRowKeys = selectedRowKeys
@@ -150,10 +147,17 @@ export default {
           type: this.form.type,
         };
         let addData={...formData};
-        let {res} = await this.$api.basic.subject.saveChildrenSubject(addData);
-        console.log(res);
+        let {data} = await this.$api.basic.subject.saveChildrenSubject(addData);
+        console.log(data);
         this.addClassVisit = false;
-        this.dataSource.unshift(addData);
+        let queryString=(window.location.hash || " ").split('?')[1]
+        let id=(queryString || " ").split('=')[1]
+        if(id){
+          let { data } = await this.$api.basic.subject.fetchChildList({id});
+          this.dataSource=data.rows;
+          console.log(data);
+        }
+
         // this.$refs.ruleForm.resetFields();
       },
       handleCancel() {

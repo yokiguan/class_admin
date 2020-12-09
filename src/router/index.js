@@ -8,15 +8,10 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/login',
-      name: '登录页',
-      component: () => import('@/pages/login/Login')
-    },
-    {
       path: '/',
       name: '首页',
       component: TabsView,
-      redirect: '/login',
+      redirect: '/basic',
       children: [
         // 基础设置
         {
@@ -54,7 +49,7 @@ export default new Router({
               },
                 {
                   path: '/basic/classroom/rule',
-                  name: '教师时间规则',
+                  name: '教室时间规则',
                   component:() => import('@/pages/basic/classroom/rule')
                 }
               ]
@@ -132,7 +127,7 @@ export default new Router({
                 {
                   path: '/basic/teacher/rule',
                   name: '教师规则',
-                  component:() => import('@/pages/basic/teacher/rule')
+                  component:() => import('@/pages/basic/teacher/rule/index')
                 }
               ]
             }, {

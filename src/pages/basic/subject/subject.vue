@@ -11,7 +11,7 @@
         :subPath="'/basic/subject/subsubject'"
         :dataSource="dataSource"
         :selectedRows="selectedRows"
-      ><span slot="operation" slot-scope="text, record">
+        ><span slot="operation" slot-scope="text,record">
           <a @click="showModal(record)">编辑</a>
           |
           <a @click="deleteItem(record.id)">删除</a>
@@ -22,20 +22,16 @@
     <a-modal
       title="新增课程"
       :visible="show"
-      @ok="handleOk"
-      @cancel="handleCancel"
     >
-      <a-form :form="form" v-bind="formItemLayout">
-        <a-form-item label="科目名称">
-          <a-input
-            v-decorator="[
-              'subName',
-              { rules: [{ required: true, message: '请输入科目名称' }] }
-            ]"
-            placeholder="请输入你想要新增的科目名称"
-          ></a-input>
-        </a-form-item>
-      </a-form>
+      <template slot="footer">
+        <a-button key="Save" type="primary" :loading="loading" @click="handleOk('ruleForm')">保存</a-button>
+        <a-button key="back" @click="handleCancel">取消</a-button>
+      </template>
+      <a-form-model :model="form" v-bind="formItemLayout" ref="ruleForm">
+        <a-form-model-item label="科目名称" >
+          <a-input v-model="form.subjectName" placeholder="请输入你想要新增的科目名称"></a-input>
+        </a-form-model-item>
+      </a-form-model>
     </a-modal>
   </a-card>
 </template>
@@ -69,8 +65,13 @@ export default {
         wrapperCol: { span: 14 }
       },
       show:false,
+      loading:false,
       selectedRowKeys: [],
-      selectedRows: []
+      selectedRows: [],
+      // form: {this.$form.createForm(this, { name: 'advanced_search' }),}
+      form:{
+        subjectName:"",
+      },
     };
   },
   async created() {
@@ -85,13 +86,19 @@ export default {
     showModal() {
       this.show = true
     },
-    async handleOk() {
-      let formData = this.form.getFieldsValue();
-      let res = await this.$api.basic.subject.saveMain(formData);
-      console.log(formData, res);
-      this.dataSource.unshift(formData)
+    async handleOk(formName) {
+      let formData = {
+        subName:this.form.subjectName,
+      }
+      let addData={...formData}
+      let {data} = await this.$api.basic.subject.saveMain(addData);
+      // this.dataSource.unshift(formData)
       this.show = false;
-      this.$refs.ruleForm.resetFields();
+      this.$refs[formName].resetFields();
+      // this.form.resetFields()
+      let {data:buildData} = await this.$api.basic.subject.fetchMainList();
+      console.log("buildData",buildData)
+      this.dataSource = buildData.rows
     },
     handleCancel() {
       this.show = false;
@@ -104,10 +111,18 @@ export default {
       this.$router.push("/basic/subject/subsubject?id=" + id);
     },
     async deleteItem(id) {
-      let {data} = this.$api.basic.subject.deleteMain({ids: id});
-        this.dataSource = this.dataSource.filter(i => i.id == id);
-        console.log(data)
+      let {data} = await this.$api.basic.subject.deleteMain({ids:[id]});
+      console.log(data);
+      if(data&&data.success){
+        let {data:buildData} =await this.$api.basic.subject.fetchMainList();
+        console.log("buildData",buildData);
+        this.dataSource = buildData.rows;
+        message.info('删除成功');
+      }else{
+        message.info('删除失败');
+      }
     },
+
 
   }
 };

@@ -39,13 +39,7 @@
                             <a-col><span style="font-size: 20px;float: left;margin-left:150px;padding-top: 5px" >高二2019-2020第一学期</span></a-col>
                         </a-row>
                         <a-row class="buttons" style="margin-top: 10px">
-                            <a-col :span="4"><button style="background-color: #ff6600;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 110px">矫正规则</button></a-col>
-                            <a-col :span="1"><button style="background-color: #ffcc00;
+                            <a-col :span="4"><button style="background-color: #ffcc00;
                         color: white;
                         height: 40px;
                         border: none;

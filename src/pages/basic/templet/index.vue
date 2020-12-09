@@ -61,31 +61,20 @@ export default {
     this.dataSource=data.rows
   },
   methods: {
-    // remove() {
-    //   this.dataSource = this.dataSource.filter(
-    //     (item) => this.selectedRowKeys.indexOf(item.key) < 0
-    //   );
-    //   this.selectedRows = this.selectedRows.filter(
-    //     (item) => this.selectedRowKeys.indexOf(item.key) < 0
-    //   );
-    // },
     gotoNew(id) {
       this.$router.push('/basic/template/detail?id='+id)
     },
     async deleteItem(id){
-      let{data}=this.$api.basic.template.deleteTemplate({ids:id})
-      if(data.success){
-      this.dataSource=this.dataSource.filter(item=>item.id==id)
-       console.log(data)
-      message.info('删除成功')
+      let {data}= await this.$api.basic.template.deleteTemplate({ids:id})
+      if(data&&data.success){
+        let {data:templateData}=await this.$api.basic.template.fetchList()
+        console.log("templateData",templateData)
+        this.dataSource=templateData.rows
+       message.info('删除成功')
+      }else{
+          message.info('删除失败')
       }
-      return success
     },
-    // handleMenuClick(e) {
-    //   if (e.key === "delete") {
-    //     this.remove();
-    //   }
-    // },
   },
 };
 </script>

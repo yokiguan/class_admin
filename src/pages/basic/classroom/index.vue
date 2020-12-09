@@ -5,13 +5,13 @@
         <a-button @click="showModal" type="primary">新建</a-button>
       </div>
       <a-table
-              :rowKey="'roomId'"
+              :key="'roomId'"
               :columns="columns"
               :dataSource="dataSource"
               :selectedRows="selectedRows"
               @change="onchange"
       >
-        <span slot="operation" slot-scope="text, record">
+        <span slot="operation" slot-scope="record">
           <a @click="addNew(record.id)">编辑</a>
           |
           <a @click="deleteItem(record.id)">删除</a>
@@ -59,8 +59,10 @@
                     v-for="b in this.buildings"
                     :key="b.buildingId"
                     :value="b.buildingId">
-              {{ b.name }}
+              {{ b.buildingId}}
             </a-select-option>
+<!--            <a-select-option value="主楼">主楼</a-select-option>-->
+<!--            <a-select-option value="逸夫楼">逸夫楼</a-select-option>-->
           </a-select>
         </a-form-item>
         <a-form-item label="状态" ref="status" prop="status">
@@ -136,7 +138,7 @@
           name:"",
           floor:'',
           type: '',
-          buildingEntity:" ",
+          buildingEntity:"",
           capacity:'',
           status:''
         },
@@ -184,8 +186,12 @@
       this.form = this.$form.createForm(this, { name: "classroom" });
     },
     methods: {
-      showModal() {
+       async showModal() {
+        let buildData = await this.$api.basic.building.fetchList();
+        this.buildings = buildData.data.rows;
+        console.log("this.builds",this.buildings)
         this.show = true;
+
       },
       async handleOk(e) {
         let formData = {
@@ -193,14 +199,16 @@
           capacity: parseInt(this.form.capacity),
           type:this.form.type,
           status: this.form.status ? 1 : 0,
-          buildingEntity:this.form.buildingEntity
+          buildingEntity:{name:this.form.buildingEntity}
         };
         console.log(formData)
-        let addData = { ...formData,timeSetting:this.timeQuery};
+        let addData = { ...formData,timeSetting:this.timeQuery,roomId:1};
         let res = await this.$api.basic.classroom.saveClassRoom(addData);
         console.log(res);
         this.show = false;
         this.dataSource.unshift(addData);
+        let { data } = await this.$api.basic.classroom.fetchList();
+        // this.dataSource=data.rows;
       },
       // async handleOk(){
       //   let query={...this.form}

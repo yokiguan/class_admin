@@ -4,21 +4,21 @@
         <a-button @click="addNew" type="primary">新建</a-button>
       </div>
       <a-table
-        :rowKey="'no'"
+        :rowKey="'subChildId'"
         :columns="columns"
-        :dataSource="dataSource"
-        closable="false">
+        :dataSource="dataSource">
           <span slot="operation" slot-scope="text, record">
             <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
           </span>
       </a-table>
-      <a-modal title="新增课程" :visible='showSubject'>
+      <a-modal title="新增课程"
+               :visible='showSubject'
+               :closable="false">
           <template slot="footer">
-              <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
-              <a-button key="back" @click="handleCancel">取消
-              </a-button>
+              <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+              <a-button key="back" @click="handleCancel">取消</a-button>
           </template>
-         <a-form-model :model="form" :rules="rules">
+         <a-form-model :model="form" :rules="rules":label-col="{span:5}" :wrapper-col="{span:12}">
              <a-form-model-item label='课程名' prop="addsub" ref="addsub">
                  <a-input placeholder='请输入你想要新增的课程名'  v-model="form.addSub"></a-input>
              </a-form-model-item>
@@ -48,40 +48,61 @@ export default {
   data() {
     return {
       columns,
-      dataSource,
-      gradeId:'',
+      loading:false,
       showSubject:false,
       dataSource:[],
+      form:{
+          addSub:"",
+      },
+      rules:{
+          addSub:[
+              {
+                  required:true,
+                  message:"请输入要加入的课程名称！",
+                  trigger:"blur"
+              }
+          ]
+        },
     };
   },
    async created() {
-    let queryString=(window.location.hash || " ").split('?')[1]
-    let id=(queryString || " ").split('=')[1]
-    if(id){
-      let { data } = await this.$api.basic.grade.fetchGrade({gradeId:id});
-      this.dataSource=data.result?.subjectEntities
-      this.gradeId=id
-    }
+       let queryString=(window.location.hash || " ").split('?')[1]
+       let id=(queryString || " ").split('=')[1]
+       if(id){
+           let { data } = await this.$api.basic.grade.fetchGrade({gradeId:id});
+           this.dataSource=data.rows;
+           console.log(data);
+       }
   },
     beforeCreate() {
-        this.form = this.$form.createForm(this, {name: "grade"});
+        this.form = this.$form.createForm(this, {name: "grade·subjects"});
     },
   methods: {
     addNew() {
-        this.showSubject=true
+        this.showSubject=true;
     },
     handleCancel(){
         this.showSubject=false
     },
     async handleOk(){
-        let formDat={
+        let formData={
             ...this.form,
             name:this.form.addSub,
         }
-      let {res}=await this.$api.basic.building.saveGradeSubject(this.form.addSub);
-          this.showSubject=false;
-          this.dataSource.unshift()
-      }
+        let addData={...formData};
+        let {res}=await this.$api.basic.grade.saveGradeSubject(addData);
+        console.log(res);
+        this.showSubject=false;
+        this.dataSource.unshift(addData);
+      },
+    async deleteItem(id){
+        let {data}=this.api.basic.grade.deleteGradeSubject({subChildIds:id})
+        if(data.success){
+            this.dataSource=this.dataSource.filter(item => item.subChildId==id);
+            message.info('删除成功')
+        }
+        return success
+    }
   },
 };
 </script>

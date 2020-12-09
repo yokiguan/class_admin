@@ -9,62 +9,84 @@
      </a-breadcrumb>
    </div>
    <a-card>
-     <a-form-model
-             layout="horizontal"
-             ref="ruleForm"
-             :model="form"
-             :rules="rules"
-             style="overflow: hidden;margin-bottom: 30px"
+     <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules" style="overflow: hidden;margin-bottom: 30px"
              :label-col="{span:4}"
-             :wrapper-col="{span:10}"
-             @submit="handleSubmit">
-       <a-form-model-item label="选课规则" prop="rule">
-         <a-select placeholder="请选择" >
+             :wrapper-col="{span:10}">
+       <a-form-model-item label="选课规则" prop="rule" ref="rule">
+         <a-select placeholder="请选择"  v-model="form.rule">
            <a-select-option value="5">5</a-select-option>
          </a-select>
        </a-form-model-item>
-       <a-form-model-item label="选课类型" prop="type">
-         <a-select placeholder="请选择" v-model="form.workday">
+       <a-form-model-item label="选课类型" prop="classType">
+         <a-select placeholder="请选择" v-model="form.classType">
            <a-select-option value="5">5</a-select-option>
          </a-select>
        </a-form-model-item>
-       <a-form-item label="选课时间：" prop="type">
-         <a-range-picker
-                 :disabled-date="disabledDate"
-                 :disabled-time="disabledRangeTime"
-                 :show-time="{
-                hideDisabledOptions: true,
-                defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],}"
+       <a-form-item label="选课开始时间：" prop="time" ref="time">
+         <a-date-picker v-model="startValue"
+                 :disabled-date="disabledStartDate"
+                 show-time
                  format="YYYY-MM-DD HH:mm:ss"
-                 :placeholder="['开始时间', '结束时间']"
-                 style="width: 560px"/>
+                 placeholder="Start"
+                 @openChange="handleStartOpenChange"/>
        </a-form-item>
+       <a-form-model-item label="选课结束时间" >
+         <a-date-picker
+                 v-model="endValue"
+                 :disabled-date="disabledEndDate"
+                 show-time
+                 format="YYYY-MM-DD HH:mm:ss"
+                 placeholder="End"
+                 :open="endOpen"
+                 @openChange="handleEndOpenChange"/>
+       </a-form-model-item>
      </a-form-model>
-     <a-table :columns="columns" :dataSource="dataSource" :pagination='false'>
-       <div slot="subjects" slot-scope="data">
-         <a-table
-                 :columns="columnsSubjects"
-                 :dataSource="data"
-                 :pagination="false"
-                 bordered>
-           <div slot="isMust" slot-scope="isMust">
-             <a-select :default-value="isMust" style="width: 100px">
-               <a-select-option :value="true"> 必选 </a-select-option>
-               <a-select-option :value="false"> 可选 </a-select-option>
-             </a-select>
-           </div>
-           <table slot="teacher" slot-scope="teacher">
-             <tr v-for="t in teacher" :key="t" class="teacher">
-               <td>{{ t.name }}</td>
-               <td><a-input v-model="t.capacity"></a-input></td>
-               <td><a-button type="primary" @click="deleteTeacher">删除</a-button></td>
-             </tr>
-             <tr class="teacher">
-               <a class="add-btn" @click="addTeacher"><a-icon type="plus" />新增老师</a>
-             </tr>
-           </table>
-         </a-table>
-       </div>
+     <a-table :key="'no'":columns="columns" :dataSource="dataSource" :pagination='false'>
+        <div slot="subjects" slot-scope="data">
+            <a-table
+                    :key="'key'"
+                    :dataSource="data"
+                    :columns="columnsSubjects"
+                    :showHeader="false"
+                    :pagination="false"
+                    bordered
+            >
+                <div slot="isMust" slot-scope="isMust">
+                    <a-select :default-value="isMust" style="width: 100px">
+                        <a-select-option :value="true"> 必选 </a-select-option>
+                        <a-select-option :value="false"> 可选 </a-select-option>
+                    </a-select>
+                </div>
+                <div slot="teacher" slot-scope="teacher">
+                    <a-form-model ref="dynamicValidateForm" :model="dynamicValidateForm">
+                        <a-form-model-item
+                                v-for="(domain, index) in dynamicValidateForm.domains"
+                                :key="domain.key"
+                                :prop="'domains.' + index + '.value'"
+                                :rules="{ required: true,message: '请输入人数',trigger: 'blur',}">
+                            <a v-if="dynamicValidateForm.domains.length >1"
+                                    style="float: left;color: black"
+                               v-model="dynamicValidateForm.name"></a>
+                            <a-input
+                                    v-if="dynamicValidateForm.domains.length >1"
+                                    v-model="domain.value"
+                                    placeholder="请输入人数"
+                                    style="width: 60%; margin-right: 8px"/>
+                            <a
+                                    v-if="dynamicValidateForm.domains.length >1"
+                                    class="dynamic-delete-button"
+                                    type="minus-circle-o"
+                                    :disabled="dynamicValidateForm.domains.length === 1"
+                                    @click="removeDomain(domain)"
+                                    style="color: blue;float: right">删除</a>
+                        </a-form-model-item>
+                        <a-form-model-item>
+                            <a-button class="add-btn" @click="addTeacher"><a-icon type="plus" />新增老师</a-button>
+                        </a-form-model-item>
+                    </a-form-model>
+                </div>
+            </a-table>
+        </div>
        <a-form-item slot="regular" has-feedback>
          <a-select
                  v-decorator="['rule',{ rules: [{ required: true, message: '请选择规则!' }] },]"
@@ -74,7 +96,6 @@
            <!--          <a-select-option value="female">female</a-select-option>-->
          </a-select>
        </a-form-item>
-
        <a slot='operate' @click="deleteTypical">删除</a>
      </a-table>
      <div style="margin-top: 30px">
@@ -82,24 +103,19 @@
        <a-textarea placeholder="请输入" :rows="8" style="width: 1200px" />
      </div>
      <a-row style=" margin-left:500px;margin-top:50px;margin-bottom:10px">
-       <a-col :span="5"><a-button  style="width: 100px;height: 40px;background-color: #1abc9c;color: white" @click="Save">保存</a-button></a-col>
+       <a-col :span="5"><a-button  style="width: 100px;height: 40px;background-color: #1abc9c;color: white" @click="saveAll">保存</a-button></a-col>
        <a-col :span="5"><a-button style="width: 100px;height: 40px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>
        <a-col> <a-button style="width: 100px;height: 40px;background-color:blue;color: white" @click="back">返回</a-button></a-col>
      </a-row>
      <a-modal
              :visible='addVisit'
              width="800px"
-             :closable="false"
-             on-ok="handleOk">
+             :closable="false">
        <template slot="footer">
-         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-           保存
-         </a-button>
-         <a-button key="back" @click="handleCancel">
-           取消
-         </a-button>
+         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+         <a-button key="back" @click="handleCancel">取消</a-button>
        </template>
-       <a-form :form="form" :label-col="{ span:6 }" :wrapper-col="{ span: 13 }" @submit="handleSubmit" style="margin-bottom: 300px;margin-top: 50px">
+       <a-form :form="form" :label-col="{ span:6 }" :wrapper-col="{ span: 13 }"style="margin-bottom: 300px;margin-top: 50px">
          <a-form-item label="标题：">
            <a-tree-select
                    v-model="value"
@@ -116,7 +132,6 @@
 </template>
 
 <script>
-  import moment from 'moment';
   import { TreeSelect } from 'ant-design-vue';
   const SHOW_PARENT = TreeSelect.SHOW_PARENT;
 const columns = [
@@ -167,37 +182,15 @@ const dataSource = [
   {
     key: '1',
     type: "必修课",
-    subjects: [
-      {
-        name: "高一数学",
-        isMust: true,
-        teacher: [
-          {
-            name: "张x",
-            capacity: 30,
-          },
-          {
-            name: "王x",
-            capacity: 30,
-          },
-        ],
-      },
-      {
-        name: "高一语文",
-        isMust: true,
-        teacher: [
-          {
-            key:'1',
-            name: "张x",
-            capacity: 30,
-          },
-          {
-            key:'2',
-            name: "王x",
-            capacity: 30,
-          },
-        ],
-      },
+    subjects:[
+        {
+            name: "高一数学",
+            isMust: true,
+        },
+        {
+            name: "高一语文",
+            isMust: true,
+        },
     ],
     rule: "覆盖2科",
   },
@@ -205,25 +198,14 @@ const dataSource = [
     key: '2',
     type: "选修课",
     subjects: [
-      {
-        name: "高一物理选修",
-        isMust: true,
-        teacher: [
-          {
-            name: "张x",
-            capacity: 30,
-          },
-          {
-            name: "王x",
-            capacity: 30,
-          },
-        ],
-      },
-      {
-        name: "高一生物选修",
-        isMust: true,
-        teacher: null,
-      },
+        {
+            name: "高一物理选修",
+            isMust: true,
+        },
+        {
+            name: "高一生物选修",
+            isMust: true,
+        },
     ],
     rule: "覆盖2科",
   },
@@ -281,6 +263,17 @@ export default {
       value: ['张凯元'],
       treeData,
       SHOW_PARENT,
+      startValue: null,
+      endValue: null,
+      endOpen: false,
+        dynamicValidateForm: {
+            domains: [],
+        },
+      dynamicValidateForm: {
+        domains: [{
+          value: ''
+        }],
+      },
       form: {
         type: 1,
         rule: 6 + 3,
@@ -295,7 +288,7 @@ export default {
             trigger: "blur",
           },
         ],
-        type: [
+          classType: [
           {
             required: true,
             message: "请选择选课类型",
@@ -322,32 +315,36 @@ export default {
   beforeCreate() {
     this.form = this.$form.createForm(this, { name: 'time_related_controls' });
   },
+  watch: {
+    startValue(val) {
+      console.log('startValue', val);
+    },
+    endValue(val) {
+      console.log('endValue', val);
+    },
+  },
   methods: {
-    moment,
-    range(start, end) {
-      const result = [];
-      for (let i = start; i < end; i++) {
-        result.push(i);
+    disabledStartDate(startValue) {
+      const endValue = this.endValue;
+      if (!startValue || !endValue) {
+        return false;
       }
-      return result;
+      return startValue.valueOf() > endValue.valueOf();
     },
-    disabledDate(current) {
-      // Can not select days before today and today
-      return current && current < moment().endOf('day');
-    },
-    disabledRangeTime(_, type) {
-      if (type === 'start') {
-        return {
-          disabledHours: () => this.range(0, 60).splice(4, 20),
-          disabledMinutes: () => this.range(30, 60),
-          disabledSeconds: () => [55, 56],
-        };
+    disabledEndDate(endValue) {
+      const startValue = this.startValue;
+      if (!endValue || !startValue) {
+        return false;
       }
-      return {
-        disabledHours: () => this.range(0, 60).splice(20, 4),
-        disabledMinutes: () => this.range(0, 31),
-        disabledSeconds: () => [55, 56],
-      };
+      return startValue.valueOf() >= endValue.valueOf();
+    },
+    handleStartOpenChange(open) {
+      if (!open) {
+        this.endOpen = true;
+      }
+    },
+    handleEndOpenChange(open) {
+      this.endOpen = open;
     },
     handleSelectChange(value) {
       console.log(value);
@@ -356,7 +353,8 @@ export default {
       });
     },
     addTeacher(){
-      this.addVisit=true;
+        this.addVisit=true;
+
     },
     deleteTypical(key){
       const dataSource = [...this.dataSource];
@@ -365,6 +363,11 @@ export default {
     handleOk() {
       this.loading = true;
       setTimeout(() => {
+          this.dynamicValidateForm.domains.push({
+              value: '',
+              key: Date.now()
+          });
+          this.dynamicValidateForm.name=this.value;
         this.addVisit=false;
         this.loading = false;
       }, 2000);
@@ -372,16 +375,27 @@ export default {
     handleCancel() {
       this.addVisit=false;
     },
-    addHandleSubmint(){},
-    deleteTeacher(){},
-    Save(){
-    },
+    saveAll(){
+
+      },
     Clear(){
-      this.dataSource.subject=[]
+        this.form.setFieldsValue();
     },
     back(){
       this.$router.go(-1)
-    }
+    },
+      removeDomain(item) {
+          let index = this.dynamicValidateForm.domains.indexOf(item);
+          if (index !== -1) {
+              this.dynamicValidateForm.domains.splice(index, 1);
+          }
+      },
+      addDomain() {
+          this.dynamicValidateForm.domains.push({
+              value: '',
+              key: Date.now(),
+          });
+      },
   },
 };
 </script>
