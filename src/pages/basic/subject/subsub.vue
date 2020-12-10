@@ -5,15 +5,15 @@
         <a-button @click="addNew" type="primary">新建</a-button>
       </div>
       <a-table
-              :rowKey="'key'"
+              :rowKey="'subChildId'"
               :columns="columns"
               :dataSource="dataSource"
               :selectedRows="selectedRows"
               @change="onchange"
       >
         <span slot="operation" slot-scope="text, record">
-          <a @click="gotoNew(record.id)">编辑</a>
-          <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
+          <a @click="gotoNew(record.subChildId)">编辑</a>
+          <a style="margin-left: 50px" @click="deleteItem(record.subChildId)">删除</a>
     </span>
       </a-table>
     </div>
@@ -22,12 +22,8 @@
             width="600px"
             :closable="false">
       <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-          保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">
-          取消
-        </a-button>
+        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+        <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <a-form-model :model="form"
               :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}"
@@ -62,7 +58,7 @@
   const columns = [
     {
       title: '子课程编号',
-      dataIndex: 'id'
+      dataIndex: 'subChildId'
     },
     {
       title: '名称',
@@ -70,7 +66,14 @@
     },
     {
       title: '年级',
-      dataIndex: 'gradeIds',
+      dataIndex: 'childSubjectGrade',
+      customRender:(text,index,i)=>{
+        let grade="";
+        for(var j=0;j<text.length;j++){
+          grade+=text[j].gradeName+'，';
+        }
+      return  grade
+      }
     },
     {
       title: '类型',
@@ -124,9 +127,10 @@ export default {
         let queryString=(window.location.hash || " ").split('?')[1]
         let id=(queryString || " ").split('=')[1]
         if(id){
-        let { data } = await this.$api.basic.subject.fetchChildList({id});
-        this.dataSource=data.rows;
-        console.log(data);
+        let { data:{result,success} } = await this.$api.basic.subject.fetchChildList({id});
+        this.dataSource=result.subjectChildEntitys;
+        // this.dataSource.childSubjectGrade=result.subjectChildEntitys.childSubjectGrade.gradeName;
+        // console.log(data);
       }
     },
   methods: {
@@ -143,7 +147,7 @@ export default {
       async handleOk() {
         let formData={
           name: this.form.name,
-          gradeIds: this.form.gradeIds,
+          childSubjectGrade: this.form.gradeIds,
           type: this.form.type,
         };
         let addData={...formData};
@@ -153,9 +157,8 @@ export default {
         let queryString=(window.location.hash || " ").split('?')[1]
         let id=(queryString || " ").split('=')[1]
         if(id){
-          let { data } = await this.$api.basic.subject.fetchChildList({id});
-          this.dataSource=data.rows;
-          console.log(data);
+          let { data:{result,success} } = await this.$api.basic.subject.fetchChildList({id});
+          this.dataSource=result.subjectChildEntitys;
         }
 
         // this.$refs.ruleForm.resetFields();

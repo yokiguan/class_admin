@@ -77,7 +77,7 @@ export default {
   async created() {
     let { data } = await this.$api.basic.subject.fetchMainList();
     this.dataSource=data.rows
-    console.log(data);
+    // console.log(data);
   },
    beforeCreate() {
     this.form = this.$form.createForm(this, { name: "subject" });

@@ -5,17 +5,17 @@
         <a-button @click="showModal" type="primary">新建</a-button>
       </div>
       <a-table
-              :key="'roomId'"
+              :key="'buildingId'"
               :columns="columns"
               :dataSource="dataSource"
               :selectedRows="selectedRows"
               @change="onchange"
       >
         <span slot="operation" slot-scope="record">
-          <a @click="addNew(record.id)">编辑</a>
+          <a @click="addNew(record.buildingId)">编辑</a>
           |
-          <a @click="deleteItem(record.id)">删除</a>
-          |<a @click="gotoNew(record.roomId)">规则设置</a>
+          <a @click="deleteItem(record.buildingId)">删除</a>
+          |<a @click="gotoNew(record.buildingId)">规则设置</a>
         </span>
       </a-table>
     </div>
@@ -78,11 +78,10 @@
 
 <script>
   import {message} from "ant-design-vue";
-
   const columns = [
     {
       title: "教室编号",
-      dataIndex: "roomId"
+      dataIndex: "buildingId"
     },
     {
       title: "教室名称",
@@ -103,7 +102,7 @@
     {
       title: "所属教学楼",
       dataIndex: "buildingEntity",
-      customRender: (text, record) => record.buildingEntity.name
+      // customRender: (text, record) => record.buildingEntity.name
     },
     {
       title: "状态",
@@ -179,12 +178,12 @@
       };
     },
     async created() {
-      let { data } = await this.$api.basic.classroom.fetchList();
-      this.dataSource = data.rows;
+      let { data:{result,success} }  = await this.$api.basic.classroom.fetchList();
+      this.dataSource = result.buildingEntity;
     },
-    beforeCreate() {
-      this.form = this.$form.createForm(this, { name: "classroom" });
-    },
+    // beforeCreate() {
+    //   this.form = this.$form.createForm(this, { name: "classroom" });
+    // },
     methods: {
        async showModal() {
         let buildData = await this.$api.basic.building.fetchList();

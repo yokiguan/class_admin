@@ -13,7 +13,7 @@
         @change="onchange"
       >
         <span slot="operation" slot-scope="text, record">
-          <a @click="showModal(record)">编辑</a>
+          <a @click="showModal(record.gradeId)">编辑</a>
           |
           <a @click="deleteItem(record.gradeId)">删除</a>
           |
@@ -80,13 +80,14 @@ const columns = [
   {
     title: "课程",
     dataIndex: "subjectEntities",
-    // customRender:(text,record)=>{
-    //   let t = record.subjectEntities
-    //           ? record.subjectEntities.forEach(item => (item = item.name))?.join(",")
-    //           : "";
-    //   console.log(t);
-    //   return t;
-    // }
+    customRender:(text,record)=>{
+      // console.log(record.subjectEntities)
+      let t = record.subjectEntities
+              ? record.subjectEntities.forEach(item => (item = item.name))?.join(",")
+              : "";
+      console.log(t);
+      return t;
+    }
   },
   {
     title: "操作",
