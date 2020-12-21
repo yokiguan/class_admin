@@ -50,7 +50,7 @@ export default new Router({
                 {
                   path: '/basic/classroom/rule',
                   name: '教室时间规则',
-                  component:() => import('@/pages/basic/classroom/rule')
+                  component:() => import('@/pages/basic/classroom/rule/index')
                 }
               ]
             },

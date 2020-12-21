@@ -35,10 +35,12 @@
         <a-form-model-item label="所属年级：" prop="gradeIds" ref="gradeIds">
           <a-select v-model="form.gradeIds"
                     placeholder="请选择" style="width: 275px">
-            <a-select-option value="高一">
+<!--            v-for(item, index) in GradeLisat item.GradeId -->
+            <a-select-option value="1">
               高一
+<!--              item.GradeName-->
             </a-select-option>
-            <a-select-option value="高二">
+            <a-select-option value="2">
               高二
             </a-select-option>
           </a-select>
@@ -70,7 +72,7 @@
       customRender:(text,index,i)=>{
         let grade="";
         for(var j=0;j<text.length;j++){
-          grade+=text[j].gradeName+'，';
+          grade+=text[j].gradeId+'，';
         }
       return  grade
       }
@@ -127,8 +129,9 @@ export default {
         let queryString=(window.location.hash || " ").split('?')[1]
         let id=(queryString || " ").split('=')[1]
         if(id){
-        let { data:{result,success} } = await this.$api.basic.subject.fetchChildList({id});
-        this.dataSource=result.subjectChildEntitys;
+        let { data } = await this.$api.basic.subject.fetchChildList({id});
+        console.log(data.result.subjectChildEntitys)
+        this.dataSource=data.result.subjectChildEntitys;
         // this.dataSource.childSubjectGrade=result.subjectChildEntitys.childSubjectGrade.gradeName;
         // console.log(data);
       }
@@ -145,10 +148,13 @@ export default {
         this.addClassVisit=true;
       },
       async handleOk() {
+        console.log(this.form)
+        // gradeId = gradeIdName = '1323' ? '1' : '2'
         let formData={
           name: this.form.name,
-          childSubjectGrade: this.form.gradeIds,
-          type: this.form.type,
+          gradeIds: [this.form.gradeIds],
+          type: Number(this.form.type),
+          subFatherId: this.$router.history.current.query.id
         };
         let addData={...formData};
         let {data} = await this.$api.basic.subject.saveChildrenSubject(addData);

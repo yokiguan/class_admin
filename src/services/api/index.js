@@ -1,4 +1,6 @@
 import basic from './basic'
-export default {    
-    basic
+import schedule from './schedule'
+export default {
+    basic,
+    schedule
 }

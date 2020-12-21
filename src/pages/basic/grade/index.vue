@@ -85,7 +85,6 @@ const columns = [
       let t = record.subjectEntities
               ? record.subjectEntities.forEach(item => (item = item.name))?.join(",")
               : "";
-      console.log(t);
       return t;
     }
   },

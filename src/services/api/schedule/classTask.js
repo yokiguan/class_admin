@@ -1,7 +1,7 @@
 /*
 * 走班排课任务模块接口列表
 * */
-import schedule from '.../schedule';    //导入接口域名列表
+import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'      //导入从http众创建的axios实例
 const baseUrl1 = base.root +'/a/schedulePlan'
 const baseUrl2 = base.root + '/a/scheduleTeacher'
@@ -9,8 +9,9 @@ const baseUrl3 = base.root + '/a/classroomSetting'
 const baseUrl4 = base.root + '/a/scheduleTeacherClass'
 const baseUrl5 = base.root + '/a/scheduleResult'
 const baseUrl6 = base.root + '/a/scheduleSyllabus'
-const plan = {
-    // 开始排课 保存/修改
+const  classTask = {
+    // 开始
+    // 排课 保存/修改
     updateSchedule(params){
         return axios.get(`${baseUrl1}/updateSchedule.json`,params, {
             'Content-Type': 'multipart/form-data'});
@@ -62,5 +63,6 @@ const plan = {
     //手动调课查看
     //手动调课修改（需讨论）
 }
+export default  classTask
 
 

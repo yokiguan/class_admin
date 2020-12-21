@@ -11,8 +11,8 @@
         :selectedRows="selectedRows"
         @change="onchange">
       <span slot="operation" slot-scope="text,record">
-     <a @click="gotoNew(record.buildingId)">编辑</a>
-     <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
+        <a @click="edit(record.buildingId)">编辑</a>
+        <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
     </span>
       </a-table>
     </div>
@@ -72,7 +72,7 @@ export default {
         let {data} = await this.$api.basic.building.fetchList();
         this.dataSource = data.rows;
         console.log(data);
-    },
+    }, 
     data() {
         return {
             show: false,
@@ -81,15 +81,12 @@ export default {
             loading:false,
             selectedRowKeys: [],
             selectedRows: [],
+            editText:-1,
             formItemLayout: {
                 labelCol: {span: 6},
                 wrapperCol: {span: 14}
             },
            changeTitle:'新增教学楼',
-          // type:[
-          //   {status:true,value:"可用"},
-          //   {status:false,value:"不可用"},
-          // ],
             form:{
                name:" ",
                floor:'',
@@ -118,37 +115,44 @@ export default {
             }
         }
     },
-    beforeCreate() {
-        this.form = this.$form.createForm(this, {name: "building"});
-    },
+    // beforeCreate() {
+    //     this.form = this.$form.createForm(this, {name: "building"});
+    // },
     methods:{
         showModal() {
             this.changeTitle = '新增教学楼'
             this.show = true;
         },
         async handleOk() {
+          if(this.changeTitle=="新增教学楼"){
             let formData = {
-                ...this.form,
-                name:this.form.name,
-                floor: parseInt(this.form.floor),
-                status: this.form.status ? 1 : 0
+              ...this.form,
+              name:this.form.name,
+              floor: parseInt(this.form.floor),
+              status: this.form.status ? 1 : 0
             };
             let addData={...formData}
             let {data} = await this.$api.basic.building.saveBuilding(addData);
             console.log(data);
             this.show = false;
-            // this.dataSource.unshift(addData);
             let {data:buildData} = await this.$api.basic.building.fetchList()
             console.log("buildData",buildData)
             this.dataSource = buildData.rows
-
+          }else{
+            let  formData={
+              buildingId:this.dataSource[this.editText].buildingId,
+              name:this.form.name,
+              floor:this.form.floor,
+              status: this.form.status ? 1 : 0
+            }
+            let addData={...formData}
+            let {data:saveData}=await this.$api.basic.building.saveBuilding(addData);
+            let {data:buildingData}=await this.$api.basic.building.fetchList();
+            console.log("buildingData",buildingData)
+            this.dataSource=buildingData.rows;
+            this.show=false;
+          }
         },
-      // async saveInfo(){
-      //   let query={...this.form,timeSetting:this.timeQuery}
-      //   let {data}=await this.$api.basic.template.saveTemplate(query)
-      //   console.log(data);
-      //   this.$router.push("/basic/template/admin")
-      // },
         handleCancel() {
             this.show = false;
         },
@@ -156,10 +160,14 @@ export default {
             this.selectedRowKeys = selectedRowKeys
             this.selectedRows = selectedRows
         },
-        async gotoNew(){
+        edit(id){
           this.changeTitle='编辑教学楼'
           this.show=true
-          let {data} = await this.$api.basic.building.fetchList();
+          this.editText=this.dataSource.findIndex(item=>item.buildingId==id)
+          this.form.name=this.dataSource[this.editText].name;
+          this.form.floor=this.dataSource[this.editText].floor;
+          this.form.status=this.dataSource[this.editText].status;
+          console.log(this.editText)
         },
         async deleteItem(id) {
           let {data} = await this.$api.basic.building.deleteBuilding({ids:[id]});

@@ -19,12 +19,15 @@
           <template v-else>
             <a-card :hoverable="true">
               <a-card-meta>
-                <div style="margin-bottom: 3px" slot="title">{{item.title}}</div>
+                <div style="margin-bottom: 3px" slot="title">{{item.name}}</div>
                 <a-avatar class="card-avatar" slot="avatar" :src="item.avatar" size="large" />
-                <div class="meta-content" slot="description">{{item.content}}</div>
+                <div class="meta-content" slot="description">
+                  <div>学期:{{item.term}}</div>
+                  <div>参与年级:{{item.gradeId}}</div>
+                </div>
               </a-card-meta>
-              <router-link slot="actions" to='/schedule/detail/index'>操作</router-link>
-              <a slot="actions">删除</a>
+              <router-link slot="actions" :to="`/schedule/detail/index?planId=${item.planId}`">操作</router-link>
+              <a slot="actions" @click="handleDeletePlan(item.planId)">删除</a>
             </a-card>
           </template>
         </a-list-item>
@@ -38,13 +41,13 @@
               @modalClosed="closed"
               @modalSubmit="handleSubmit">
         <div slot="content">
-          <a-form v-bind="formItemLayout" @submit="handleSubmit" ref="createForm">
-            <a-form-item label="计划名称">
+          <a-form-model v-bind="formItemLayout" :model="form" @submit="handleSubmit" ref="createForm">
+            <a-form-model-item label="计划名称">
               <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-              <a-input placeholder="请输入计划名称"/>
-            </a-form-item>
-            <a-form-item label="年份">
-              <a-select :default-value="yearRange[0]" style="width: 120px" @change="handleYearChange">
+              <a-input placeholder="请输入计划名称" v-model="form.name"/>
+            </a-form-model-item>
+            <!-- <a-form-model-item label="年份">
+              <a-select :default-value="yearRange[0]" style="width: 120px" @change="handleYearChange" >
                 <a-select-option v-for="(startYear, index) in yearRange" :key="index" >
                   {{ startYear }}
                 </a-select-option>
@@ -54,9 +57,9 @@
                   {{ endYear }}
                 </a-select-option>
               </a-select>
-            </a-form-item>
-            <a-form-item label="所属学期">
-              <a-select default-value="1" style="width: 120px">
+            </a-form-model-item> -->
+            <a-form-model-item label="所属学期">
+              <a-select default-value="1" style="width: 120px" v-model="form.term">
                 <a-select-option value="1">
                   第一学期
                 </a-select-option>
@@ -64,9 +67,9 @@
                   第二学期
                 </a-select-option>
               </a-select>
-            </a-form-item>
-            <a-form-item label="所属年级">
-              <a-select default-value="1" style="width: 120px">
+            </a-form-model-item>
+            <a-form-model-item label="所属年级">
+              <a-select default-value="1" style="width: 120px" v-model="form.gradeId">
                 <a-select-option value="1">
                   高一
                 </a-select-option>
@@ -77,8 +80,15 @@
                   高三
                 </a-select-option>
               </a-select>
-            </a-form-item>
-          </a-form>
+            </a-form-model-item>
+            <a-form-model-item label="启用功能">
+              <a-radio-group v-model="form.type">
+                <a-radio value="0">行政班排课</a-radio>
+                <a-radio value="1">走班排课</a-radio>
+              </a-radio-group>
+            </a-form-model-item>
+
+          </a-form-model>
         </div>
       </create-modal>
     </div>
@@ -87,17 +97,6 @@
 
 <script>
   import CreateModal from '../../../components/modal/CreateModal'
-  let dataSource = [
-    {
-      title: "高一第一学期排课计划",
-      avatar:
-              "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-      content: "学期：2019-2020第一学期/参与年级：高一",
-    },
-  ];
-  dataSource.unshift({
-    add: true,
-  });
   export default {
     components : {CreateModal,},
     name: "CardList",
@@ -105,11 +104,11 @@
       return {
         extraImage:
                 "https://gw.alipayobjects.com/zos/rmsportal/RzwpdLnhmvDJToTdfDPe.png",
-        dataSource,
+        dataSource:[],
         // modal
         visible : false,
         loading : false,
-        // form
+        form:{},
         formItemLayout: {
           labelCol: {
             xs: { span: 24 },
@@ -125,7 +124,18 @@
         endYearRange : [2021, 2022, 2023, 2024]
       };
     },
+    async created() {
+      this.initSearch()
+    },
     methods : {
+      async initSearch(){
+        // 查询排课计划
+        let {data} = await this.$api.schedule.arrangeClass.getSchedulePlan()
+        this.dataSource = data.rows
+        this.dataSource.unshift({
+          add: true,
+        });
+      },
       addNew : function(){
         this.visible = true
       },
@@ -133,28 +143,25 @@
         this.visible = false
         this.loading = false
       },
-      handleSubmit : function(){
-        const that = this
-        console.log(that.$refs.createForm)
-        that.loading = true
-        setTimeout(()=>{
-          that.dataSource.push(
-                  {
-                    title: "高一第一学期排课计划",
-                    avatar:
-                            "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-                    content: "学期：2019-2020第一学期/参与年级：高一",
-                  }
-          ),
-                  that.visible = false
-          that.loading = false
-        }, 2000)
+      async handleSubmit(){
+        this.loading = true
+        let {data} = await this.$api.schedule.arrangeClass.saveCoursetime(this.form)
+        if(data.success){
+          this.visible = false
+          this.loading = false
+        }
+        this.initSearch()
       },
       handleYearChange : function(index){
         console.log(this.yearRange, index)
         let temp = this.yearRange
         this.endYearRange = temp.slice(index, this.yearRange.length)
         console.log(this.endYearRange)
+      },
+      async handleDeletePlan(value){
+        // 删除排课计划
+        let {data} = this.$api.schedule.arrangeClass.deleteSchedulePlan({ids:value})
+        this.initSearch()
       }
     }
   };
@@ -179,7 +186,7 @@
   .new-btn {
     border-radius: 2px;
     width: 100%;
-    height: 187px;
+    height: 162px;
   }
   .meta-content {
     position: relative;

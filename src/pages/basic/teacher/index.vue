@@ -12,16 +12,6 @@
                   style="font-size: 1.3em;"/>
         </div>
         <div class="right">
-            <div class="operator">
-              <a-button @click="addNew" type="primary">新建</a-button>
-              <a-button >批量操作</a-button>
-              <a-dropdown>
-                <a-menu @click="handleMenuClick" slot="overlay">
-                  <a-menu-item key="delete">删除</a-menu-item>
-                </a-menu>
-                <a-button>更多操作 <a-icon type="down" /></a-button>
-              </a-dropdown>
-            </div>
             <standard-table
                     :rowKey="'key'"
                     :columns="columns"

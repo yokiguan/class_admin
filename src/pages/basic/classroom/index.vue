@@ -5,40 +5,41 @@
         <a-button @click="showModal" type="primary">新建</a-button>
       </div>
       <a-table
-              :key="'buildingId'"
+              :rowKey="'roomId'"
               :columns="columns"
               :dataSource="dataSource"
               :selectedRows="selectedRows"
               @change="onchange"
       >
-        <span slot="operation" slot-scope="record">
-          <a @click="addNew(record.buildingId)">编辑</a>
-          |
-          <a @click="deleteItem(record.buildingId)">删除</a>
-          |<a @click="gotoNew(record.buildingId)">规则设置</a>
-        </span>
+        <template slot="operation" slot-scope="text, record">
+           <span @click="edit(record.roomId)">编辑</span>|
+           <span @click="deleteItem(record)">删除</span>|
+          <span @click="gotoNew(record.roomId)">规则设置</span>
+        </template>
       </a-table>
     </div>
     <a-modal
-            title="新增教室"
+            :title="changeTitle"
             :visible="show"
             :closable="false">
       <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">取消
-        </a-button>
+        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+        <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <a-form-model :model="form" :rules="rules" ref="ruleForm">
         <a-form-model-item label="教室名称" ref="name" prop="name">
-          <a-input v-model="form.name"
-                  v-decorator="['name',{ rules: [{ required: true, message: '请输入场地名称' }] }]"
-                  placeholder="请输入你想要新增的场地名称"
-          ></a-input>
+          <a-input v-model="form.name" placeholder="请输入你想要新增的场地名称"></a-input>
         </a-form-model-item>
+        <a-form-item label="所属教学楼" ref="buildingId" prop="buildingId">
+          <a-select v-model="form.buildingId" :default-value="buildings[0].buildingId" placeholder="请选择场地所在教学楼" @change="changeBuilding">
+            <a-select-option v-for="(building,index) in this.buildings" :key="index" :value="building.buildingId">
+              {{ building.name}}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
         <a-form-model-item label="楼层" ref="floor" prop="floor">
-          <a-select v-model="form.floor" placeholder="请选择场地所在楼层">
-            <a-select-option v-for="f of this.floor" :key="f" :value="f">
+          <a-select placeholder="请选择场地所在楼层" v-model="form.floor">
+            <a-select-option v-for="(f,index) in this.floors" :key="index" :value="f">
               {{ f }}
             </a-select-option>
           </a-select>
@@ -53,23 +54,8 @@
         <a-form-model-item label="容纳人数" ref="capacity" prop="capacity">
           <a-input v-model="form.capacity" placeholder="请输入你想要新增的场地容量"></a-input>
         </a-form-model-item>
-        <a-form-item label="所属教学楼" ref="buildingId" prop="buildingEntity">
-          <a-select v-model="form.buildingEntity" placeholder="请选择场地所在教学楼" @change="changeBuilding">
-            <a-select-option
-                    v-for="b in this.buildings"
-                    :key="b.buildingId"
-                    :value="b.buildingId">
-              {{ b.buildingId}}
-            </a-select-option>
-<!--            <a-select-option value="主楼">主楼</a-select-option>-->
-<!--            <a-select-option value="逸夫楼">逸夫楼</a-select-option>-->
-          </a-select>
-        </a-form-item>
         <a-form-item label="状态" ref="status" prop="status">
-          <a-switch v-model="form.status" v-decorator="['status', { rules: [{ required: true }],initiaValue:true,valuePropName:'checked'}]" >
-            <a-icon slot="checkedChildren" type="check"></a-icon>
-            <a-icon slot="unCheckedChildren" type="close"></a-icon>
-          </a-switch>
+          <a-switch v-model="form.status"/>
         </a-form-item>
       </a-form-model>
     </a-modal>
@@ -78,10 +64,11 @@
 
 <script>
   import {message} from "ant-design-vue";
+  import Templet from "../templet/index";
   const columns = [
     {
       title: "教室编号",
-      dataIndex: "buildingId"
+      dataIndex: "roomId"
     },
     {
       title: "教室名称",
@@ -93,7 +80,8 @@
     },
     {
       title: "类型",
-      dataIndex: "type"
+      dataIndex: "type",
+      customRender:(text)=>text==0?'专业教学场地':text==1? '公共教学场地':'行政班教室'
     },
     {
       title: "容纳人数",
@@ -101,7 +89,7 @@
     },
     {
       title: "所属教学楼",
-      dataIndex: "buildingEntity",
+      dataIndex: "buildingId",
       // customRender: (text, record) => record.buildingEntity.name
     },
     {
@@ -118,17 +106,20 @@
 
   export default {
     name: "classroom",
+    components: {Templet},
     data() {
       return {
         show: false,
         loading:false,
         placeName: "",
         columns: columns,
-        buildings: [],
-        floor: 1,
+        buildings: [{buildingId:"",name:""}],
+        floors: [],
         dataSource: [],
         selectedRowKeys: [],
         selectedRows: [],
+        editText:-1,
+        changeTitle:'新增教室',
         formItemLayout: {
           labelCol: { span: 6 },
           wrapperCol: { span: 14 }
@@ -137,7 +128,7 @@
           name:"",
           floor:'',
           type: '',
-          buildingEntity:"",
+          buildingId:"",
           capacity:'',
           status:''
         },
@@ -159,7 +150,7 @@
           type: [
             { required: true, message: '请选择教室类型', trigger: 'change' }
           ],
-          buildingEntity:[
+          buildingId:[
             {
               required:true,
               message:"请输入教室名称！",
@@ -173,49 +164,65 @@
               trigger:"blur"
             }
           ],
-
         }
       };
     },
     async created() {
-      let { data:{result,success} }  = await this.$api.basic.classroom.fetchList();
-      this.dataSource = result.buildingEntity;
+      let { data}  = await this.$api.basic.classroom.fetchList();
+      this.dataSource=data.rows;
+      let {data:buildings}=await this.$api.basic.building.fetchList();
+      console.log(buildings);
+      this.buildings =buildings.rows
+      // buildings.rows.map(item=>{
+      //   this.buildings.push(item.name)
+      // })
     },
     // beforeCreate() {
     //   this.form = this.$form.createForm(this, { name: "classroom" });
     // },
     methods: {
-       async showModal() {
-        let buildData = await this.$api.basic.building.fetchList();
-        this.buildings = buildData.data.rows;
-        console.log("this.builds",this.buildings)
-        this.show = true;
+       showModal() {
+         this.changeTitle='新增教室'
+         this.show = true;
+      },
+      async handleOk() {
+        if(this.changeTitle=="新增教室"){
+          let formData = {
+            ...this.form,
+            name:this.form.name,
+            buildingId:this.form.buildingId,
+            floor:this.form.floor,
+            capacity: Number(this.form.capacity),
+            type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1 :2,
+            status: this.form.status ? 1 : 0,
+            subId: 1
+          };
+          console.log(formData)
+          let addData = { ...formData};
+          let res = await this.$api.basic.classroom.saveClassRoom(addData);
+          console.log(res);
+          let { data } = await this.$api.basic.classroom.fetchList();
+          this.dataSource=data.rows;
+          this.show = false;
+        }else{
+          let formData = {
+            roomId:this.dataSource[this.editText].roodId,
+            name:this.form.name,
+            buildingId:this.form.buildingId,
+            floor:this.form.floor,
+            capacity: Number(this.form.capacity),
+            type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1 :2,
+            status: this.form.status ? 1 : 0,
+            subId: 1
+          };
+          let addData = { ...formData};
+          let {data:saveData} = await this.$api.basic.classroom.saveClassRoom(addData);
+          let { data:classroomData } = await this.$api.basic.classroom.fetchList();
 
+          this.dataSource=classroomData.rows;
+          this.show = false;
+        }
       },
-      async handleOk(e) {
-        let formData = {
-          ...this.form,
-          capacity: parseInt(this.form.capacity),
-          type:this.form.type,
-          status: this.form.status ? 1 : 0,
-          buildingEntity:{name:this.form.buildingEntity}
-        };
-        console.log(formData)
-        let addData = { ...formData,timeSetting:this.timeQuery,roomId:1};
-        let res = await this.$api.basic.classroom.saveClassRoom(addData);
-        console.log(res);
-        this.show = false;
-        this.dataSource.unshift(addData);
-        let { data } = await this.$api.basic.classroom.fetchList();
-        // this.dataSource=data.rows;
-      },
-      // async handleOk(){
-      //   let query={...this.form}
-      //   let {data}=await this.$api.basic.classroom.saveClassRoom(query)
-      //   console.log(data);
-      //   this.show = false;
-      //   this.dataSource.push(addData);
-      // },
       handleCancel() {
         this.show = false;
       },
@@ -223,24 +230,38 @@
         this.selectedRowKeys = selectedRowKeys;
         this.selectedRows = selectedRows;
       },
-      changeBuilding(value) {
-        this.floor = this.buildings.filter(b => b.buildingId == value)[0].floor;
-      },
-      addNew(id) {
-        this.show=true
-        console.log(id);
+      async changeBuilding() {
+        let {data}=await this.$api.basic.building.fetchBuilding({buildingId:this.form.buildingId});
+        this.floors = []
+        this.form.floor = ''
+        this.floors.push(data.result.floor)
       },
       gotoNew(id) {
         this.$router.push("/basic/classroom/rule?id=" + id);
       },
-      deleteItem(id) {
-        let {data} = this.$api.basic.classroom.deleteBuilding({ids: id});
-        if(data.success){
-          this.dataSource=this.dataSource.filter(item => item.roomId == id)
-          console.log(data)
+      edit(id){
+        this.changeTitle='编辑教室';
+        this.show = true;
+        this.editText=this.dataSource.findIndex(item=>item.roomId==id);
+        this.form.name=this.dataSource[this.editText].name;
+        this.form.buildingId=this.dataSource[this.editText].buildingId;
+        this.form.floor=this.dataSource[this.editText].floor;
+        this.form.capacity=this.dataSource[this.editText].capacity;
+        this.form.type=this.dataSource[this.editText].type;
+        this.form.status=this.dataSource[this.editText].status;
+      },
+      async deleteItem(row) {
+        console.log(row.roomId)
+        let {data} = await this.$api.basic.classroom.deleteBuilding({ids: [row.roomId]});
+        console.log(data);
+        if(data&&data.success){
+          let {data} = await this.$api.basic.classroom.fetchList();
+          this.dataSource = data.rows;
           message.info('删除成功')
+        } else{
+          message.info('删除失败')
         }
-        return success
+        // return success
       },
     }
   };

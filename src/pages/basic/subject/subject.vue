@@ -12,7 +12,7 @@
         :dataSource="dataSource"
         :selectedRows="selectedRows"
         ><span slot="operation" slot-scope="text,record">
-          <a @click="showModal(record)">编辑</a>
+          <a @click="edit(record.id)">编辑</a>
           |
           <a @click="deleteItem(record.id)">删除</a>
           |<a @click="gotoNew(record.id)">子课程</a>
@@ -20,9 +20,9 @@
         </a-table>
     </div>
     <a-modal
-      title="新增课程"
+     :title="changeTitle"
       :visible="show"
-    >
+     :closable="false">
       <template slot="footer">
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk('ruleForm')">保存</a-button>
         <a-button key="back" @click="handleCancel">取消</a-button>
@@ -35,9 +35,7 @@
     </a-modal>
   </a-card>
 </template>
-
 <script>
-
 const columns = [
   {
     title: "课程编号",
@@ -68,6 +66,8 @@ export default {
       loading:false,
       selectedRowKeys: [],
       selectedRows: [],
+      changeTitle:'新增课程',
+      editText:-1,
       // form: {this.$form.createForm(this, { name: 'advanced_search' }),}
       form:{
         subjectName:"",
@@ -79,26 +79,47 @@ export default {
     this.dataSource=data.rows
     // console.log(data);
   },
-   beforeCreate() {
-    this.form = this.$form.createForm(this, { name: "subject" });
-  },
+  //  beforeCreate() {
+  //   this.form = this.$form.createForm(this, { name: "subject" });
+  // },
   methods: {
     showModal() {
-      this.show = true
+      this.show = true;
+      this.changeTitle='新增课程';
+    },
+    edit(id){
+      this.changeTitle='编辑课程';
+      this.show=true;
+      this.editText=this.dataSource.findIndex(item=>item.id==id)
+      this.form.subjectName=this.dataSource[this.editText].subName;
+      console.log(this.editText)
     },
     async handleOk(formName) {
-      let formData = {
-        subName:this.form.subjectName,
+      if(this.changeTitle=="新增课程"){
+        let formData = {
+          subName:this.form.subjectName,
+        }
+        let addData={...formData}
+        let {data} = await this.$api.basic.subject.saveMain(addData);
+        // this.dataSource.unshift(formData)
+        this.show = false;
+        this.$refs[formName].resetFields();
+        // this.form.resetFields()
+        let {data:buildData} = await this.$api.basic.subject.fetchMainList();
+        console.log("buildData",buildData)
+        this.dataSource = buildData.rows
+      }else{
+        let formData={
+          id:this.dataSource[this.editText].id,
+          subName: this.form.subjectName,
+        }
+        let addData={...formData}
+        let {data:saveData}=await this.$api.basic.subject.saveMain(addData);
+        let {data:subjectData}=await this.$api.basic.subject.fetchMainList();
+        console.log("subjectData",subjectData)
+        this.dataSource=subjectData.rows;
+        this.show=false;
       }
-      let addData={...formData}
-      let {data} = await this.$api.basic.subject.saveMain(addData);
-      // this.dataSource.unshift(formData)
-      this.show = false;
-      this.$refs[formName].resetFields();
-      // this.form.resetFields()
-      let {data:buildData} = await this.$api.basic.subject.fetchMainList();
-      console.log("buildData",buildData)
-      this.dataSource = buildData.rows
     },
     handleCancel() {
       this.show = false;

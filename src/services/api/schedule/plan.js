@@ -1,7 +1,7 @@
 /*
 * 排课计划模块接口列表
 * */
-import schedule from '.../schedule';    //导入接口域名列表
+import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'      //导入从http众创建的axios实例
 const baseUrl=base.root+'/a/schedulePlan'
 const baseUrl2=base.root+'/a/qualifiedStudent'
@@ -33,8 +33,9 @@ const plan={
     },
     //发布选课
     schedulesaveQua(params){
-        return axios.get(`${baseUrl2}/saveQualification.json`,params, {
+        return axios.post(`${baseUrl2}/saveQualification.json`,params, {
             'Content-Type': 'multipart/form-data'});
     }
 }
+export default plan
 

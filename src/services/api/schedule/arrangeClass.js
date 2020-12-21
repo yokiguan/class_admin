@@ -1,16 +1,16 @@
 /*
 * 选课排课模块接口列表
 * */
-import schedule from '.../schedule';    //导入接口域名列表
+import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'      //导入从http众创建的axios实例
 const baseUrl1=base.root+'/a/schedulePlan'
 const baseUrl2 = base.root + '/a/classroomSetting'
 const baseUrl3 = base.root + '/a/scheduleTeacherClass'
 const baseUrl4 = base.root + '/a/courseRule'
-const plan={
+const arrangeClass={
     // 选课排课 课时设置保存
     saveCoursetime(params){
-        return axios.get(`${baseUrl1}/saveData.json`,params, {
+        return axios.post(`${baseUrl1}/saveData.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //课节设置保存
@@ -22,6 +22,14 @@ const plan={
     getList(params){
         return axios.get(`${baseUrl1}/getClassTeaDataList.json`,params, {
             'Content-Type': 'multipart/form-data'});
+    },
+    // 排课计划查看
+    getSchedulePlan(params){
+        return axios.get(`${baseUrl1}/getDataList.json`,params, {
+            'Content-Type': 'multipart/form-data'});
+    },
+    deleteSchedulePlan(params){
+        return axios.get(`${baseUrl1}/deleteData.json`,{params:params})
     },
     //教室设置查看
     getClass(params){
@@ -63,4 +71,5 @@ const plan={
         });
     }
 }
+export default arrangeClass
 

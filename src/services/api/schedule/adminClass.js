@@ -1,14 +1,14 @@
 /*
 * 行政班排课模块接口列表
 * */
-import schedule from '.../schedule';    //导入接口域名列表
+import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'      //导入从http众创建的axios实例
 const baseUrl1 = base.root +'/a/scheduleCourse'
 const baseUrl2 = base.root + '/a/scheduleTeacherClass'
 const baseUrl3 = base.root + '/a/xzbRuleSetting'
 const baseUrl4 = base.root + '/a/xzbRuleBanAdjacent'
 const baseUrl5 = base.root + '/a/xzbRuleSingleDoubleLesson'
-const plan = {
+const adminClass = {
     //行政班排课查看
     //行政班排课修改
 
@@ -107,4 +107,5 @@ const plan = {
         });
     }
 }
+export default adminClass;
 

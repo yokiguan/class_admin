@@ -27,15 +27,6 @@
       </a-row>
     </a-form>
     <div>
-      <div class="operator">
-        <a-button @click="addNew" type="primary">新建</a-button>
-        <a-dropdown>
-          <a-menu @click="handleMenuClick" slot="overlay">
-            <a-menu-item key="delete">删除</a-menu-item>
-          </a-menu>
-          <a-button> 更多操作 <a-icon type="down" /> </a-button>
-        </a-dropdown>
-      </div>
       <admin-table
               :rowKey="'no'"
               :columns="columns"

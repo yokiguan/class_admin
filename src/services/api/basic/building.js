@@ -13,8 +13,7 @@ const building = {
 
     // 查询指定教学楼信息，用于教室规则等的教学楼选择，编辑模板前，先查询模板信息，利用模板id
     fetchBuilding(params){
-        return axios.get(`${baseUrl}/getDataInfo.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl}/getDataInfo.json`,{params});
     },
     // 教学楼新增接口
     saveBuilding(params){

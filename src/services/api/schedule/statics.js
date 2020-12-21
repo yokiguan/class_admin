@@ -1,12 +1,12 @@
 /*
 * 选课统计模块接口列表
 * */
-import schedule from '.../schedule';    //导入接口域名列表
+import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'      //导入从http众创建的axios实例
 const baseUrl1=base.root+'/a/scheduleResult'
 const baseUrl2=base.root+'/a/scheduleStatics'
 const baseUrl3=base.root+'/a/schedulePlan'
-const plan={
+const statics={
     // 课程组合统计查看
     getsubjectCombination(params){
         return axios.get(`${baseUrl1}/subjectCombination.json`,params, {
@@ -43,4 +43,5 @@ const plan={
             'Content-Type': 'multipart/form-data'});
     }
 }
+export default statics
 
