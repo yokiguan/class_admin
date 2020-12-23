@@ -23,14 +23,14 @@ const arrangeClass={
         return axios.get(`${baseUrl1}/getClassTeaDataList.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
-    // // 排课计划查看
-    // getSchedulePlan(params){
-    //     return axios.get(`${baseUrl1}/getDataList.json`,params, {
-    //         'Content-Type': 'multipart/form-data'});
-    // },
-    // deleteSchedulePlan(params){
-    //     return axios.get(`${baseUrl1}/deleteData.json`,{params:params})
-    // },
+    // 排课计划查看
+    getSchedulePlan(params){
+        return axios.get(`${baseUrl1}/getDataList.json`,params, {
+            'Content-Type': 'multipart/form-data'});
+    },
+    deleteSchedulePlan(params){
+        return axios.get(`${baseUrl1}/deleteData.json`,{params:params})
+    },
     //教室设置查看
     getClass(params){
         return axios.get(`${baseUrl2}/getDatasList.json`,params, {

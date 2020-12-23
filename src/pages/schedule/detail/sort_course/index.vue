@@ -268,9 +268,20 @@
                 tableData4,
                 columns,
                 tableData,
+                planData:"",
                 visible: false,
                 loading: false
             };
+        },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
         },
         methods: {
             maxTime: function () {
