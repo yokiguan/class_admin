@@ -22,12 +22,16 @@
                     <a-tree
                             :tree-data="buildingsData"
                             checkable
-                            v-model="checkedKeys"
+                            v-model="checkedBuildingKeys"
+                            :selected-keys="selectBuildingKeys"
+                            @select="selectBuilding"
                             style="font-size: 1.3em;"/>
                 </div>
                 <div class="right">
-                    <LocationRegular/>
-                    <CurriculumRegular/>
+                    <LocationRegular v-if="showcomLocation"></LocationRegular>
+                    <CurriculumRegular v-if="showcomCurriculum"></CurriculumRegular>
+<!--                    <LocationRegular></LocationRegular>-->
+<!--                    <CurriculumRegular></CurriculumRegular>-->
                 </div>
             </div>
         </div>
@@ -38,36 +42,6 @@
     import ClassRegular from './class'
     import LocationRegular from './location'
     import CurriculumRegular from "./curriculum"
-    // const treeData = [
-    //     {
-    //         name: '教学组',
-    //         key: '0-0',
-    //         child: [
-    //             { name: '高一',
-    //                 key: '0-0-0',
-    //                 child:[{name:'语文',key:'0-0-0-0'}]
-    //             },
-    //             { name: '高二', key: '0-0-1' ,
-    //                 child:[
-    //                     { name:'语文', key: '0-0-2-0',},
-    //                     {name:'数学',key:'0-0-2-1'},
-    //                     {name:'英语',key:'0-0-2-2',
-    //                         child:[{
-    //                             name:'赵卫民',key:'0-0-0-2-0'},
-    //                             {name:'李援朝',key: '0-0-0-2-1'}]},
-    //                 ],},
-    //             { name: '高三', key: '0-0-2' },
-    //         ],
-    //     },{
-    //         name: '教务组',
-    //         key: '0-1',
-    //         child: [
-    //             { name: '初一', key: '0-1-0'},
-    //             { name: '初二', key: '0-1-1' },
-    //             { name: '初三', key: '0-1-2' },
-    //         ],
-    //     },
-    // ];
     export default {
         name:'teacherRule',
         components: {ClassRegular,LocationRegular,CurriculumRegular},
@@ -75,10 +49,13 @@
             return {
                 // treeData,
                 buildingsData:[],
+                showcomLocation:false,
+                showcomCirriculum:false,
                 myBarOption:{
                     barColor:'block'
                 },
-                checkedKeys: [],
+                checkedBuildingKeys:[],
+                selectBuildingKeys:[],
                 disabled: false,
                 replaceFields: {
                     children: 'child',
@@ -88,13 +65,12 @@
         },
         created(){
             this.getData()
-            // let {data} = await this.$api.basic.classroom.fetchRoomList();
-            // console.log(data)
-            // data.result.map(item=>{
-            //  this.buildingsData.push(item.building_name);
-            // })
         },
-
+        watch:{
+          checkedBuildingKeys(val){
+              console.log('onCheck',val);
+          }
+        },
         methods: {
             async getData () {
                 console.log(this.$api.basic.building.fetchList())
@@ -129,19 +105,18 @@
                     this.buildingsData.push(numberTree)
                     console.log(data.result[i])
                 }
-                // data.result.map(item=> {
-                //     this.buildingsData.push(item.building_name);
-                // })
                 console.log(this.buildingsData)
-                // console.log(data)
             },
-            onSelect(selectedKeys, info) {
-                console.log('selected', selectedKeys, info);
+            onCheck(checkedKeys){
+              this.selectBuildingKeys=checkedKeys;
+              // this.$router.push('/basic/classroom/rule/location');
+              this.showcomLocation=true;
             },
-            onCheck(checkedKeys, info) {
-                console.log('onCheck', checkedKeys, info);
+            selectBuilding(selectBuildingsKeys,info){
+                this.selectBuildingKeys=selectBuildingsKeys;
+                // this.$router.push('/basic/classroom/rule/location');
+                this.showcomLocation=true;
             },
-            change(){},
         },
     };
 </script>

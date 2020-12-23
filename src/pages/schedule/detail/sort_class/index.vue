@@ -3,16 +3,14 @@
         <div class="result">
             <a-row>
                 <a-col :span="12">
-                    <span style="font-size:1.5em">高一2019-2020第一学期分班结果</span>
+                    <span style="font-size:1.5em">{{this.planData}}</span>
                     <br>
                     <span style="margin-left:2em">未分班人数<font style="color:red">100</font>人</span>
                 </a-col>
                 <a-col :span="12">
                     <a-row>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="autoSortClass">
-                            <router-link to="/schedule/detail/sort_class/auto">自动分班</router-link></a-button></a-col>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="manaulSortClass">
-                            <router-link to="/schedule/detail/sort_class/manual">手动分班</router-link></a-button></a-col>
+                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="autoSortClass">自动分班</a-button></a-col>
+                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="manaulSortClass">手动分班</a-button></a-col>
                         <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="clearTable">清空</a-button></a-col>
                         <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
                     </a-row>
@@ -20,17 +18,17 @@
             </a-row>
         </div>
         <div class="table-bg">
-            <a-table :columns="columns"
-                     :data-source="tableData"
+            <a-table :rowKey="'subId'"
+                     :columns="columns"
+                     :data-source="dataSource"
                      :bordered="true"
                      :pagination="false">
-                <div slot="action" slot-scope="situation">
-                    <li
-                            v-for="(s, index) in situation"
-                            :key="index"
-                            class="situation">
+                <div slot="action" slot-scope="scheduleTeacherClassEntities">
+                    <li v-for="(s, index) in scheduleTeacherClassEntities" :key="index" class="situation">
                         <a-row>
-                            <a-col :span="16"><span>{{s}}</span></a-col>
+                            <a-col :span="16"><span>{{s.className}}</span></a-col>
+                            <a-col :span="4"><span>{{s.teacherId}}</span></a-col>
+                            <a-col :span="4"><span>{{s.number}}</span></a-col>
                             <a-col :span="4"><a style="color:blue" @click="changeSituation" type="dashed">修改</a></a-col>
                             <a-col :span="4"><a style="color:red" @click="onDelete" type="dashed">删除</a></a-col>
                         </a-row>
@@ -38,156 +36,145 @@
                 </div>
             </a-table>
         </div>
-        <!--   修改-->
-        <create-modal
-                :visible="editvisible"
-                :close="false"
-                width="700px"
-                :loading="loading"
-                @modalClosed="closed"
-                @modalSubmit="save">
-            <div slot="content">
-                <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:15}" @submit="addClassHandleSubmint"
-                        style="margin-left: 30px">
-                    <a-form-item label="班级名称：" >
-                        <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                        <a-input placeholder="请输入"/>
-                    </a-form-item>
-                    <a-form-item label="任课教师：">
-                        <a-select default-value="请选择" style="width: 100%">
-                        </a-select>
-                    </a-form-item>
-                </a-form>
-            </div>
-        </create-modal>
+        <!--  选课分班修改-->
+        <a-modal
+                :visible="chooseSortClass"
+                :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
+            </template>
+            <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:15}" style="margin-left: 30px">
+                <a-form-model-item label="班级名称：" props="name" ref="name" >
+                    <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
+                    <a-input placeholder="请输入" v-model="form.name"/>
+                </a-form-model-item>
+                <a-form-model-item label="任课教师：" props="teacher" ref="teacher">
+                    <a-select placeholder="请选择任课教师" v-model="form.teacher">
+                        <a-select-option value="0">智能</a-select-option>
+                        <a-select-option value="1">赵老师</a-select-option>
+                    </a-select>
+                </a-form-model-item>
+            </a-form-model>
+        </a-modal>
     </div>
 </template>
 <script>
     import CreateModal from "@/components/modal/CreateModal";
+    import TagSelectOption from "../../../../components/tool/TagSelectOption";
     const columns = [
         { title: '课程名称',
-            dataIndex: 'name',
-            key: 'name',
+            dataIndex: 'subId',
             align:'center',
-            width:'10%',
         },
         {
             title: '总人数',
-            dataIndex: 'all',
-            key: 'all',
+            dataIndex: 'total',
             align:'center',
-            width:'10%',
         },
-        {
-            title: '未分班人数',
-            dataIndex: 'unsorted',
-            key: 'unsorted',
-            align:'center',
-            width:'10%',
-        },
+        // {
+        //     title: '未分班人数',
+        //     dataIndex: 'unsorted',
+        //     align:'center',
+        //     width:'10%',
+        // },
         {
             title: '分班个数',
-            key: 'classNum',
             dataIndex: 'classNum',
             align:'center',
-            width:'10%',
         },
         {
             title: '分班情况',
-            dataIndex: 'situation',
-            key: 'situation',
+            dataIndex: 'scheduleTeacherClassEntities',
             scopedSlots: { customRender: 'action' },
             align:'center',
         },
     ];
-    let tableData = [
-        {
-            key: 0,
-            name: '高一语文',
-            all: 30,
-            unsorted: 10,
-            classNum: 4,
-            situation: [
-                "高一语文1班  张凯元   30人",
-                "高一语文1班  张凯元   30人",
-                "高一语文1班  张凯元   30人",
-                "高一语文1班  张凯元   30人",
-            ]
-        },
-        {
-            key: 1,
-            name: '高一数学',
-            all: 30,
-            unsorted: 10,
-            classNum: 4,
-            situation: [
-                "高一语文1班  张凯元   30人",
-                "高一语文1班  张凯元   30人"
-            ]
-        },
-        {
-            key: 2,
-            name: '高一英语',
-            all: 30,
-            unsorted: 10,
-            classNum: 4,
-            situation: [
-                "高一语文1班  张凯元   30人"
-            ]
-        },
-    ];
     export default {
-        components: {CreateModal},
+        components: {TagSelectOption, CreateModal},
         data() {
             return {
-                tableData,
+                dataSource:[],
                 columns,
-                editvisible: false,
-                loading:false
+                chooseSortClass: false,
+                loading:false,
+                planData:"",
+                planId:"",
+                form:{
+                    name:"",
+                    teacher:"",
+                },
+                rules:{
+                    name:[
+                        {
+                            required:true,
+                            message:"请输入人数！",
+                            trigger:"blur"
+                        }
+                    ],
+                    teacher:[
+                        {
+                            required:true,
+                            message:"请选择任课教师！",
+                            trigger:"blur"
+                        }
+                    ],
+                }
             };
         },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+                console.log(this.planData);
+            };
+            //选课分班信息查看
+            let {data}=await this.$api.schedule.sortClass.classGet({planId});
+            this.dataSource=data.rows;
+            console.log(this.dataSource);
+        },
         methods: {
-            changeSituation: function () {
-                this.editvisible = true;
+            changeSituation () {
+                this.chooseSortClass = true;
+
             },
-            closed: function () {
-                this.editvisible = false
-                this.loading= false
+            //保存修改
+            async handleOk(){
+                let formData={
+
+                }
+                this.chooseSortClass=false;
+                let {data}=await this.$api.schedule.sortClass.classAlter();
             },
-            save: function () {
-                console.log(this.$refs.createForm)
-                this.loading = true
-                setTimeout(() => {
-                    this.editvisible = false
-                    this.loading = false
-                }, 2000)
-                const { count, tableData} = this;
-                const newData = {
-                    key: count,
-                    name: '高一英语',
-                    all: 30,
-                    unsorted: 10,
-                    classNum: 4,
-                    situation: [
-                        "高一语文1班  张凯元   30人"]
-                };
-                this.tableData= [...tableData, newData];
-                this.count = count + 1;
+            //取消
+            handleCancel(){
+                this.chooseSortClass=false;
             },
             back(){
               this.$router.go(-1)
             },
-            onDelete(){
-                const dataSource = [...this. tableData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this. tableData = dataSource
+            async onDelete(id){
+                let {data}=await this.$api.schedule.sortClass.classDelete({ids:[id]});
+                console.log(data);
+                // const dataSource = [...this. dataSource];
+                // dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                // this. dataSource= dataSource
             },
-            form(){},
             addClassHandleSubmint(){},
-            manaulSortClass(){},
-            autoSortClass(){},
+            //手动分班
+            manaulSortClass(){
+                this.$router.push(`/schedule/detail/sort_class/manual?planId=${this.planId}`)
+            },
+            //自动分班
+            autoSortClass(){
+                this.$router.push(`/schedule/detail/sort_class/auto?planId=${this.planId}`)
+            },
             clearTable(){
-                this. tableData=[]
+                this. dataSource=[]
             }
         }
     };

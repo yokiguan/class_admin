@@ -12,6 +12,7 @@ export default new Router({
       name: '首页',
       component: TabsView,
       redirect: '/basic',
+      hidden:true,
       children: [
         // 基础设置
         {
@@ -19,7 +20,8 @@ export default new Router({
           component: BlankView,
           redirect: '/basic/template',
           name: '基础设置',
-          meta: { icon: 'profile' },
+          meta: {
+            icon: 'profile' },
           children: [
             {
               path: '/basic/template',
@@ -28,11 +30,12 @@ export default new Router({
               redirect: '/basic/template/admin',
               children: [{
                 path: '/basic/template/admin',
-                name: '课表模板管理',
+                  name: '课表模板管理',
                 component: () => import('@/pages/basic/templet/index'),
               },
                 {
                   path: '/basic/template/detail',
+                  hidden:true,
                   name: '课表模板新增',
                   component: () => import('@/pages/basic/templet/detail')
                 }
@@ -50,7 +53,8 @@ export default new Router({
                 {
                   path: '/basic/classroom/rule',
                   name: '教室时间规则',
-                  component:() => import('@/pages/basic/classroom/rule/index')
+                  hidden:true,
+                  component:() => import('@/pages/basic/classroom/rule')
                 }
               ]
             },
@@ -71,6 +75,7 @@ export default new Router({
               },
                 {
                   path: '/basic/subject/subsubject',
+                  hidden:true,
                   name: '子课程管理',
                   component: () => import('@/pages/basic/subject/subsub'),
                 }
@@ -88,6 +93,7 @@ export default new Router({
               },
                 {
                   path: '/basic/grade/subject',
+                  hidden:true,
                   name: '课程管理',
                   component: () => import('@/pages/basic/grade/subject'),
                 }

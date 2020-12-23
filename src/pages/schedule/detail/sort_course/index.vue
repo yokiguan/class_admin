@@ -10,7 +10,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col><button style="background-color: blue;
                         color: white;
                         height: 40px;
@@ -57,8 +57,7 @@
                         border: none;
                         border-radius: 5px;
                         margin-top: 50px;
-                        width: 150px">
-                    下一步</button>
+                        width: 150px">下一步</button>
             </router-link>
             <create-modal
                     :visible="visible"

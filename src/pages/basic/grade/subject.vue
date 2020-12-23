@@ -44,7 +44,6 @@ const columns = [
   },
 ];
 export default {
-  name: "grade·subjects",
   data() {
     return {
       columns,
@@ -65,18 +64,14 @@ export default {
         },
     };
   },
-   async created() {
-       let queryString=(window.location.hash || " ").split('?')[1]
-       let id=(queryString || " ").split('=')[1]
-       if(id){
-           let { data } = await this.$api.basic.grade.fetchGrade({gradeId:id});
-           this.dataSource=data.rows;
-           console.log(data);
-       }
-  },
-    beforeCreate() {
-        this.form = this.$form.createForm(this, {name: "grade·subjects"});
-    },
+  // async created(){
+  //     let querystring=(window.location.hash ||" ").split('?')[1]
+  //     let id=(querystring || " ").split('=')[1];
+  //     if(id){
+  //         let {data:{result,success}}=await this.$api.basic.subject.fetchGrade({id});
+  //         console.log(result.subjectChildEntitys)
+  //     }
+  // }  ,
   methods: {
     addNew() {
         this.showSubject=true;

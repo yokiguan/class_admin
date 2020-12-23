@@ -205,17 +205,17 @@
         }else if(item.text==='选课统计'){
           this.$router.push( `/schedule/detail/statistics?planId=${this.planId}`)
         }else if(item.text==='选课分班'){
-          this.$router.push(`/schedule/detail/sort_class/index?planId=${this.planId}`)
+          this.$router.push(`/schedule/detail/sort_class/admin?planId=${this.planId}`)
         }else if(item.text==='选课排课'){
-          this.$router.push('/schedule/detail/sort_course/index')
+          this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
         }else if(item.text==='行政班排课'){
-          this.$router.push('/schedule/detail/class_admin/index')
+          this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
         }else if(item.text==='走班排课任务'){
-          this.$router.push('/schedule/detail/task_mobile/index')
+          this.$router.push(`/schedule/detail/task_mobile/index?planId=${this.planId}`)
         }else if(item.text==='课表'){
-          this.$router.push('/schedule/detail/curriculum/index')
+          this.$router.push(`/schedule/detail/curriculum/index?planId=${this.planId}`)
         }else if(item.text==='行政班排课任务'){
-          this.$router.push('/schedule/detail/task_admin/index')
+          this.$router.push(`/schedule/detail/task_admin/index?planId=${this.planId}`)
         }  },
       onSelectChange( selectedRowKeys,selectedRows) {
         this.selectedRowKeys = selectedRowKeys;

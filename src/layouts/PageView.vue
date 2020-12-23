@@ -3,12 +3,14 @@
     <div v-if="this.extraImage && !isMobile" slot="extra" class="extraImg">
       <img :src="extraImage"/>
     </div>
-    <page-toggle-transition :animate="animate.name" :direction="animate.direction">
+    <div class="animate__animated animate__fadeInRight">
       <keep-alive v-if="multiPage">
         <router-view ref="page" />
       </keep-alive>
       <router-view ref="page" v-else />
-    </page-toggle-transition>
+    </div>
+
+
   </page-layout>
 </template>
 

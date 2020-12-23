@@ -23,8 +23,7 @@ const plan={
     },
     //排课计划查看（单个）
     schedulegetInfo(params){
-        return axios.get(`${baseUrl}/getDataInfo.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl}/getDataInfo.json`,{params});
     },
     //发布选课查看学生
     scheduleDistribute(params){

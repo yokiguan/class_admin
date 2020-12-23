@@ -27,9 +27,6 @@ const subject = {
     },
     // 主课程对应子课程列表查看
     fetchChildList(params){
-        // axios.get('/user', {
-        //     params:  params // 这里就是你传进来的那个参数了
-        //   })
      return axios.get(`${baseUrl}/getChildSubjectDataList.json`,{params});
     },
 

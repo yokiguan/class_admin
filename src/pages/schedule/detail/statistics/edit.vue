@@ -10,8 +10,8 @@
         <div class="content">
             <a-row>
                 <a-col :span="12">
-                        <span style="font-size:1.5em">高一2019-2020第一学期选课结果</span>
-                        <span class="link-font-color" style="margin-left:2em">选课时间：2020/03/01 ——2020/03/15</span>
+                        <span style="font-size:1.5em">{{this.planData}}</span>
+                        <span class="link-font-color" style="margin-left:2em">选课时间：{{form.startChooseTime}} ——{{form.endChooseTime}}</span>
                         <span class="link-font-color" style="margin-left:2em">选课中</span>
                 </a-col>
                 <a-col :span="12">
@@ -25,56 +25,66 @@
         </div>
         <!--       修改选课时间弹窗-->
         <a-modal
-                :visible="visible"
-                :loading="loading"
+                title="修改选课时间"
+                :visible="changeChooseTimeModal"
                 :closable="false">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
-            <a-form :form="form" :label-col="{ span:9 }" :wrapper-col="{ span: 5}">
-                <a-form-item label="选课开始时间：" prop="time" ref="time">
-                    <a-date-picker v-model="startValue"
-                        show-time
-                        format="YYYY-MM-DD HH:mm:ss"
-                        placeholder="Start"
-                        openChange="handleStartOpenChange"/>
-                </a-form-item>
-                <a-form-model-item label="选课结束时间" >
-                    <a-date-picker v-model="endValue"
-                        show-time
-                        format="YYYY-MM-DD HH:mm:ss"
-                        placeholder="End"
-                        :open="endOpen"
-                        @openChange="handleEndOpenChange"/>
-                </a-form-model-item>
-            </a-form>
+            <div class="chooseData">
+                <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules"
+                              :label-col="{span:6}" :wrapper-col="{span:15}">
+                    <a-form-model-item label="选课开始时间：" prop="startChooseTime" ref="startChooseTime">
+                        <a-date-picker v-model="form.startChooseTime"
+                                       :disabled-date="disabledStartDate"
+                                       show-time
+                                       format="YYYY-MM-DD"
+                                       placeholder="设置开始选课时间"
+                                       @openChange="handleStartOpenChange"
+                                       valueFormat="YYYY-MM-DD"/>
+                    </a-form-model-item>
+                    <a-form-model-item label="选课结束时间：" prop="endChooseTime" ref="endChooseTime">
+                        <a-date-picker v-model="form.endChooseTime"
+                                       :disabled-date="disabledEndDate"
+                                       show-time
+                                       format="YYYY-MM-DD"
+                                       placeholder="设置选课结束时间"
+                                       :open="endOpen"
+                                       @openChange="handleEndOpenChange"
+                                       valueFormat="YYYY-MM-DD"/>
+                    </a-form-model-item>
+                </a-form-model>
+
+            </div>
         </a-modal>
         <div class="info link-font-color">
-            已有900人选课 （共1000人）<font style="color:red">100人未选</font></div>
+            已有{{this.chooseCourseData.isChoosen}}人选课 （共{{this.chooseCourseData.total}}人）<font style="color:red">{{this.chooseCourseData.notChoosen}}人未选</font></div>
         <div class="table-bg">
             <!-- statistics -->
             <!-- table -->
             <a-table
-                    :key="'key'"
+                    :rowKey="'subChildId'"
                     :columns="columns"
-                    :data-source="classData"
+                    :data-source="dataSource"
                     :bordered = "true"
                     :pagination = "false">
-                <span slot="add" @click="addStudent">添加</span>
-                <div slot="group">
-                    <template v-for="(tag, index) in tags">
-                        <a-tooltip v-if="tag.length > 20" :key="tag" :title="tag">
-                            <a-tag :key="tag" :closable="index !== 0" @close="() => handleClose(tag)">
-                                {{ `${tag.slice(0, 20)}...` }}
+                <span slot="operation" @click="addStudent">添加</span>
+                <div slot="studentInfoDtoList" slot-scope="text,record,index">
+                    <template v-for="(tag) in text"  >
+
+                        <a-tooltip v-if="tag.length > 20" :title="tag">
+                            <a-tag  closable @close="() => handleClose(tag.id)">
+                                {{tag}}
                             </a-tag>
                         </a-tooltip>
-                        <a-tag v-else :key="tag" :closable="index !== 0" @close="() => handleClose(tag)">
-                            {{ tag }}
+                        <a-tag v-else closable @close="() => handleClose(tag.id)">
+                            {{ tag.stuName}}
                         </a-tag>
                     </template>
+
                     <a-input
-                            v-if="inputVisible"
+                            v-if="inputVisible && activeIndex === index"
                             ref="input"
                             type="text"
                             size="small"
@@ -84,7 +94,7 @@
                             @blur="handleInputConfirm"
                             @keyup.enter="handleInputConfirm"
                     />
-                    <a-tag v-else style="background: #fff; borderStyle: dashed;" @click="showInput">
+                    <a-tag v-else style="background: #fff; borderStyle: dashed;" @click="showInput(index)">
                         <a-icon type="plus" /> New Tag
                     </a-tag>
                 </div>
@@ -100,9 +110,9 @@
                 <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
-            <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}"
+            <a-form-model :form="form" :label-col="{span:5}" :wrapper-col="{span:12}"
                     style="">
-                <a-form-item label="未选课人员：">
+                <a-form-model-item label="未选课人员：">
                     <a-radio-group v-decorator="['未选课人员：']">
                         <a-radio value="a">
                            杨安宁
@@ -114,8 +124,8 @@
                             张凯元
                         </a-radio>
                     </a-radio-group>
-                </a-form-item>
-            </a-form>
+                </a-form-model-item>
+            </a-form-model>
         </a-modal>
     </div>
 </template>
@@ -125,118 +135,136 @@
     const columns = [
         {
             title: '课程',
-            dataIndex: 'name',
+            dataIndex: 'subName',
             align:'center',
-            width:'8%',
         },
         {
             title: '已选人数',
-            dataIndex: 'count',
+            dataIndex: 'stuNumber',
             align:'center',
-            width:'5%',
         },
         {
             title: '课程组合',
-            dataIndex: 'group',
+            dataIndex: 'studentInfoDtoList',
             align:'center',
-            width:'80%',
-            scopedSlots: { customRender: "group" },
+            scopedSlots: {customRender: 'studentInfoDtoList'}
         },
         {
             title: '操作',
-            dataIndex: 'add',
+            dataIndex: 'operation',
             align:'center',
-            scopedSlots:{customRender:'add'},
-            width:'7%',
+            scopedSlots:{customRender:'operation'},
         },
     ]
-    const classData = [
-        {
-            key: 0,
-            name: '政治学修',
-            count: 600,
-        },
-        {
-            key: 1,
-            name: '政治选修',
-            count: 200,
-        },
-        {
-            key: 2,
-            name: '物理学修',
-            count: 100,
-        },
-    ];
     export default {
         data() {
             return {
                 size : "small",
-                classData,
+                dataSource:[],
                 columns,
                 visible:false,
                 addVisit:false,
+                changeChooseTimeModal:false,
+                chooseCourseData:"",
+                planData:" ",
                 loading:false,
-                startValue: null,
-                endValue: null,
-                endOpen: false,
-                tags: ['周翔', '张敏钰', '张凌伟','许佳诺','徐宏达','徐鼎钦','肖若愚','吴静希','翁柳琪'],
+                endOpen:false,
+                form:{
+                    startChooseTime:null,
+                    endChooseTime:null,
+                },
+                rules:{
+                    startChooseTime:[
+                        {
+                            required:true,
+                            message:"请选择开始选课时间",
+                            trigger:"change",
+                        }
+                    ],
+                    endChooseTime:[
+                        {
+                            required:true,
+                            message:"请选择选课结束时间",
+                            trigger:"change",
+                        }
+                    ]
+                },
                 inputVisible: false,
-                inputValue: ''
+                inputValue: '',
+                planId:"",
+                activeIndex:""
             };
         },
-        beforeCreate() {
-            this.form = this.$form.createForm(this, { name: 'time_related_controls' });
-        },
+    async created(){
+        let queryString=(window.location.hash||" ").split('?')[1]
+        let planId=(queryString || " ").split('=')[1]
+        this.planId=planId;
+        if(planId){
+            //获取单个选课计划的信息
+            let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId})
+            this.planData=result.name
+            console.log(this.planData);
+        }
+         //选课结果详情查看
+        let {data}=await this.$api.schedule.statics.getResult({planId});
+        this.dataSource=data.result;
+        console.log(this.dataSource);
+        //统计选课人数以及课程被选情况
+        let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId});
+        this.chooseCourseData=chooseCourse.result;
+        console.log(this.chooseCourseData)
+    },
         methods: {
             changeTime(){
-                this.visible=true;
+                this.changeChooseTimeModal=true;
             },
-            disabledStartDate(startValue) {
-                const endValue = this.endValue;
-                if (!startValue || !endValue) {
+            disabledStartDate(startValue){
+                const endValue=this.form.startChooseTime
+                if(!startValue||!endValue){
                     return false;
                 }
-                return startValue.valueOf() > endValue.valueOf();
+                return startValue.valueOf()>endValue.valueOf();
             },
-            disabledEndDate(endValue) {
-                const startValue = this.startValue;
-                if (!endValue || !startValue) {
+            disabledEndDate(endValue){
+                const startValue=this.form.startChooseTime;
+                if(!endValue||!startValue){
                     return false;
                 }
-                return startValue.valueOf() >= endValue.valueOf();
+                return startValue.valueOf()>=endValue.valueOf();
             },
-            handleStartOpenChange(open) {
-                if (!open) {
-                    this.endOpen = true;
+            handleStartOpenChange(open){
+                if(!open){
+                    this.endOpen=true;
                 }
             },
-            handleEndOpenChange(open) {
-                this.endOpen = open;
-            },
-            handleSelectChange(value) {
-                console.log(value);
-                this.form.setFieldsValue({
-                    // note: `Hi, ${value === 'male' ? 'man' : 'lady'}!`,
-                });
+            handleEndOpenChange(open){
+                this.endOpen=open;
             },
             closed: function () {
-                this.visible = false
+                this.changeChooseTimeModal = false
                 this.loading = false
             },
-            addStudent(){
+            async addStudent(id,subId){
+                id=this.planId
+                subId=this.dataSource.subChildId;
                 this.addVisit=true;
+                let {data}=await this.$api.schedule.statics.alterResultButtonFind({id,subId});
+                console.log(data);
             },
-            handleOk() {
-                this.loading = true;
-                setTimeout(() => {
-                    this.addVisit = false;
-                    this.visible=false;
-                    this.loading = false;
-                }, 2000);
+            async handleOk(id) {
+                id=this.planId;
+                this.changeChooseTimeModal=false;
+                //保存选课时间
+                //修改选课时间alterTime
+                let timeLimit=this.form.startChooseTime+"——"+this.form.endChooseTime
+                let addData={id,timeLimit}
+                let {data:changeChooseTime}=await this.$api.schedule.statics.alterTime(addData);
+                console.log(changeChooseTime)
+                // this.dataSource=data.result;
             },
             handleCancel() {
                 this.addVisit = false;
-                this.visible=false;
+                this.changeChooseTimeModal=false;
             },
             back(){
                 this.$router.go(-1)
@@ -244,14 +272,17 @@
             Clear(){
                 this. classData=[]
             },
-            handleClose(removedTag) {
+            //删除学生
+            async handleClose(id) {
+                let {data}=await this.$api.schedule.statics.delResult({ids:[id]})
                 const tags = this.tags.filter(tag => tag !== removedTag);
                 console.log(tags);
                 this.tags = tags;
             },
 
-            showInput() {
+            showInput(value) {
                 this.inputVisible = true;
+                this.activeIndex  = value
                 this.$nextTick(function() {
                     this.$refs.input.focus();
                 });
@@ -259,7 +290,12 @@
             handleInputChange(e) {
                 this.inputValue = e.target.value;
             },
-            handleInputConfirm() {
+            async handleInputConfirm(id,subId,stuId) {
+                id=this.planId
+                subId=this.dataSource.subChildId;
+                stuId=this.tags;
+                let {data}=await this.$api.schedule.statics.alterResultButtonResult({id,subId,stuId});
+                console.log(data);
                 const inputValue = this.inputValue;
                 let tags = this.tags;
                 if (inputValue && tags.indexOf(inputValue) === -1) {
@@ -271,6 +307,7 @@
                     inputVisible: false,
                     inputValue: '',
                 });
+
             },
         }
     };

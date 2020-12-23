@@ -177,9 +177,6 @@
       //   this.buildings.push(item.name)
       // })
     },
-    // beforeCreate() {
-    //   this.form = this.$form.createForm(this, { name: "classroom" });
-    // },
     methods: {
        showModal() {
          this.changeTitle='新增教室'
@@ -206,7 +203,7 @@
           this.show = false;
         }else{
           let formData = {
-            roomId:this.dataSource[this.editText].roodId,
+            roomId:this.dataSource[this.editText].roomId,
             name:this.form.name,
             buildingId:this.form.buildingId,
             floor:this.form.floor,
@@ -247,7 +244,7 @@
         this.form.buildingId=this.dataSource[this.editText].buildingId;
         this.form.floor=this.dataSource[this.editText].floor;
         this.form.capacity=this.dataSource[this.editText].capacity;
-        this.form.type=this.dataSource[this.editText].type;
+        this.form.type=this.dataSource[this.editText].type==0?'专业教学场地':1?'公共教学场地':'行政班教室';
         this.form.status=this.dataSource[this.editText].status;
       },
       async deleteItem(row) {
@@ -261,7 +258,6 @@
         } else{
           message.info('删除失败')
         }
-        // return success
       },
     }
   };

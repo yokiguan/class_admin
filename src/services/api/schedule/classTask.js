@@ -13,7 +13,7 @@ const  classTask = {
     // 开始
     // 排课 保存/修改
     updateSchedule(params){
-        return axios.get(`${baseUrl1}/updateSchedule.json`,params, {
+        return axios.post(`${baseUrl1}/updateSchedule.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //走班排课任务页面
@@ -29,22 +29,22 @@ const  classTask = {
     },
     //教室树形列表查询
     getClassList(params){
-        return axios.get(`${baseUrl3}/getClassroomList.json`,params, {
+        return axios.post(`${baseUrl3}/getClassroomList.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //课程列表查询
     getCourseList(params){
-        return axios.get(`${baseUrl4}/getClassList.json`,params, {
+        return axios.post(`${baseUrl4}/getClassList.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //学生列表查看
     getStudentList(params){
-        return axios.get(`${baseUrl5}/getStudentList.json`,params, {
+        return axios.post(`${baseUrl5}/getStudentList.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //按姓名查找学生
     getStudent(params) {
-        return axios.get(`${baseUrl5}/getStudent.json`, params, {
+        return axios.post(`${baseUrl5}/getStudent.json`, params, {
             'Content-Type': 'multipart/form-data'});
     },
     //整体/按老师/按教室/按课程/按学生/按班级查看

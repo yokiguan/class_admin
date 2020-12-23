@@ -102,8 +102,6 @@
     name: "CardList",
     data() {
       return {
-        extraImage:
-                "https://gw.alipayobjects.com/zos/rmsportal/RzwpdLnhmvDJToTdfDPe.png",
         dataSource:[],
         // modal
         visible : false,

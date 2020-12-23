@@ -10,7 +10,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="18"><span style="font-size:1.5em">高一2019-2020第一学期排课计划 -手动分班</span></a-col>
+                <a-col :span="18"><span style="font-size:1.5em">{{this.planData}} -手动分班</span></a-col>
                 <a-col><button style="width: 100px;height: 40px;background-color: blue;color: white;border-radius: 5px;border: none" @click="back">返回</button></a-col>
             </a-row>
         </div>
@@ -96,10 +96,7 @@
     </div>
 </template>
 <script>
-    // import echarts from 'echarts'
-
     import CreateModal from "../../../../components/modal/CreateModal";
-
     const columns = [
         { title: '学科',
             dataIndex: 'subject',
@@ -114,7 +111,6 @@
             scopedSlots: { customRender: 'situation' }
         },
     ];
-
     let tableData = [
         {
             key: 0,
@@ -145,10 +141,21 @@
                 columns,
                 loading:false,
                 visible: false,
+                planData:"",
                 tags: ['Unremovable', 'Tag 2', 'Tag 3Tag 3Tag 3Tag 3Tag 3Tag 3Tag 3'],
                 inputVisible: false,
                 inputValue: '',
             };
+        },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
         },
         methods: {
             add: function () {

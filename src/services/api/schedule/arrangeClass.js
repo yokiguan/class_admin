@@ -15,7 +15,7 @@ const arrangeClass={
     },
     //课节设置保存
     saveLesson(params){
-        return axios.get(`${baseUrl1}/saveSelectLessonData.json`,params, {
+        return axios.post(`${baseUrl1}/saveSelectLessonData.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //课程设置 列表信息查看
@@ -23,14 +23,14 @@ const arrangeClass={
         return axios.get(`${baseUrl1}/getClassTeaDataList.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
-    // 排课计划查看
-    getSchedulePlan(params){
-        return axios.get(`${baseUrl1}/getDataList.json`,params, {
-            'Content-Type': 'multipart/form-data'});
-    },
-    deleteSchedulePlan(params){
-        return axios.get(`${baseUrl1}/deleteData.json`,{params:params})
-    },
+    // // 排课计划查看
+    // getSchedulePlan(params){
+    //     return axios.get(`${baseUrl1}/getDataList.json`,params, {
+    //         'Content-Type': 'multipart/form-data'});
+    // },
+    // deleteSchedulePlan(params){
+    //     return axios.get(`${baseUrl1}/deleteData.json`,{params:params})
+    // },
     //教室设置查看
     getClass(params){
         return axios.get(`${baseUrl2}/getDatasList.json`,params, {
@@ -38,14 +38,14 @@ const arrangeClass={
     },
     //教室设置保存
     saveClass(params){
-        return axios.get(`${baseUrl2}/saveData.json`,params, {
+        return axios.post(`${baseUrl2}/saveData.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //课程设置查看（待）
 
     //课程设置保存/修改
     saveCoursesetting(params){
-        return axios.get(`${baseUrl3}/saveDatas.json`,params, {
+        return axios.post(`${baseUrl3}/saveDatas.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //互斥设置,同时上课,禁止相邻查看
@@ -55,7 +55,7 @@ const arrangeClass={
     },
     //互斥设置,同时上课,禁止相邻 新增/修改
     banAdding(params) {
-        return axios.get(`${baseUrl4}/saveDatas.json`, params, {
+        return axios.post(`${baseUrl4}/saveDatas.json`, params, {
             'Content-Type': 'multipart/form-data'});
     },
     //互斥设置,同时上课,禁止相邻删除

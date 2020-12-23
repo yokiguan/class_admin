@@ -11,7 +11,7 @@
         <div class="content">
             <a-row>
                 <a-col :span="12">
-                    <span style="font-size:1.5em">高一2019-2020第一学期排课计划 -自动分班</span>
+                    <span style="font-size:1.5em">{{this.planData}}-自动分班</span>
                 </a-col>
                 <a-col :span="12">
                     <a-row>
@@ -22,41 +22,39 @@
                 </a-col>
             </a-row>
         </div>
-        <create-modal
-                width="760px"
-                :close="false"
-                :visible="numvisible"
-                :loading="loading"
-                @modalClosed="closed"
-                @modalSubmit="handleSubmit">
-            <div slot="content">
-                <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit">
-                    <a-form-item label="最大人数：" style="margin-top: 50px">
-                        <a-input placeholder="请输入" style="width: 500px;height: 35px"/>
-                    </a-form-item>
-                    <a-form-item :wrapper-col="{ span: 8, offset:1 }" :label-col="{ span:4}" >
-                        <a-checkbox @change="onChange" style="margin-top: 30px;margin-left: 100px;font-size: 15px">
-                            生成班级个数
-                        </a-checkbox>
-                    </a-form-item>
-                </a-form>
-            </div>
-        </create-modal>
-        <create-modal width="760px"
-                :close="false"
-                :visible="timevisible"
-                :loading="loading"
-                @modalClosed="closed"
-                @modalSubmit="handlesubmit">
-            <div slot="content">
-                <a-form :form="form" :label-col="{ span:5 }" :wrapper-col="{ span: 19}" @submit="handleSubmit">
-                    <a-form-item label="课时数：" style="margin-top: 50px">
-                        <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                        <a-input placeholder="请输入" style="width: 500px;height: 35px"/>
-                    </a-form-item>
-                </a-form>
-            </div>
-        </create-modal>
+<!--       设置最大人数弹窗-->
+        <a-modal title="统一设置最大人数"
+                :visible="maxPerNumModal"
+                :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
+            </template>
+            <a-form-model :model="form" :rules="rules" :label-col="{ span:5 }" :wrapper-col="{ span: 19}">
+                <a-form-model-item label="最大人数：" style="margin-top: 50px" props="maxPerNum" ref="maxPerNum">
+                    <a-input placeholder="请输入" v-model="form.maxPerNum"/>
+                </a-form-model-item>
+                <a-form-model-item >
+                    <a-checkbox @change="onChange" style="margin-top: 30px;margin-left: 100px;font-size: 15px" v-model="form.classNum">
+                        生成班级个数
+                    </a-checkbox>
+                </a-form-model-item>
+            </a-form-model>
+        </a-modal>
+<!--        统一设置最大课时数-->
+        <a-modal title="统一设置最课时数"
+                 :visible="maxTimeNumModal"
+                 :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
+            </template>
+            <a-form-model :model="form" ref="rules" :label-col="{ span:5 }" :wrapper-col="{ span: 19}">
+                <a-form-model-item label="课时数：" style="margin-top: 50px" props="times" ref="times">
+                    <a-input placeholder="请输入课时数" v-model="form.times"/>
+                </a-form-model-item>
+            </a-form-model>
+        </a-modal>
         <div class="table-bg">
             <a-form :form="form" :label-col="{ span:6 }" :wrapper-col="{ span: 13 }" style="margin-left: 300px">
                 <a-form-item label="可用教室数：">
@@ -65,25 +63,13 @@
             </a-form>
             <a-table :key="'key'"
                     :columns="columns"
-                    :data-source="tableData"
+                    :data-source="dataSource"
                     :pagination="false"
                     :bordered="true">
-                <input slot="classNum"
-                        slot-scope="classNum"
-                        :value="classNum"
-                        @change="changeMax(record.key, classNum)">
-                <input slot="max"
-                        slot-scope="max"
-                        :value="max"
-                        @change="changeClassNum(record.key, max)">
-                <input slot="classTime"
-                        slot-scope="classTime"
-                        :value="classTime"
-                        @change="changeAve(record.key, classTime)">
-                <a-button slot="action"
-                        slot-scope="text"
-                        @click="add"
-                        style="background-color:blue;color:white">{{text}}</a-button>
+<!--                <input slot="classNum" slot-scope="classNum"  @change="changeMax(record.key, classNum)">-->
+<!--                <input slot="max" slot-scope="max"  @change="changeClassNum(record.key, max)">-->
+<!--                <input slot="classTime" slot-scope="classTime"  @change="changeAve(record.key, classTime)">-->
+                <a-button slot="action" slot-scope="text" @click="add" style="background-color:blue;color:white">添加</a-button>
             </a-table>
             <div style="margin: 20px 0px 20px 40%">
                 <a-button type="primary" style="margin-right:40px;margin-top: 50px;width: 100px;height: 40px">开始分班</a-button>
@@ -107,7 +93,7 @@
                         <a-col :span="12"><span style="font-size: 1.2em;font-weight: bold">老师列表：</span></a-col>
                     </a-row>
                     <a-row style="font-size: 1.2em;margin-top: 10px;margin-bottom: 10px">
-                        <a-form :form="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }" @submit="handleSubmit">
+                        <a-form :form="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }" >
                             <a-form-item label="选择老师">
                                 <a-input placeholder="请输入" v-decorator="['选择老师', { rules: [{ required: true, message: '请选择老师' }] }]"/>
                             </a-form-item>
@@ -145,7 +131,6 @@
                              @click="teacherDelete"
                              style="background-color: red;color: white;border: none;width: 80px;height: 30px;border-radius: 5px">删除</button>
                 </a-table></div>
-
             </div>
         </a-modal>
     </div>
@@ -153,106 +138,49 @@
 <script>
     import CreateModal from "../../../../components/modal/CreateModal";
     const columns = [
-        { title: '分类',
-            dataIndex: 'category',
-            className:'class_color',
-            scopedSlots: { customRender: '分类' },
+        {   title: '课程',
+            dataIndex: 'subId',
+            className:'',
         },
         {
             title: '学生总人数',
-            dataIndex: 'all',
-            className:'class_color'
+            dataIndex: 'total',
         },
+        // {
+        //     title: '未分班人数',
+        //     dataIndex: 'unsorted',
+        //     className:'class_color'
+        // },
         {
-            title: '未分班人数',
-            dataIndex: 'unsorted',
-            className:'class_color'
-        },
-        {
-            title: '分班个数',
+            title: '班级个数',
             dataIndex: 'classNum',
-            scopedSlots: { customRender: 'classNum' },
-            className:'class_color'
+            // scopedSlots: { customRender: 'classNum' },
         },
         {
             title: '平均人数',
-            dataIndex: 'ave',
-            className:'class_color'
+            dataIndex: 'average',
         },
         {
             title: '每班最大人数',
-            dataIndex: 'max',
-            scopedSlots: { customRender: 'max' },
-            className:'class_color'
+            dataIndex: 'maxNum',
+            // scopedSlots: { customRender: 'max' },
         },
         {
             title: '每周课时数',
-            dataIndex: 'classTime',
-            scopedSlots: { customRender: 'classTime' },
-            className:'class_color'
+            dataIndex: 'lessonNum',
+            // scopedSlots: { customRender: 'classTime' },
         },
         {
             title: '教师所教班级个数',
-            dataIndex: 'teacherclassNum',
-            className:'class_color'
+            dataIndex: 'Num',
         },
         {
             title: '操作',
             dataIndex: 'opt',
             scopedSlots: { customRender: 'action' },
-            className:'class_color'
         },
     ];
-    let tableData = [
-        {
-            key: 0,
-            category: '高一语文',
-            all: 30,
-            unsorted: 10,
-            classNum: 4,
-            ave:2,
-            max:10,
-            classTime:12,
-            teacherclassNum:2,
-            opt: "添加"
-        },
-        {
-            key: 1,
-            category: '高一语文',
-            all: 30,
-            unsorted: 10,
-            classNum: 4,
-            ave:2,
-            max:10,
-            classTime:12,
-            teacherclassNum:2,
-            opt: "添加"
-        },
-        {
-            key: 2,
-            category: '高一语文',
-            all: 30,
-            unsorted: 10,
-            classNum: 4,
-            ave:2,
-            max:10,
-            classTime:12,
-            teacherclassNum:2,
-            opt: "添加"
-        },
-        {
-            key: 3,
-            category: '高一语文',
-            all: 30,
-            unsorted: 10,
-            classNum: 4,
-            ave:2,
-            max:10,
-            classTime:12,
-            teacherclassNum:2,
-            opt: "添加"
-        },
-    ];
+
     const treeData = [
         {
             name: '小学语文',
@@ -309,56 +237,69 @@
         components: {CreateModal},
         data() {
             return {
-                tableData,
+                dataSource:[],
                 columns,
                 treeData,
                 teacherColumns,
                 teacherData,
                 teacherCount:4,
-                numvisible: false,
-                timevisible: false,
+                maxTimeNumModal:false,
+                maxPerNumModal:false,
                 addVisit:false,
                 visit:false,
                 loading:false,
+                planData:" ",
                 replaceFields: {
                     children: 'child',
                     title: 'name',
                 },
+                form:{
+                    maxPerNum:0,
+                    classNum:0,
+                    times:0,
+                },
+                rules:{
+
+                }
             };
         },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            //自动分班查看
+            let {data}=await this.$api.schedule.sortClass.classAutoGet({planId});
+            console.log(data)
+            this.dataSource=data.rows;
+        },
         methods: {
-            maxNum: function () {
-                this.numvisible = true
+            maxNum(){
+              this.maxPerNumModal=true;
             },
-            timeNum: function () {
-                this.timevisible = true
+            timeNum(){
+              this.maxTimeNumModal=true;
             },
-            closed: function () {
-                this.numvisible = false
-                this.timevisible = false
-                this.loading = false
+            handleOk(){
+                this.maxPerNumModal=false;
+                this.maxTimeNumModal=false;
             },
-            handleSubmit: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
-                setTimeout(() => {
-                    that.dataSource.push(
-                        {
-                        }
-                    ),
-                        this.numvisible = false
-                    this.timevisible = false
-                    that.loading = false
-                }, 2000)
+            handleCancel() {
+                this.maxPerNumModal=false;
+                this.maxTimeNumModal=false;
+                this.addVisit=false;
             },
-            changeMax: function (key, val) {
+            changeMax(key, val) {
                 this.tableData[key].max = val
             },
-            changeClassNum: function (key, val) {
+            changeClassNum(key, val) {
                 this.tableData[key].classNum = val
             },
-            changeAve: function (key, val) {
+            changeAve(key, val) {
                 this.tableData[key].ave = val
             },
             add: function () {
@@ -392,14 +333,10 @@
                 this.teacherData= [...teacherData, newData];
                 this. teacherCount =  teacherCount + 1;
             },
-            handleCancel() {
-                this.addVisit=false;
-            },
+
             changeCellStyle(){},
             onCheck(){},
             onSelect(){},
-            form(){},
-            handlesubmit(){},
 
         }
     };

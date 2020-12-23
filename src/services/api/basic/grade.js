@@ -18,7 +18,7 @@ const grade = {
 
     // 查询指定年级信息
     fetchGrade(params){
-        return axios.get(`${gradeUrl}/getGradeDataInfo.json`,params);
+        return axios.post(`${gradeUrl}/getGradeDataInfo.json`,{params});
     },
 
     // 年级新增接口
