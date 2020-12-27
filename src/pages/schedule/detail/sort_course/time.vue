@@ -10,7 +10,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col>
                     <button style="background-color: blue;
                         color: white;
@@ -45,21 +45,19 @@
                 <a-col :span="3"><a-button style="height:40px;background-color:#0099ff;color:white" @click="maxTime">最大课时数设置</a-button>
                 </a-col>
             </a-row>
-            <a-table id="kebiaoTable"
+            <a-table
                     :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true">
             </a-table>
-            <router-link to="/schedule/detail/sort_course/place">
-                <button style="background-color: blue;
+            <button style="background-color: blue;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         margin-top: 50px;
-                        width: 100px">下一步</button>
-            </router-link>
+                        width: 100px" @click="Next">下一步</button>
             <create-modal
                     width="900px"
                     :close="false"
@@ -277,11 +275,26 @@
                 tableData4,
                 columns,
                 tableData,
+                planData:"",
                 options,
                 visible: false,
                 loading: false,
                 addNameVisit:false,
+                planId:"",
             };
+        },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            //课节设置查看
+            let {data}=await this.$api.schedule.arrangeClass.getLesson({planId})
+            console.log(data)
         },
         methods: {
             maxTime: function () {
@@ -340,19 +353,19 @@
                 this.addNameVisit=false;
             },
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             onChange(checkedValues) {
                 console.log('checked = ', checkedValues);
@@ -362,6 +375,9 @@
                 const dataSource = [...this. tableData4];
                 dataSource.splice(event.target.getAttribute('dataIndex'),1);
                 this. tableData4 = dataSource
+            },
+            Next(){
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`);
             },
             back(){
                 this.$router.go(-1)

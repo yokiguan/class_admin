@@ -9,8 +9,12 @@
               :columns="columns"
               :dataSource="dataSource"
               :selectedRows="selectedRows"
-              @change="onchange"
-      >
+              @change="onchange">
+        <template slot="classroom" slot-scope="buildingEntity">
+           <span v-for="(c,index) in buildingEntity" :key="index">
+              {{c.name}}
+        </span>
+        </template>
         <template slot="operation" slot-scope="text, record">
            <span @click="edit(record.roomId)">编辑</span>|
            <span @click="deleteItem(record)">删除</span>|
@@ -89,8 +93,17 @@
     },
     {
       title: "所属教学楼",
-      dataIndex: "buildingId",
-      // customRender: (text, record) => record.buildingEntity.name
+      dataIndex: "buildingEntity",
+      // scopedSlots: { customRender: "classroom" }
+      customRender:(text,index,i)=>{
+        // let buildName="";
+        // console.log(text)
+        return text.name
+        // for (let j=0;j<text.length;j++){
+        //   buildName+=text[j].name
+        // }
+        // return buildName;
+      }
     },
     {
       title: "状态",
@@ -168,14 +181,14 @@
       };
     },
     async created() {
-      let { data}  = await this.$api.basic.classroom.fetchList();
+      //查看教学楼
+      let {data} = await this.$api.basic.classroom.fetchList();
       this.dataSource=data.rows;
+      console.log(this.dataSource)
+      //获取教室和教学楼相关信息
       let {data:buildings}=await this.$api.basic.building.fetchList();
-      console.log(buildings);
       this.buildings =buildings.rows
-      // buildings.rows.map(item=>{
-      //   this.buildings.push(item.name)
-      // })
+      // console.log(this.buildings);
     },
     methods: {
        showModal() {
@@ -229,9 +242,11 @@
       },
       async changeBuilding() {
         let {data}=await this.$api.basic.building.fetchBuilding({buildingId:this.form.buildingId});
-        this.floors = []
         this.form.floor = ''
-        this.floors.push(data.result.floor)
+        for(let j=1;j<data.result.floor+1;j++){
+          this.floors=j;
+        }
+        return this.floors;
       },
       gotoNew(id) {
         this.$router.push("/basic/classroom/rule?id=" + id);

@@ -69,34 +69,13 @@
                     :data-source="dataSource"
                     :bordered = "true"
                     :pagination = "false">
-                <span slot="operation" @click="addStudent">添加</span>
+                <span slot="operation" slot-scope="text,record" @click="addStudent(record.subChildId)">添加</span>
                 <div slot="studentInfoDtoList" slot-scope="text,record,index">
                     <template v-for="(tag) in text"  >
-
-                        <a-tooltip v-if="tag.length > 20" :title="tag">
-                            <a-tag  closable @close="() => handleClose(tag.id)">
-                                {{tag}}
-                            </a-tag>
-                        </a-tooltip>
-                        <a-tag v-else closable @close="() => handleClose(tag.id)">
-                            {{ tag.stuName}}
-                        </a-tag>
-                    </template>
-
-                    <a-input
-                            v-if="inputVisible && activeIndex === index"
-                            ref="input"
-                            type="text"
-                            size="small"
-                            :style="{ width: '78px' }"
-                            :value="inputValue"
-                            @change="handleInputChange"
-                            @blur="handleInputConfirm"
-                            @keyup.enter="handleInputConfirm"
-                    />
-                    <a-tag v-else style="background: #fff; borderStyle: dashed;" @click="showInput(index)">
-                        <a-icon type="plus" /> New Tag
+                        <a-tag  closable @close="handleClose(tag)">
+                        {{ tag.stuName}}
                     </a-tag>
+                    </template>
                 </div>
             </a-table>
             <!-- table -->
@@ -110,18 +89,12 @@
                 <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
-            <a-form-model :form="form" :label-col="{span:5}" :wrapper-col="{span:12}"
+            <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}"
                     style="">
-                <a-form-model-item label="未选课人员：">
-                    <a-radio-group v-decorator="['未选课人员：']">
-                        <a-radio value="a">
-                           杨安宁
-                        </a-radio>
-                        <a-radio value="b">
-                            车东明
-                        </a-radio>
-                        <a-radio value="c">
-                            张凯元
+                <a-form-model-item label="未选课人员：" prop="unStudent" ref="unStudent">
+                    <a-radio-group v-model="form.unStudent">
+                        <a-radio v-for="(unChoosePerson,index) in this.unChooseNums" :key="index" :value="unChoosePerson.stuId">
+                           {{unChoosePerson.stuName}}
                         </a-radio>
                     </a-radio-group>
                 </a-form-model-item>
@@ -172,6 +145,7 @@
                 form:{
                     startChooseTime:null,
                     endChooseTime:null,
+                    unStudent:null,
                 },
                 rules:{
                     startChooseTime:[
@@ -189,10 +163,14 @@
                         }
                     ]
                 },
+                tags:[],
                 inputVisible: false,
                 inputValue: '',
                 planId:"",
-                activeIndex:""
+                activeIndex:"",
+                subChildId: null,
+                editText:-1,
+                unChooseNums:[],
             };
         },
     async created(){
@@ -207,8 +185,13 @@
         }
          //选课结果详情查看
         let {data}=await this.$api.schedule.statics.getResult({planId});
-        this.dataSource=data.result;
+        console.log(data.result)
+        this.dataSource=data.result.splice(1,data.result.length - 1);
         console.log(this.dataSource);
+        for(var i=0;i<this.dataSource.length;i++){
+            this.tags.push(this.dataSource[i].studentInfoDtoList)
+        }
+        console.log(this.tags);
         //统计选课人数以及课程被选情况
         let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId});
         this.chooseCourseData=chooseCourse.result;
@@ -240,27 +223,38 @@
             handleEndOpenChange(open){
                 this.endOpen=open;
             },
-            closed: function () {
-                this.changeChooseTimeModal = false
-                this.loading = false
-            },
-            async addStudent(id,subId){
-                id=this.planId
-                subId=this.dataSource.subChildId;
+            //获取未选课学生的信息
+            async addStudent(id){
                 this.addVisit=true;
-                let {data}=await this.$api.schedule.statics.alterResultButtonFind({id,subId});
-                console.log(data);
+                this.editText=this.dataSource.findIndex(item=>item.subChildId==id);
+                for(let i=0;i<this.dataSource.length;i++){
+                    this.subId=this.dataSource[this.editText].subChildId;
+                }
+                console.log(this.subId)
+                let {data}=await this.$api.schedule.statics.alterResultButtonFind({planId:this.planId,subId:this.subId});
+                this.unChooseNums=data.result;
+                console.log( this.unChooseNums);
             },
+
             async handleOk(id) {
                 id=this.planId;
-                this.changeChooseTimeModal=false;
                 //保存选课时间
                 //修改选课时间alterTime
                 let timeLimit=this.form.startChooseTime+"——"+this.form.endChooseTime
                 let addData={id,timeLimit}
                 let {data:changeChooseTime}=await this.$api.schedule.statics.alterTime(addData);
                 console.log(changeChooseTime)
-                // this.dataSource=data.result;
+                ////将未选课的学生添加进已选课程中
+                let {data:saveData}=await this.$api.schedule.statics.alterResultButtonResult({planId:this.planId,subId:this.subId,stuIdList:[this.form.unStudent]})
+                console.log(saveData);
+                this.changeChooseTimeModal=false;
+                this.addVisit = false;
+                //刷新界面
+                // //选课结果详情查看
+                let {data}=await this.$api.schedule.statics.getResult({planId});
+                console.log(data.result)
+                this.dataSource=data.result.splice(1,data.result.length - 1);
+                console.log(this.dataSource);
             },
             handleCancel() {
                 this.addVisit = false;
@@ -272,42 +266,12 @@
             Clear(){
                 this. classData=[]
             },
-            //删除学生
-            async handleClose(id) {
-                let {data}=await this.$api.schedule.statics.delResult({ids:[id]})
-                const tags = this.tags.filter(tag => tag !== removedTag);
-                console.log(tags);
-                this.tags = tags;
-            },
-
-            showInput(value) {
-                this.inputVisible = true;
-                this.activeIndex  = value
-                this.$nextTick(function() {
-                    this.$refs.input.focus();
-                });
-            },
-            handleInputChange(e) {
-                this.inputValue = e.target.value;
-            },
-            async handleInputConfirm(id,subId,stuId) {
-                id=this.planId
-                subId=this.dataSource.subChildId;
-                stuId=this.tags;
-                let {data}=await this.$api.schedule.statics.alterResultButtonResult({id,subId,stuId});
-                console.log(data);
-                const inputValue = this.inputValue;
-                let tags = this.tags;
-                if (inputValue && tags.indexOf(inputValue) === -1) {
-                    tags = [...tags, inputValue];
-                }
-                console.log(tags);
-                Object.assign(this, {
-                    tags,
-                    inputVisible: false,
-                    inputValue: '',
-                });
-
+            //删除已选课的学生
+            async handleClose(removedTag) {
+               let mineIds = []
+                mineIds.push(removedTag.id)
+                console.log(mineIds)
+                let {data} = await this.$api.schedule.statics.delResult({ids:mineIds})
             },
         }
     };

@@ -9,7 +9,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col>
                     <button style="background-color: blue;
                         color: white;
@@ -205,8 +205,19 @@
                 columns,
                 tableData,
                 visible: false,
-                loading: false
+                loading: false,
+                planData:"",
             };
+        },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
         },
         methods: {
             maxTime: function () {
@@ -243,22 +254,22 @@
                 this.tableData[key].situation.pop(index)
             },
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             Next(){
-                this.$router.push('/schedule/detail/class_admin/course')
+                this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`)
             },
             back(){
                 this.$router.go(-1)

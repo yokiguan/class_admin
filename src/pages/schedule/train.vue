@@ -1,358 +1,110 @@
 <template>
     <div>
-        <div class="result">
-            <a-breadcrumb>
-                <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">修改选课结果</a></a-breadcrumb-item>
-            </a-breadcrumb>
-        </div>
-        <div class="content">
-            <a-row>
-                <a-col :span="12">
-                    <span style="font-size:1.5em">{{this.planData}}</span>
-                    <span class="link-font-color" style="margin-left:2em">选课时间：{{form.startChooseTime}} ——{{form.endChooseTime}}</span>
-                    <span class="link-font-color" style="margin-left:2em">选课中</span>
-                </a-col>
-                <a-col :span="12">
-                    <a-row>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changeTime">修改选课时间</a-button></a-col>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>
-                        <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
-                    </a-row>
-                </a-col>
-            </a-row>
-        </div>
-        <!--       修改选课时间弹窗-->
-        <a-modal
-                title="修改选课时间"
-                :visible="changeChooseTimeModal"
-                :closable="false">
-            <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
-                <a-button key="back" @click="handleCancel">取消</a-button>
+        <a-input-search style="margin-bottom: 8px" placeholder="Search" @change="onChange" />
+        <a-tree
+                :expanded-keys="expandedKeys"
+                :auto-expand-parent="autoExpandParent"
+                :tree-data="gData"
+                @expand="onExpand"
+        >
+            <template slot="title" slot-scope="{ title }">
+        <span v-if="title.indexOf(searchValue) > -1">
+          {{ title.substr(0, title.indexOf(searchValue)) }}
+          <span style="color: #f50">{{ searchValue }}</span>
+          {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
+        </span>
+                <span v-else>{{ title }}</span>
             </template>
-            <div class="chooseData">
-                <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules"
-                              :label-col="{span:6}" :wrapper-col="{span:15}">
-                    <a-form-model-item label="选课开始时间：" prop="startChooseTime" ref="startChooseTime">
-                        <a-date-picker v-model="form.startChooseTime"
-                                       :disabled-date="disabledStartDate"
-                                       show-time
-                                       format="YYYY-MM-DD"
-                                       placeholder="设置开始选课时间"
-                                       @openChange="handleStartOpenChange"
-                                       valueFormat="YYYY-MM-DD"/>
-                    </a-form-model-item>
-                    <a-form-model-item label="选课结束时间：" prop="endChooseTime" ref="endChooseTime">
-                        <a-date-picker v-model="form.endChooseTime"
-                                       :disabled-date="disabledEndDate"
-                                       show-time
-                                       format="YYYY-MM-DD"
-                                       placeholder="设置选课结束时间"
-                                       :open="endOpen"
-                                       @openChange="handleEndOpenChange"
-                                       valueFormat="YYYY-MM-DD"/>
-                    </a-form-model-item>
-                </a-form-model>
-
-            </div>
-        </a-modal>
-        <div class="info link-font-color">
-            已有{{this.chooseCourseData.isChoosen}}人选课 （共{{this.chooseCourseData.total}}人）<font style="color:red">{{this.chooseCourseData.notChoosen}}人未选</font></div>
-        <div class="table-bg">
-            <!-- statistics -->
-            <!-- table -->
-            <a-table
-                    :key="'key'"
-                    :columns="columns"
-                    :data-source="classData"
-                    :bordered = "true"
-                    :pagination = "false">
-                <span slot="add" @click="addStudent">添加</span>
-                <div slot="group">
-                    <template v-for="(tag, index) in tags">
-                        <a-tooltip v-if="tag.length > 20" :key="tag" :title="tag">
-                            <a-tag :key="tag" closable @close="() => handleClose(tag)">
-                                {{ `${tag.slice(0, 20)}...` }}
-                            </a-tag>
-                        </a-tooltip>
-                        <a-tag v-else :key="tag" closable @close="() => handleClose(tag)">
-                            {{ tag }}
-                        </a-tag>
-                    </template>
-                    <a-input
-                            v-if="inputVisible"
-                            ref="input"
-                            type="text"
-                            size="small"
-                            :style="{ width: '78px' }"
-                            :value="inputValue"
-                            @change="handleInputChange"
-                            @blur="handleInputConfirm"
-                            @keyup.enter="handleInputConfirm"
-                    />
-                    <a-tag v-else style="background: #fff; borderStyle: dashed;" @click="showInput">
-                        <a-icon type="plus" /> New Tag
-                    </a-tag>
-                </div>
-            </a-table>
-            <!-- table -->
-            <!-- statistics -->
-        </div>
-        <a-modal
-                :visible='addVisit'
-                width="600px"
-                :closable="false">
-            <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
-                <a-button key="back" @click="handleCancel">取消</a-button>
-            </template>
-            <a-form :form="form" :label-col="{span:5}" :wrapper-col="{span:12}"
-                    style="">
-                <a-form-item label="未选课人员：">
-                    <a-radio-group v-decorator="['未选课人员：']">
-                        <a-radio value="a">
-                            杨安宁
-                        </a-radio>
-                        <a-radio value="b">
-                            车东明
-                        </a-radio>
-                        <a-radio value="c">
-                            张凯元
-                        </a-radio>
-                    </a-radio-group>
-                </a-form-item>
-            </a-form>
-        </a-modal>
+        </a-tree>
     </div>
 </template>
+
 <script>
-    const columns = [
-        {
-            title: '课程',
-            dataIndex: 'name',
-            align:'center',
-            width:'8%',
-        },
-        {
-            title: '已选人数',
-            dataIndex: 'count',
-            align:'center',
-            width:'5%',
-        },
-        {
-            title: '课程组合',
-            dataIndex: 'group',
-            align:'center',
-            width:'80%',
-            scopedSlots: { customRender: "group" },
-        },
-        {
-            title: '操作',
-            dataIndex: 'add',
-            align:'center',
-            scopedSlots:{customRender:'add'},
-            width:'7%',
-        },
-    ]
-    const classData = [
-        {
-            key: 0,
-            name: '政治学修',
-            count: 600,
-        },
-        {
-            key: 1,
-            name: '政治选修',
-            count: 200,
-        },
-        {
-            key: 2,
-            name: '物理学修',
-            count: 100,
-        },
-    ];
+    const x = 3;
+    const y = 2;
+    const z = 1;
+    const gData = [];
+
+    const generateData = (_level, _preKey, _tns) => {
+        const preKey = _preKey || '0';
+        const tns = _tns || gData;
+
+        const children = [];
+        for (let i = 0; i < x; i++) {
+            const key = `${preKey}-${i}`;
+            tns.push({ title: key, key, scopedSlots: { title: 'title' } });
+            if (i < y) {
+                children.push(key);
+            }
+        }
+        if (_level < 0) {
+            return tns;
+        }
+        const level = _level - 1;
+        children.forEach((key, index) => {
+            tns[index].children = [];
+            return generateData(level, key, tns[index].children);
+        });
+    };
+    generateData(z);
+
+    const dataList = [];
+    const generateList = data => {
+        for (let i = 0; i < data.length; i++) {
+            const node = data[i];
+            const key = node.key;
+            dataList.push({ key, title: key });
+            if (node.children) {
+                generateList(node.children);
+            }
+        }
+    };
+    generateList(gData);
+
+    const getParentKey = (key, tree) => {
+        let parentKey;
+        for (let i = 0; i < tree.length; i++) {
+            const node = tree[i];
+            if (node.children) {
+                if (node.children.some(item => item.key === key)) {
+                    parentKey = node.key;
+                } else if (getParentKey(key, node.children)) {
+                    parentKey = getParentKey(key, node.children);
+                }
+            }
+        }
+        return parentKey;
+    };
     export default {
         data() {
             return {
-                size : "small",
-                classData,
-                columns,
-                visible:false,
-                addVisit:false,
-                changeChooseTimeModal:false,
-                chooseCourseData:"",
-                loading:false,
-                endOpen:false,
-                form:{
-                    startChooseTime:null,
-                    endChooseTime:null,
-                },
-                rules:{
-                    startChooseTime:[
-                        {
-                            required:true,
-                            message:"请选择开始选课时间",
-                            trigger:"change",
-                        }
-                    ],
-                    endChooseTime:[
-                        {
-                            required:true,
-                            message:"请选择选课结束时间",
-                            trigger:"change",
-                        }
-                    ]
-                },
-                tags: ['周翔', '张敏钰', '张凌伟','许佳诺','徐宏达','徐鼎钦','肖若愚','吴静希','翁柳琪'],
-                inputVisible: false,
-                inputValue: '',
-                planId:"",
+                expandedKeys: [],
+                searchValue: '',
+                autoExpandParent: true,
+                gData,
             };
         },
-        async created(){
-            let queryString=(window.location.hash||" ").split('?')[1]
-            let planId=(queryString || " ").split('=')[1]
-            this.planId=planId;
-            if(planId){
-                //获取单个选课计划的信息
-                let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId})
-                this.planData=result.name
-                console.log(this.planData);
-            }
-            //选课结果详情查看
-            let {data}=await this.$api.schedule.statics.getResult({planId});
-            //统计选课人数以及课程被选情况
-            let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId});
-            this.chooseCourseData=chooseCourse.result;
-            console.log(this.chooseCourseData)
-        },
         methods: {
-            changeTime(){
-                this.changeChooseTimeModal=true;
+            onExpand(expandedKeys) {
+                this.expandedKeys = expandedKeys;
+                this.autoExpandParent = false;
             },
-            disabledStartDate(startValue){
-                const endValue=this.form.startChooseTime
-                if(!startValue||!endValue){
-                    return false;
-                }
-                return startValue.valueOf()>endValue.valueOf();
-            },
-            disabledEndDate(endValue){
-                const startValue=this.form.startChooseTime;
-                if(!endValue||!startValue){
-                    return false;
-                }
-                return startValue.valueOf()>=endValue.valueOf();
-            },
-            handleStartOpenChange(open){
-                if(!open){
-                    this.endOpen=true;
-                }
-            },
-            handleEndOpenChange(open){
-                this.endOpen=open;
-            },
-            closed: function () {
-                this.changeChooseTimeModal = false
-                this.loading = false
-            },
-            addStudent(){
-                this.addVisit=true;
-            },
-            async handleOk(id) {
-                id=this.planId;
-                this.changeChooseTimeModal=false;
-                //保存选课时间
-                //修改选课时间alterTime
-                let timeLimit=this.form.startChooseTime+"——"+this.form.endChooseTime
-                let addData={id,timeLimit}
-                let {data:changeChooseTime}=await this.$api.schedule.statics.alterTime(addData);
-                console.log(changeChooseTime)
-                // this.dataSource=data.result;
-            },
-            handleCancel() {
-                this.addVisit = false;
-                this.changeChooseTimeModal=false;
-            },
-            back(){
-                this.$router.go(-1)
-            },
-            Clear(){
-                this. classData=[]
-            },
-            handleClose(removedTag) {
-                const tags = this.tags.filter(tag => tag !== removedTag);
-                console.log(tags);
-                this.tags = tags;
-            },
-
-            showInput() {
-                this.inputVisible = true;
-                this.$nextTick(function() {
-                    this.$refs.input.focus();
-                });
-            },
-            handleInputChange(e) {
-                this.inputValue = e.target.value;
-            },
-            handleInputConfirm() {
-                const inputValue = this.inputValue;
-                let tags = this.tags;
-                if (inputValue && tags.indexOf(inputValue) === -1) {
-                    tags = [...tags, inputValue];
-                }
-                console.log(tags);
+            onChange(e) {
+                const value = e.target.value;
+                const expandedKeys = dataList
+                    .map(item => {
+                        if (item.title.indexOf(value) > -1) {
+                            return getParentKey(item.key, gData);
+                        }
+                        return null;
+                    })
+                    .filter((item, i, self) => item && self.indexOf(item) === i);
                 Object.assign(this, {
-                    tags,
-                    inputVisible: false,
-                    inputValue: '',
+                    expandedKeys,
+                    searchValue: value,
+                    autoExpandParent: true,
                 });
             },
-        }
+        },
     };
 </script>
-
-<style lang="less" scoped>
-    .result{
-        width: 100%;
-        background-color: white;
-        height:50px;
-        margin: 20px 0px 10px 0px;
-        padding-left: 25px;
-        padding-top: 15px;
-        vertical-align: top;
-        border-radius: 5px;
-    }
-    .content{
-        width: 100%;
-        height: 300px;
-        background-color: white;
-        height: 100px;
-        margin: 0px 0px 20px 0px;
-        padding: 20px 25px;
-        vertical-align: top;
-        border-radius: 5px;
-    }
-    .result-left{
-        width: 50%;
-    }
-    .link-font-color{
-        color: #0000ff;
-    }
-    .info{
-        height: 50px;
-        width: 100%;
-        margin: 0px 0px 10px 0px;
-        padding: 10px 5px;
-        background-color: white;
-        border-radius: 5px;
-    }
-    .table-bg{
-        background-color: white;
-        margin: 0px 0px 20px 0px;
-        padding: 20px 25px;
-        border-radius: 5px;
-    }
-</style>

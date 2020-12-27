@@ -10,7 +10,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col>
                 <button style="background-color: blue;
                         color: white;
@@ -33,7 +33,7 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-table :columns="columns"
-                     :data-source="tableData"
+                     :data-source="dataSource"
                      :pagination="false"
                      :bordered="true">
                 <a-select slot="buildingType" slot-scope="type" :default-value="type" style="width: 120px">
@@ -52,61 +52,50 @@
                 </a-select>
                 <a slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</a>
             </a-table>
-            <a-button icon="plus"
-                    style="color:white;
+            <a-button icon="plus" style="color:white;
                     background-color:#3399cc;
                     margin:30px 0px; border-radius: 5px;
-                    width: 150px;height: 40px"
-                    @click="addClass">添加教室</a-button>
-            <router-link to="/schedule/detail/sort_course/course/index">
-                <button style="background-color: #00ccff;
+                    width: 150px;height: 40px" @click="addClass">添加教室</a-button>
+            <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         margin-top: 70px;
                        margin-left: 100px;
-                        width: 150px">
-                        下一步
-                    </button>
-            </router-link>
+                        width: 150px" @click="Next">下一步</button>
             <!--        添加教室弹窗-->
-            <create-modal
-                    :close="false"
+            <a-modal
+                    title="添加教室"
                     :visible="visible"
-                    :loading="loading"
-                    @modalClosed="closed"
-                    @modalSubmit="AddhandleSubmit">
-                <div slot="content">
-                    <a-form v-bind="formItemLayout"
-                            @submit="handleSubmit"
-                            ref="createForm">
-                        <a-tree :treeData="treeData" checkable></a-tree>
-                    </a-form>
-                </div>
-            </create-modal>
+                    :closable="false">
+                <template slot="footer">
+                    <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                    <a-button key="back" @click="handleCancel">取消</a-button>
+                </template>
+                <a-tree :treeData="buildingsData" checkable></a-tree>
+            </a-modal>
         </div>
     </div>
 </template>
 <script>
-    import CreateModal from "../../../../components/modal/CreateModal";
     const columns = [
         {
             title: '序号',
-            dataIndex: 'key',
+            dataIndex: 'classroomId',
         },
         {
             title: '教室名称',
-            dataIndex: 'name',
+            dataIndex: 'classroomName',
 
         },
         {
             title: '所属教学楼',
-            dataIndex: 'building',
+            dataIndex: 'buildingName',
         },
         {
             title: '教室类型',
-            dataIndex: 'type',
+            dataIndex: 'typeId',
             scopedSlots: { customRender: 'buildingType' }
         },
         {
@@ -123,102 +112,80 @@
             scopedSlots: { customRender: 'action' }
         },
     ];
-    let tableData = [
-        {
-            key: 0,
-            name: '101',
-            building: '逸夫楼',
-            type: "0",
-            floor: 4,
-            capacity: 55,
-            opt: '删除'
-        },
-        {
-            key: 1,
-            name: '102',
-            building: '逸夫楼',
-            type: "1",
-            floor: 4,
-            capacity: 55,
-            opt: '删除'
-        },
-        {
-            key: 2,
-            name: '103',
-            building: '逸夫楼',
-            type: "2",
-            floor: 4,
-            capacity: 55,
-            opt: '删除'
-        },
-    ];
     export default {
-        components: {CreateModal},
         data() {
             return {
-                tableData,
+                dataSource:[],
                 count:2,
                 columns,
                 formItemLayout:false,
                 visible: false,
                 loading: false,
-                treeData:[
-                    {
-                        title: '逸夫楼',
-                        key: '1',
-                        children: [
-                            {
-                                title: '一层',
-                                key: '11',
-                                children:[
-                                    {
-                                        title:'101',
-                                        key:'111'
-                                    },{
-                                        title: '102',
-                                        key: '112'
-                                    }
-                                ]
-                            }, {
-                                title: '二层',
-                                key: '12'
-                            }
-                        ]
-                    }, {
-                        title: '主楼',
-                        key: '2',
-                    }
-                ]
+                planData:"",
+                planId:"",
+                classroomId:"",
+                typeId:"",
+                buildingsData:[],
+                ClassroomIds:[],
+                classroomId:"1",
             };
         },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            // 查看教室设置
+            let ClassroomIds=[1,2];
+            let {data}=await this.$api.schedule.arrangeClass.getClass(ClassroomIds)
+        },
         methods: {
-            addClass: function () {
+            async addClass() {
                 this.visible = true;
+                //全部教室信息查询
+                let { data:classroomData}  = await this.$api.basic.classroom.fetchList();
+                console.log(classroomData.rows);
+                let {data} = await this.$api.basic.classroom.fetchRoomList();
+                // this.buildingsData = data.result
+                console.log(data.result)
+                for(let i in data.result) {
+                    // 第一层
+                    let numberTree = {}
+                    numberTree.title = data.result[i].building_name
+                    numberTree.key = data.result[i].building_Id
+                    if (data.result[i].floor_list.length) {
+                        //    第二层
+                        numberTree.children = []
+                        for (let j = 0; j < data.result[i].floor_list.length; j++) {
+                            let item = data.result[i].floor_list[j]
+                            let childData = {}
+                            childData.key = item.floor
+                            childData.title = '第' + item.floor + '层'
+                            if(item.classroom_list.length) {
+                                childData.children = []
+                                for (let k in item.classroom_list) {
+                                    let dataThree = {}
+                                    dataThree.key = item.classroom_list[k].room_id
+                                    dataThree.title = item.classroom_list[k].classroom_name
+                                }
+                                childData.children.push(dataThree)
+                            }
+                            numberTree.children.push(childData)
+                        }
+                    }
+                    this.buildingsData.push(numberTree)
+                    console.log(data.result[i])
+                }
             },
-            change: function () {
-                this.visible = true;
+            handleOk(){
+                this.visible=false;
             },
-            closed: function () {
-                this.visible = false
-            },
-            AddhandleSubmit: function () {
-                this.loading = true
-                setTimeout(() => {
-                    this.visible = false
-                    this.loading = false
-                }, 200)
-                const { count, tableData} = this;
-                const newData = {
-                    key: count,
-                    name: '101',
-                    building: '逸夫楼',
-                    type: "0",
-                    floor: 4,
-                    capacity: 55,
-                    opt: '删除'
-                };
-                this.tableData= [...tableData, newData];
-                this.count = count + 1;
+            handleCancel(){
+              this.visible=false;
             },
             onChange(e){
                 console.log('radio checked',e.target.value)
@@ -231,19 +198,19 @@
                 this.tableData[key].situation.pop(index)
             },
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             onDelete(){
                 const dataSource = [...this. tableData];
@@ -252,6 +219,10 @@
             },
             back(){
               this.$router.go(-1)
+            },
+            async Next(planId,classroomId,typeId){
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
+                let {data}=await this.$api.schedule.arrangeClass.saveCoursetime({planId:this.planId,classroomId:this.classroomId,typeId:this.typeId})
             },
             handleSubmit(){},
             click(){},

@@ -9,7 +9,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col><button style="background-color: blue; color: white;height: 40px; border: none;border-radius: 5px;
                         float: right;width: 100px" @click="back">返回</button>
                 </a-col>
@@ -28,7 +28,7 @@
                     <a-descriptions bordered>
                         <a-descriptions-item label="学科时间规则" >
                             <a-table  :rowKey="'subjectTimekey'"
-                                    :columns="column1"
+                                      :columns="column1"
                                       :data-source="studyTimeData"
                                       :pagination="false"
                                       :bordered="true">
@@ -393,8 +393,7 @@
     const column1=[
         {
             title:'学科名称',
-            key:'subject',
-            dataIndex:'subject',
+            dataIndex:'subName',
             scopedSlots: { customRender: 'subjects' },
             width: '12%',
             align:'center',
@@ -414,20 +413,6 @@
             scopedSlots: { customRender: 'action' },
             width: '12%',
             align:'center',
-        },
-    ]
-    const studyTimeData=[
-        {
-            subjectTimekey:'1',
-            time1:'必须星期一下午第4节',
-        },
-        {
-            subjectTimekey:'2',
-            time1:'必须星期一下午第3节 必须星期一下午第4节',
-        },
-        {
-            subjectTimekey:'3',
-            time1:'不能星期一下午第1节 不能星期一上午第二节 不能星期一上午第3节',
         },
     ]
     const column2=[
@@ -645,7 +630,7 @@
         data() {
             return {
                 column1,
-                studyTimeData,
+                studyTimeData:[],
                 subjectTimeCount:3,
                 column2,
                 teacherTimeData,
@@ -660,27 +645,51 @@
                 timeRegularVisit: false,
                 loading:false,
                 teacherVisit:false,
+                planData:"",
             };
+        },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            //获取学科时间规则
+            let {data:subjectTimeRuleData}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId})
+            console.log(subjectTimeRuleData);
+            this.studyTimeData=subjectTimeRuleData.result;
         },
         methods:{
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             Next(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
+            //提交
+            handleSelectChange3(){},
+            handleSelectChange2(){},
+            handleSelectChange(){},
+            handleSubmit(){},
+            handleSubmit1(){},
+            handleSubmit2(){},
+            onChange(){},
+            addClass(){},
             timeRegularSetting() {
                 this.timeRegularVisit = true;
             },
@@ -763,9 +772,6 @@
             back(){
                 this.$router.go(-1)
             },
-
-
-
             form(){},
             classTimeKey(){},
             visible(){},

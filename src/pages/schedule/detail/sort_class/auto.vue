@@ -61,14 +61,15 @@
                     <a-input  placeholder="16" style="width: 300px;"></a-input>
                 </a-form-item>
             </a-form>
-            <a-table :key="'key'"
+            <a-table :rowKey="'subId'"
                     :columns="columns"
                     :data-source="dataSource"
                     :pagination="false"
                     :bordered="true">
-<!--                <input slot="classNum" slot-scope="classNum"  @change="changeMax(record.key, classNum)">-->
-<!--                <input slot="max" slot-scope="max"  @change="changeClassNum(record.key, max)">-->
-<!--                <input slot="classTime" slot-scope="classTime"  @change="changeAve(record.key, classTime)">-->
+<!--                <input slot="average"  @change="average(record.key, classNum)">-->
+                <a-input slot="classNum" slot-scope="classNum"  @change="change"></a-input>
+                <a-input slot="max" slot-scope="max"  @change="change"></a-input>
+                <a-input slot="classTime" slot-scope="classTime"  @change="change" ></a-input>
                 <a-button slot="action" slot-scope="text" @click="add" style="background-color:blue;color:white">添加</a-button>
             </a-table>
             <div style="margin: 20px 0px 20px 40%">
@@ -119,6 +120,7 @@
                         <a-col> <span style="font-size: 1.2em;" @click="allClear">全部清除</span></a-col>
                     </a-row>
                     <a-table
+
                         :columns="teacherColumns"
                         :data-source="teacherData"
                         :pagination="false"
@@ -136,43 +138,48 @@
     </div>
 </template>
 <script>
-    import CreateModal from "../../../../components/modal/CreateModal";
     const columns = [
         {   title: '课程',
-            dataIndex: 'subId',
-            className:'',
+            dataIndex: 'subjectChildEntity',
+            align:'center',
+            width:'12%',
+            customRender:(text)=>{
+                return  text.name
+            }
         },
         {
             title: '学生总人数',
             dataIndex: 'total',
         },
-        // {
-        //     title: '未分班人数',
-        //     dataIndex: 'unsorted',
-        //     className:'class_color'
-        // },
         {
             title: '班级个数',
             dataIndex: 'classNum',
-            // scopedSlots: { customRender: 'classNum' },
+            scopedSlots: { customRender: 'classNum' },
         },
         {
             title: '平均人数',
             dataIndex: 'average',
+            // scopedSlots: { customRender: 'average' },
         },
         {
             title: '每班最大人数',
             dataIndex: 'maxNum',
-            // scopedSlots: { customRender: 'max' },
+            scopedSlots: { customRender: 'max' },
         },
         {
             title: '每周课时数',
             dataIndex: 'lessonNum',
-            // scopedSlots: { customRender: 'classTime' },
+            scopedSlots: { customRender: 'classTime' },
         },
         {
             title: '教师所教班级个数',
-            dataIndex: 'Num',
+            dataIndex: 'scheduleTeacherEntities',
+            customRender:(text,index,i)=>{
+                // console.log(text.schWxUserEntity)
+                let grade=0;
+                grade=text.classNum
+                return  grade
+            }
         },
         {
             title: '操作',
@@ -180,7 +187,6 @@
             scopedSlots: { customRender: 'action' },
         },
     ];
-
     const treeData = [
         {
             name: '小学语文',
@@ -219,29 +225,14 @@
             scopedSlots: { customRender: "delete" },
         }
     ]
-    const teacherData=[
-        {
-            teacherCount:'0',
-            teacherName:'李援朝',
-        },
-        {
-            teacherCount:'1',
-            teacherName:'赵卫民',
-        },{
-            teacherCount:'2',
-        },{
-            teacherCount:'3',
-        }
-    ]
     export default {
-        components: {CreateModal},
         data() {
             return {
                 dataSource:[],
                 columns,
                 treeData,
                 teacherColumns,
-                teacherData,
+                teacherData:[],
                 teacherCount:4,
                 maxTimeNumModal:false,
                 maxPerNumModal:false,
@@ -249,6 +240,7 @@
                 visit:false,
                 loading:false,
                 planData:" ",
+                editText:-1,
                 replaceFields: {
                     children: 'child',
                     title: 'name',
@@ -274,8 +266,8 @@
             }
             //自动分班查看
             let {data}=await this.$api.schedule.sortClass.classAutoGet({planId});
-            console.log(data)
             this.dataSource=data.rows;
+            console.log(this.dataSource)
         },
         methods: {
             maxNum(){
@@ -293,16 +285,19 @@
                 this.maxTimeNumModal=false;
                 this.addVisit=false;
             },
-            changeMax(key, val) {
-                this.tableData[key].max = val
+            async change(key, val,id) {
+                this.tableData[key].max = val;
+                this.tableData[key].classNum = val;
+                this.tableData[key].ave = val;
+                //获取当前编辑行的下表
+                // this.editText=this.dataSource.findIndex(item=>item.id==id)
+                // let formData={
+                //
+                //     id:
+                // }
+                let {data}=await this.$api.schedule.sortClass.classAutoAlter();
             },
-            changeClassNum(key, val) {
-                this.tableData[key].classNum = val
-            },
-            changeAve(key, val) {
-                this.tableData[key].ave = val
-            },
-            add: function () {
+            add () {
                 this.addVisit=true
             },
             onChange(e) {
@@ -319,7 +314,8 @@
             allClear(){
                 this. teacherData= []
             },
-            handleAdd() {
+            //添加弹框的保存
+            async handleAdd() {
                 this.loading = true;
                 setTimeout(() => {
                     this.addVisit=false
@@ -332,6 +328,10 @@
                 };
                 this.teacherData= [...teacherData, newData];
                 this. teacherCount =  teacherCount + 1;
+                //获取添加老师列表信息
+                this.editText=this.dataSource.findIndex(item=>item.subId==id)
+                let {data}= await this.$api.schedule.sortClass.classGetTeacherlist({planId:this.planId,subId:this.dataSource.subId});
+                console.log(data);
             },
 
             changeCellStyle(){},

@@ -70,7 +70,7 @@
                     <div id="barChart" style="width: 60%;height: 400px;"></div>
                 </a-row>
                 <a-row>
-                    <div id="pieChart" style="width: 100%;height: 400px;" ></div>
+                    <div id="pieChart" style="width: 50%;height: 400px;" ></div>
                 </a-row>
             </div>
             <!-- charts -->
@@ -135,6 +135,8 @@
                     ]
                 },
                 planId:"",
+                echartsDataCircle: [],
+                tipsName: []
             };
         },
         mounted(){
@@ -171,11 +173,18 @@
             this.chooseCourseData=chooseCourse.result;
             this.staticChooseData=chooseCourse.result.selectPerSubNumberDtos;
             console.log(this.staticChooseData);
-            for(var i=0;i<this.staticChooseData.length;i++){
-                    this.xName.push(this.staticChooseData[i].subName)
-                    this.yNumber.push(this.staticChooseData[i].number)
+            for(let i=1;i<this.staticChooseData.length;i++){
+                let arrDatas = {
+                    name: this.staticChooseData[i].subName,
+                    value: this.staticChooseData[i].number,
+                }
+                this.tipsName.push(this.staticChooseData[i].subName)
+                this.xName.push(this.staticChooseData[i].subName)
+                this.yNumber.push(this.staticChooseData[i].number)
+                this.echartsDataCircle.push(arrDatas)
             }
-        },
+            console.log(this.echartsDataCircle)
+    },
         methods: {
             disabledStartDate(startValue){
                 const endValue=this.form.startChooseTime
@@ -232,7 +241,7 @@
                         orient: 'vertical',  //图例的布局，竖直    horizontal为水平
                         x: 'right',//图例显示在右边
                         // for(var i=0;i<this.staticChooseData.length;i++){}
-                        data:['语文','数学','英语','物理','化学'],
+                        data: this.tipsName,
                         textStyle:{    //图例文字的样式
                             color:'#333',  //文字颜色
                             fontSize:12    //文字大小
@@ -262,13 +271,7 @@
                                     show: false
                                 }
                             },
-                            data:[
-                                {value:335, name:'语文'},
-                                {value:310, name:'数学'},
-                                {value:234, name:'英语'},
-                                {value:135, name:'物理'},
-                                {value:1548, name:'化学'}
-                            ]
+                            data: this.echartsDataCircle
                         }
                     ]
                 });

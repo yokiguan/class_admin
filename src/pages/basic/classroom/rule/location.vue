@@ -6,13 +6,12 @@
             </a-col>
         </a-row>
         <a-row>
-            <a-form-model :form="form" :label-col="{span:2}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint">
+            <a-form-model :modal="form" :label-col="{ span: 2 }" :wrapper-col="{ span:12}" >
                 <a-form-model-item label="选择课表模板">
-                    <a-select v-decorator="['选择课表模板',{ rules: [{ required: true, message: '请选择课表模板!' }] },]"
-                              placeholder="高一组课表模板">
-                        <a-select-option value="one">高一组课表模板</a-select-option>
-                        <a-select-option value="two">高二组课表模板</a-select-option>
-                        <a-select-option value="three">高三组课表模板</a-select-option>
+                    <a-select @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modal">
+                        <a-select-option v-for="(modalName,index) in modalInfo" :key="index" :value="modalName.id">
+                            {{modalName.templateName}}
+                        </a-select-option>
                     </a-select>
                 </a-form-model-item>
             </a-form-model>
@@ -85,12 +84,37 @@
             return{
                 columnsPlace,
                 placeData,
-                form:{},
+                modelName:[],
+                modalInfo:[],
+                modalName:"",
+                modalIds:[],
+                form:{
+                    modal:" ",
+                }
             }
         },
+        async created(){
+            //获取课表模板信息
+            let {data}=await this.$api.basic.template.fetchList()
+            this.modalInfo=data.rows;
+            console.log(this.modalInfo);
+            for(var i=0;i<this.modalInfo.length;i++){
+                this.modalIds.push(this.modalInfo[i].id);
+            }
+            console.log(this.modalIds);
+            //获取场地信息
+            let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:this.modalIds})
+            console.log(placeData)
+
+        },
         methods:{
-            addClassHandleSubmint(){},
             change(){},
+            handleSelectChange(){},
+        },
+        watch:{
+            "form.modal" () {
+                this.$emit("form-modal-change", this.form.modal)
+            }
         }
     }
 </script>

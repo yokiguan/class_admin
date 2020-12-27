@@ -10,7 +10,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col>
                     <button style="background-color: blue;
                         color: white;
@@ -79,24 +79,24 @@
                     obj.attrs.rowSpan = 4;
                 }
                 // These two are merged into above cell
-                if (index === 1) {
-                    obj.attrs.rowSpan = 0;
-                }
-                if (index === 2) {
-                    obj.attrs.colSpan = 0;
-                }
-                if (index === 3) {
-                    obj.attrs.colSpan = 0;
-                }
+                // if (index === 1) {
+                //     obj.attrs.rowSpan = 0;
+                // }
+                // if (index === 2) {
+                //     obj.attrs.colSpan = 0;
+                // }
+                // if (index === 3) {
+                //     obj.attrs.colSpan = 0;
+                // }
                 if(index===4){
                     obj.attrs.rowSpan = 3;
                 }
-                if (index === 5) {
-                    obj.attrs.rowSpan = 0;
-                }
-                if (index === 6) {
-                    obj.attrs.rowSpan = 0;
-                }
+                // if (index === 5) {
+                //     obj.attrs.rowSpan = 0;
+                // }
+                // if (index === 6) {
+                //     obj.attrs.rowSpan = 0;
+                // }
                 return obj;
             },
         },
@@ -109,7 +109,7 @@
                     return {
                         children: text,
                         attrs: {
-                            colSpan: 3,
+                            colSpan:0,
                         },
                     };
                 } else {
@@ -124,7 +124,7 @@
             scopedSlots:{
                 customRender:(value,row,index)=>{
                     const obj={
-                        children:value='class_day',
+                        // children:value='class_day',
                     };
                     if(index===3){
                         obj.attrs.colSpan = 0;
@@ -138,7 +138,19 @@
             title: '  ',
             dataIndex: 'blank',
             align:'center',
-            scopedSlots: { customRender: 'blank' },
+            // scopedSlots: { customRender: 'blank' },
+            scopedSlots:{
+                customRender:(value,row,index)=>{
+                    const obj={
+                         children:value='blank',
+                    };
+                    if(index===3){
+                        obj.attrs.colSpan = 0;
+                    }
+                    return obj;
+                }
+
+            },
         },
         {
             title: '操作',
@@ -154,24 +166,24 @@
                     obj.attrs.rowSpan = 4;
                 }
                 // These two are merged into above cell
-                if (index === 1) {
-                    obj.attrs.rowSpan = 0;
-                }
-                if (index === 2) {
-                    obj.attrs.colSpan = 0;
-                }
-                if (index === 3) {
-                    obj.attrs.colSpan = 0;
-                }
+                // if (index === 1) {
+                //     obj.attrs.rowSpan = 0;
+                // }
+                // if (index === 2) {
+                //     obj.attrs.colSpan = 0;
+                // }
+                // if (index === 3) {
+                //     obj.attrs.colSpan = 0;
+                // }
                 if(index===4){
                     obj.attrs.rowSpan = 3;
                 }
-                if (index === 5) {
-                    obj.attrs.rowSpan = 0;
-                }
-                if (index === 6) {
-                    obj.attrs.rowSpan = 0;
-                }
+                // if (index === 5) {
+                //     obj.attrs.rowSpan = 0;
+                // }
+                // if (index === 6) {
+                //     obj.attrs.rowSpan = 0;
+                // }
                 return obj;
             }
         },
@@ -219,7 +231,18 @@
                 // columns,
                 visible: false,
                 loading: false,
+                planData:"",
             };
+        },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
         },
         methods: {
             add_course: function () {
@@ -245,22 +268,22 @@
                 console.log('radio checked',e.target.value)
             },
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             Next(){
-                this.$router.push('/schedule/detail/class_admin/rule')
+                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`)
             },
             back(){
                 this.$router.go(-1)

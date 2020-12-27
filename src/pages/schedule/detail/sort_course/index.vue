@@ -31,246 +31,115 @@
             <a-row class="form"
                 style="margin-left: -150px;
                         margin-top:60px">
-                <a-form :form="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 8}" >
-                    <a-form-item label="选择课表模板">
-                        <a-select
-                                v-decorator="['table_modal',
-          { rules: [{ required: true, message: 'Please select your table_modal!' }] },]"
-                                placeholder="高一组课表模板"
-                                @change="handleSelectChange">
+                <a-form-model :modal="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 8}" >
+                    <a-form-model-item label="选择课表模板">
+                        <a-select @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modalId">
+                            <a-select-option v-for="(modalName,index) in modalInfo" :key="index" :value="modalName.id">
+                                {{modalName.templateName}}
+                            </a-select-option>
                         </a-select>
-                    </a-form-item>
-                </a-form>
+                    </a-form-model-item>
+                </a-form-model>
             </a-row>
-            <a-table id="Table"
+            <a-table
+                    :rowKey="`activity`"
                     :columns="columns"
-                    :data-source="tableData"
+                    :data-source="dataSource"
                     :pagination="false"
                     :bordered="true"
             style="margin-top: 10px;
                     margin-left: 50px">
             </a-table>
-            <router-link to="/schedule/detail/sort_course/time">
-                <button style="background-color: #00ccff;
+            <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         margin-top: 50px;
-                        width: 150px">下一步</button>
-            </router-link>
-            <create-modal
-                    :visible="visible"
-                    :loading="loading"
-                    @modalClosed="closed"
-                    @modalSubmit="handleSubmit"
-                    style="width: 500px">
-                <div slot="content">
-                    <a-form @submit="handleSubmit" ref="createForm">
-                        <a-form-item>
-                            <p style="height:100%;
-                  background-color: #0099ff;
-                  margin-top: 20px;
-                  color: white;
-                  line-height: 50px;
-                  font-size: 20px;">
-                                设置每个老师使用某个课时的最大数量</p>
-                            <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                        </a-form-item>
-                        <a-form-item>
-                            <a-table :columns="column4"
-                                     :data-source="tableData4"
-                                     :pagination="false"
-                                     :bordered="true">
-                                <span slot="add" icon="plus" style="color: blue">添加一项</span>
-                                <a-select slot="buildingType"
-                                          slot-scope="type"
-                                          :default-value="type"
-                                          style="width: 240px">
-                                    <a-select-option value="0">
-                                        1
-                                    </a-select-option>
-                                    <a-select-option value="0">
-                                        2
-                                    </a-select-option>
-                                </a-select>
-                                <span slot="action" slot-scope="text" style="color:blue">{{text}}</span>
-                            </a-table>
-                        </a-form-item>
-                    </a-form>
-                </div>
-            </create-modal>
+                        width: 150px" @click="Next">下一步</button>
         </div>
     </div>
 </template>
 <script>
-    import CreateModal from "../../../../components/modal/CreateModal";
-    const renderContext=(value,row,index)=>{
-        const obj={
-            children: value,
-            attrs:{},
-        };
-        if(index===3||index === 6){
-            obj.attrs.colSpan=0;
-        }
-        return obj;
-    };
+    import moment from "moment";
+    import plan from "../../../../services/api/schedule/plan";
     const columns = [
         {
-            align: "center",
-            title: " ",
-            dataIndex: 'key',
-            className:'back-color',
-            customRender: (text, row, index) => {
-                if (index === 3 || index === 6) {
-                    return {
-                        children: text,
-                        attrs: {
-                            colSpan: 8,
-                        },
-                    };
-                } else {
-                    return text;
-                }
-            },
+            title: "",
+            dataIndex: "activity"
         },
         {
-            title: '星期一',
-            dataIndex: 'one',
-            key:'one',
-            align:'center',
-            customRender:renderContext,
-            className:'back-color',
+            title: "星期一",
+            dataIndex: "monday"
         },
         {
-            title: '星期二',
-            dataIndex: 'two',
-            key:'two',
-            align:'center',
-            customRender:renderContext,
-            className:'back-color',
+            title: "星期二",
+            dataIndex: "tuesday"
         },
         {
-            title: '星期三',
-            dataIndex: 'three',
-            key:'three',
-            align:'center',
-            customRender:renderContext,
-            className:'back-color',
+            title: "星期三",
+            dataIndex: "wednesday"
         },
         {
-            title: '星期四',
-            dataIndex: 'four',
-            key: 'four',
-            align:'center',
-            customRender:renderContext,
-            className:'back-color',
+            title: "星期四",
+            dataIndex: "thursday"
         },
         {
-            title: '星期五',
-            dataIndex: 'five',
-            key: 'five',
-            align:'center',
-            customRender:renderContext,
-            className:'back-color',
+            title: "星期五",
+            dataIndex: "friday"
         },
         {
-            title: '星期六',
-            dataIndex: 'six',
-            key:'six',
-            customRender:renderContext,
-            align:'center',
-            className:'back-color',
+            title: "星期六",
+            dataIndex: "saturday"
         },
         {
-            title: '星期日',
-            dataIndex: 'seven',
-            key:'seven',
-            customRender:renderContext,
-            align:'center',
-            className:'back-color',
-        },
+            title: "星期日",
+            dataIndex: "sunday"
+        }
     ];
-    const tableData=[
+    const activity = [
         {
-            key: '早读1',
-            one:'6:00~7:00'
+            name: "早读",
+            options: [0, 1, 2],
+            value: "morningread"
         },
         {
-            key: '上午1',
-            one:'8:30~9:00'
+            name: "上午",
+            options: [0, 1, 2, 3, 4],
+            value: "morning"
         },
         {
-            key: '上午2',
-            one:'9:00~10:00'
-        },{
-            key: '课间操10：00-10:30',
+            name: "中午",
+            options: [0, 1, 2],
+            value: "noon"
         },
         {
-            key: '上午3',
-            one:'10:30~11:30'
+            name: "下午",
+            options: [0, 1, 2, 3, 4],
+            value: "afternoon"
         },
         {
-            key: '上午4',
-            one:'11:30~12:30'
-        },{
-            key: '午休12：30-1:30',
-        },
-        {
-            key: '下午1',
-        },
-        {
-            key: '下午2',
-        },
-        {
-            key: '下午3',
-        },
-        {
-            key: '下午4',
-        },
-        {
-            key: '晚自习1',
-        },
+            name: "晚自习",
+            options: [0, 1, 2, 3, 4],
+            value: "evening"
+        }
     ];
-    const column4 = [
-        {
-            title: '课节',
-            dataIndex: 'times',
-            key: 'times',
-        },
-        {
-            title: '最大使用数',
-            dataIndex: 'number',
-            key: 'number',
-            scopedSlots: { customRender: 'buildingType' }
-        },
-        {
-            title: '操作',
-            dataIndex: 'opt',
-            key: 'opt',
-            scopedSlots: { customRender: 'action' }
-        },
-    ];
-    const tableData4= [
-        {
-            times: '周一上午第一节',
-            number: '1',
-            opt: '删除',
-        },
-        {
-            scopedSlots: { customRender: 'add' }
-        },]
     export default {
-        components: {CreateModal},
         data() {
             return {
-                column4,
-                tableData4,
                 columns,
-                tableData,
+                dataSource:[],
+                activity,
+                timeData:[],
                 planData:"",
-                visible: false,
-                loading: false
+                planId:"",
+                currId:"",
+                modalInfo:[],
+                modalName:"",
+                modalIds:[],
+                form:{
+                    modalId:" ",
+                }
             };
         },
         async created() {
@@ -282,66 +151,63 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name
             }
+            //获取课表模板信息
+            let {data}=await this.$api.basic.template.fetchList()
+            this.modalInfo=data.rows;
+            console.log(this.modalInfo);
+            for(var i=0;i<this.modalInfo.length;i++){
+                this.modalIds.push(this.modalInfo[i].id);
+            }
+            console.log(this.modalIds);
         },
         methods: {
-            maxTime: function () {
-                this.visible = true;
-            },
-            change: function () {
-                this.visible = true;
-            },
-            closed: function () {
-                this.visible = false
-                this.loading = false
-            },
-            handleSubmit: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
-                setTimeout(() => {
-                    that.dataSource.push(
-                        {
-                            avatar:
-                                "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-                            content: "最大课时数设置",
-                        }
-                    ),
-                        that.visible = false
-                    that.loading = false
-                }, 2000)
-            },
-            changeSituation: function(key, index){
-                console.log(key, index)
-            },
-            delSituation: function(key, index){
-                console.log(key, index)
-                this.tableData[key].situation.pop(index)
-            },
-            handleSelectChange(value) {
-                console.log(value);
-                this.form.setFieldsValue({
-
+            async handleSelectChange(id) {
+                let {data}=await this.$api.basic.template.fetchTemplate({id:this.form.modalId})
+                console.log(data.result);
+                this.currId=this.form.modalId;
+                console.log(this.currId);
+                let activities = [];
+                let timeDatas = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    for (let i = 1; i <= data.result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                        timeDatas.push({
+                            activity: item.name + i,
+                            value: item.value + i,
+                            time: [moment(undefined), moment(undefined)]
+                        });
+                    }
                 });
+                this.dataSource = activities;
+                this.timeData = timeDatas;
             },
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             back(){
                 this.$router.go(-1)
             },
-            form(){},
+            async Next(planId,currId){
+                console.log(this.planId);
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`);
+                let {data}=await this.$api.schedule.arrangeClass.saveCoursetime({planId:this.planId,currId:this.currId})
+            }
         }
     };
 </script>

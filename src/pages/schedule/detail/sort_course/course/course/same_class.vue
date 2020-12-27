@@ -11,7 +11,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col><button style="background-color: blue;
                         color: white;
                         height: 40px;
@@ -22,8 +22,7 @@
             </a-row>
         </div>
         <!-- /result -->
-
-        <div class="table-bg">
+        <a-card class="table-bg">
             <a-row class="buttons">
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
@@ -32,11 +31,10 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-table :columns="columns"
-                     :data-source="tableData"
+                     :data-source="dataSource"
                      :pagination="false"
                      :bordered="true"
                      class="table">
-                <a-input slot="sort_name"></a-input>
                 <div slot="kind" slot-scope="kind">
                     <a-select :default-value="kind">
                         <a-select-option :value="true"> 同时不同教室 </a-select-option>
@@ -48,7 +46,7 @@
                     color: white;
                     height:40px;"
                           @click="add_course">添加课程</a-button>
-                <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>
+                <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">删除</span>
             </a-table>
             <div style="
                     margin-top: 20px;
@@ -59,8 +57,20 @@
                 <a-icon type="plus" />
                 <span> 添加一项</span>
             </div>
-            <router-link to="/schedule/detail/sort_course/course">
-                <button style="background-color: #00ccff;
+<!--            选择课程-->
+            <a-modal  title="选择课程"
+                      :visible="chooseCourseModal"
+                      :closable="false">
+                <template slot="footer">
+                    <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                    <a-button key="back" @click="handleCancel">取消</a-button>
+                </template>
+                <a-checkbox-group @change="onChange" v-for="(course,index) in this.course" :key="index">
+                    <a-checkbox :value="course.id">{{course.subName}}</a-checkbox>
+                </a-checkbox-group>
+            </a-modal>
+        </a-card>
+        <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
                         border: none;
@@ -68,84 +78,24 @@
                         float: right;
                         margin-top:100px;
                         margin-bottom: 20px;
-                        width: 100px">
-                    下一步</button>
-            </router-link>
-            <create-modal class="add"
-                          :visible="visible"
-                          :loading="loading"
-                          :close="false"
-                          width="700px"
-                          @modalClosed="closed"
-                          @modalSubmit="handleSubmit1">
-                <div slot="content">
-                    <div style="height: 52px;
-                            border-radius: 5px;
-                             margin-top: -23px;
-                             margin-left: -24px;
-                            width: 700px;background-color: #e4e4e4">
-                            <h3 style="margin: 0px 0px 50px 0px;
-                                  padding: 15px 20px;
-                                  font-size: 1.0rem;
-                                  vertical-align: top;">选择课程</h3>
-                    </div>
-                    <div class="model1_content"
-                         style="margin-top: 70px;">
-                        <a-form :form="form" :label-col="{ span:4 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
-                            <a-form-item label="选择课程">
-                                <a-checkbox-group @change="onChange">
-                                    <a-row>
-                                        <a-col :span="6">
-                                            <a-checkbox value="A">语文</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="B">数学</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="C">英语</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="D">日语</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="E">物理选修</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="F">物理学修</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="G">生物选修</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="H">生物学修</a-checkbox>
-                                        </a-col>
-                                    </a-row>
-                                </a-checkbox-group>
-                            </a-form-item>
-                        </a-form>
-                    </div>
-                </div>
-            </create-modal>
-        </div>
+                        width: 100px" @click="Next">下一步</button>
     </div>
 </template>
 <script>
-    import CreateModal from "../../../../../../components/modal/CreateModal";
     const columns = [
         {
             title: ' ',
-            dataIndex: 'blank',
+            dataIndex: 'id',
             align:'center'
         },
         {
             title: '分组名称',
-            dataIndex: 'sort',
-            scopedSlots: { customRender: 'sort_name' },
+            dataIndex: 'groupName',
             align:'center'
         },
         {
             title:'类型',
-            dataIndex:'kinds',
+            dataIndex:'type',
             scopedSlots: { customRender: 'kind' },
             align:'center'
         },
@@ -162,90 +112,107 @@
             align:'center'
         },
     ];
-    let tableData = [
-        {
-            key:'0',
-            blank:'1',
-            kinds:true,
-            opt: '删除'
-        },
-        {
-            key:'1',
-            blank:'2',
-            kinds:true,
-            opt: '删除'
-        },
-        {
-            key:'2',
-            blank:'3',
-            kinds:true,
-            opt: '删除'
-        },
-    ];
     export default {
-        components: {CreateModal},
         data() {
             return {
-                tableData,
+                dataSource:[],
                 columns,
-                count:3,
-                visible: false,
                 loading: false,
+                planData:"",
+                planId:"",
+                chooseCourseModal:false,
+                course:"",
             };
         },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            //获取同时上课规则信息
+            let {data}=await this.$api.schedule.arrangeClass.banGetting({planId:"940085b583944e19a0a098ca24804afc",htId:"14010510RBRSUU7",ruleType:"1"})
+            console.log(data);
+            this.dataSource=data.rows;
+        },
         methods: {
-            add_course: function () {
-                this.visible = true;
+            async add_course(id) {
+                this.chooseCourseModal = true;
+                this.chooseCourseId=this.dataSource.findIndex(item=>item.id==id);
+                //获取课程接口
+                let { data } = await this.$api.basic.subject.fetchMainList();
+                // console.log(data);
+                this.course=data.rows;
+                console.log( this.course);
             },
             change: function () {
                 this.visible = true;
             },
-            closed: function () {
-                this.visible = false
-                this.loading = false
+            handleCancel () {
+                this.loading = false;
+                this.chooseCourseModal=false;
             },
-            handleSubmit1: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
+            handleOk () {
+                this.loading=true;
                 setTimeout(() => {
-                    that.visible = false
-                    that.loading = false
-                }, 2000)
+                    this.chooseCourseModal = false;
+                    this.loading = false;
+                    for(let i=0;i<this.course.length;i++){
+                        if(this.subjectId==this.course[i].id){
+                            console.log(this.course[i].subName);
+                            this.dataSource[this.chooseCourseId].groupName=this.course[i].subName;
+                            console.log( this.dataSource[this.chooseCourseId].groupName);
+                        }
+                    }
+                }, 20)
             },
             onChange(e){
                 console.log('radio checked',e.target.value)
             },
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
+            Next(){
+              this.$router.push(`/schedule/detail/sort_course/course/course/banned_subject?planId=${this.planId}`)
+            },
+            //添加一项规则
             AddContent(){
-                const { count, tableData} = this;
+                const { count, dataSource} = this;
+                // let {data}=await this.$api.schedule.arrangeClass.banAdding()
                 const newData = {
-                    key: count,
-                    blank:'3',
-                    kinds:true,
-                    opt: '删除'
+                    id:this.dataSource.length+1,
                 };
-                this.tableData= [...tableData, newData];
+                this.dataSource= [...dataSource, newData];
                 this.count = count + 1;
             },
-            onDelete(){
-                const dataSource = [...this.tableData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this.tableData = dataSource
+            //删除一行数据
+            async onDelete(id){
+                let {data}=await this.$api.schedule.arrangeClass.banDeleting({ids:[id]});
+                console.log(data);
+                if(data&&data.success){
+                    //获取互斥规则信息
+                    let {data}=await this.$api.schedule.arrangeClass.banGetting({planId:"940085b583944e19a0a098ca24804afc",htId:"14010510RBRSUU7",ruleType:"0"})
+                    console.log(data);
+                    this.dataSource=data.rows;
+                    message.info('删除成功');
+                }else{
+                    message.info('删除失败');
+                }
             },
             back(){
                 this.$router.go(-1)

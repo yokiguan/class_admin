@@ -28,6 +28,7 @@
                             <span style="color:red;float:right">删除</span>
                             <span style="color:blue;float:right;margin-right:1em;" @click="change">修改</span>
                         </div>
+
                             <template v-for="(tag, index) in tags">
                                 <a-tooltip v-if="tag.length > 20" :key="tag" :title="tag">
                                     <a-tag :key="tag" :closable="index !== 0" @close="() => handleClose(tag)">
@@ -99,11 +100,11 @@
     import CreateModal from "../../../../components/modal/CreateModal";
     const columns = [
         { title: '学科',
-            dataIndex: 'subject',
+            dataIndex: 'scheduleTeacherClassEntities.className',
         },
         {
             title: '未分班学生',
-            dataIndex: 'unsorted',
+            dataIndex: 'unscheduledStudentEntities.schWxUserEntity.userName',
         },
         {
             title: '分班情况',
@@ -111,33 +112,11 @@
             scopedSlots: { customRender: 'situation' }
         },
     ];
-    let tableData = [
-        {
-            key: 0,
-            subject: '高一语文',
-            unsorted: 10,
-        },
-        {
-            key: 1,
-            subject: '高一语文',
-            unsorted: 10,
-        },
-        {
-            key: 2,
-            subject: '高一语文',
-            unsorted: 10,
-        },
-        {
-            key: 3,
-            subject: '高一语文',
-            unsorted: 10,
-        },
-    ];
     export default {
         components: {CreateModal},
         data() {
             return {
-                tableData,
+                tableData:[],
                 columns,
                 loading:false,
                 visible: false,
@@ -156,6 +135,9 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name
             }
+            //获取手动分班学生信息
+            let {data}=await this.$api.schedule.sortClass.classGetManual({planId})
+            console.log(data)
         },
         methods: {
             add: function () {

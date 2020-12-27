@@ -56,7 +56,7 @@
         {
             align: "center",
             title: " ",
-            dataIndex: 'blank',
+            dataIndex: 'activity',
             width:'12.5%',
 
         },
@@ -103,50 +103,69 @@
             align:'center'
         },
     ];
-    const tableData=[
+    const activity = [
         {
-            blank: '早读1',
-            one:'6：00-7：00'
-
+            name: "早读",
+            options: [0, 1, 2],
+            value: "morningread"
         },
         {
-            blank: '上午1',
-            one:'8：30-9：00'
+            name: "上午",
+            options: [0, 1, 2, 3, 4],
+            value: "morning"
         },
         {
-            blank: '上午2',
-            one:'9：00-10：00'
+            name: "中午",
+            options: [0, 1, 2],
+            value: "noon"
         },
         {
-            blank: '上午3',
-            one:'10：30-11：30'
+            name: "下午",
+            options: [0, 1, 2, 3, 4],
+            value: "afternoon"
         },
         {
-            blank: '上午4',
-            one:'11：30-12：30'
-        },
-        {
-            blank: '下午1',
-        },
-        {
-            blank: '下午2',
-        },
-        {
-            blank: '下午3',
-        },
-        {
-            blank: '下午4',
-        },
-        {
-            blank: '晚自习1',
-        },
+            name: "晚自习",
+            options: [0, 1, 2, 3, 4],
+            value: "evening"
+        }
     ];
     export default {
         data(){
             return{
                 columns,
-                tableData,
+                tableData:[],
+                timeData:[],
+                currId:"",
+                activity,
             }
+        },
+        async created(id) {
+            let {data}=await this.$api.basic.template.fetchTemplate({id:this.form.modalId})
+            console.log(data.result);
+            this.currId=this.form.modalId;
+            console.log(this.currId);
+            let activities = [];
+            let timeDatas = [];
+            let list = [...this.activity];
+            list.forEach(item => {
+                for (let i = 1; i <= data.result[item.value]; i++) {
+                    activities.push({
+                        activity: item.name + i,
+                        value: item.value + i
+                    });
+                    timeDatas.push({
+                        activity: item.name + i,
+                        value: item.value + i,
+                        time: [moment(undefined), moment(undefined)]
+                    });
+                }
+            });
+            this.tableData = activities;
+            this.timeData = timeDatas;
+        },
+        methods:{
+
         }
     }
 </script>

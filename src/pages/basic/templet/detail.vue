@@ -365,6 +365,7 @@
             let activities = [];
             let timeDatas = [];
             let list = [...this.activity];
+            console.log(this.form);
             list.forEach(item => {
               for (let i = 1; i <= this.form[item.value]; i++) {
                 activities.push({
@@ -380,13 +381,14 @@
             });
             this.dataSource = activities;
             this.timeData = timeDatas;
+            console
           } else return false;
         });
       },
       async saveInfo(){
         let query={...this.form,timeSetting:this.timeQuery};
         let {data}=await this.$api.basic.template.saveTemplate(query);
-        console.log(data);
+        console.log(data.result);
         this.$router.push("/basic/template/admin");
         this.$refs.ruleForm.resetFields();
       },

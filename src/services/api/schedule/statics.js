@@ -30,11 +30,11 @@ const statics={
     },
     //修改选课结果-添加按钮-查询出的学生
     alterResultButtonFind(params){
-        return axios.post(`${baseUrl2}/getArrangeStuInfo.json`,{params});
+        return axios.get(`${baseUrl2}/getArrangeStuInfo.json`,{params});
     },
     //修改选课结果-添加按钮-添加结果
     alterResultButtonResult(params){
-        return axios.post(`${baseUrl1}/saveDataList.json`,{params});
+        return axios.post(`${baseUrl1}/saveDataList.json`,params);
     }
 }
 export default statics

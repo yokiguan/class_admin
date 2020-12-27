@@ -28,10 +28,8 @@
                             style="font-size: 1.3em;"/>
                 </div>
                 <div class="right">
-                    <LocationRegular v-if="showcomLocation"></LocationRegular>
+                    <LocationRegular v-if="showcomLocation" @form-modal-change="changeEvent"></LocationRegular>
                     <CurriculumRegular v-if="showcomCurriculum"></CurriculumRegular>
-<!--                    <LocationRegular></LocationRegular>-->
-<!--                    <CurriculumRegular></CurriculumRegular>-->
                 </div>
             </div>
         </div>
@@ -44,9 +42,11 @@
     import CurriculumRegular from "./curriculum"
     export default {
         name:'teacherRule',
+        // components: {ClassRegular,LocationRegular,CurriculumRegular},
         components: {ClassRegular,LocationRegular,CurriculumRegular},
         data() {
             return {
+                showcomCurriculum: false,
                 // treeData,
                 buildingsData:[],
                 showcomLocation:false,
@@ -63,8 +63,9 @@
                 },
             };
         },
-        created(){
-            this.getData()
+         created(){
+            this.getData();
+
         },
         watch:{
           checkedBuildingKeys(val){
@@ -88,7 +89,7 @@
                         for (let j = 0; j < data.result[i].floor_list.length; j++) {
                             let item = data.result[i].floor_list[j]
                             let childData = {}
-                            childData.key = item.floor
+                            childData.key = data.result[i].building_Id + item.floor
                             childData.title = '第' + item.floor + '层'
                             if(item.classroom_list.length) {
                                 childData.children = []
@@ -117,6 +118,10 @@
                 // this.$router.push('/basic/classroom/rule/location');
                 this.showcomLocation=true;
             },
+            changeEvent (modal) {
+                console.log(modal)
+                modal ? this.showcomCurriculum = true : this.showcomCurriculum = false
+            }
         },
     };
 </script>

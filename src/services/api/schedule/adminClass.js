@@ -14,13 +14,11 @@ const adminClass = {
 
     // 学科设置查看
     getCourseSetting(params){
-        return axios.get(`${baseUrl1}/getDataList.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl1}/getDataList.json`,{params});
     },
     //学科设置删除
     deleteCourseSetting(params){
-        return axios.post(`${baseUrl1}/deleteData.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.post(`${baseUrl1}/deleteData.json`,params);
     },
     //学科设置新增/修改
     addCourseSetting(params){
@@ -44,8 +42,7 @@ const adminClass = {
     },
     //规则设置-学科时间规则查看
     searchSubjectTimeRule(params) {
-        return axios.get(`${baseUrl3}/searchXzbSubjectTimeRule.json`, params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl3}/searchXzbSubjectTimeRule.json`, {params});
     },
     //规则设置-教师时间规则查看
     searchTeacherTimeRule(params) {

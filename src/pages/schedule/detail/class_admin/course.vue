@@ -10,7 +10,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col>
                     <button style="background-color: blue;
                         color: white;
@@ -22,7 +22,7 @@
                 </a-col>
             </a-row>
         </div>
-        <div class="table-bg">
+        <a-card class="table-bg">
             <a-row class="buttons">
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
@@ -30,9 +30,9 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
-            <a-table :key="'key'"
+            <a-table :rowKey="'id'"
                     :columns="columns"
-                     :data-source="tableData"
+                     :data-source="dataSource"
                      :pagination="false"
                      :bordered="true">
                 <a-input slot="every_time"></a-input>
@@ -45,7 +45,7 @@
                 <template slot="priority" slot-scope="text, record">
                     <editable-cell :text="text" @change="onCellChange(record.key, 'priority', $event)" />
                 </template>
-                <a  slot="action" style="color: blue" @click="onDelete">删除</a>
+                <a  slot="action" style="color: blue" slot-scope="text,record" @click="onDelete(record.id)">删除</a>
 <!--                <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>-->
             </a-table>
             <a-button icon="plus" style="background-color: #00ccff;
@@ -57,6 +57,7 @@
                         border-radius: 5px;
                         margin-top: 30px;
                         width: 150px" @click="add">添加</a-button>
+        </a-card>
             <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
@@ -66,182 +67,112 @@
                         margin-top: 150px;
                         margin-bottom: 20px;
                         width: 150px" @click="Next">下一步</button>
+<!--            添加课程弹窗-->
+            <a-modal
+                    title="添加课程"
+                    :visible='addCourseModal'
+                    :closable="false">
+                <template slot="footer">
+                    <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                    <a-button key="back" @click="handleCancel">取消</a-button>
+                </template>
+                <template>
+                    <a-input-search v-model="form.course" placeholder="Search" @change="onChange"/>
+                    <a-tree
+                            :expanded-keys="expandedKeys"
+                            :auto-expand-parent="autoExpandParent"
+                            :tree-data="gData"
+                            @expand="onExpand">
+                        <template slot="title" slot-scope="{title}">
+                            <span v-if="title.indexOf(searchValue)>-1">
+                                {{title.substr(0,title.indexOf(searchValue))}}
+                                <span style="color: #f50">{{searchValue}}</span>
+                                {{title.substr(title.indexOf(searchValue)+searchValue.length)}}
+                            </span>
+                            <span v-else>{{title}}</span>
+                        </template>
+                    </a-tree>
+                </template>
+            </a-modal>
             <!--        编辑弹窗-->
-            <create-modal class="edit"
-                          :close="false"
-                          width="700px"
-                          :visible="visible"
-                          :loading="loading"
-                          @modalClosed="closed"
-                          @modalSubmit="edithandleSubmit">
-                <div slot="content">
-                    <div style="height: 65px;
-                         border-radius: 5px;
-                         margin-top: -23px;
-                         margin-left: -24px;
-                         width:700px;background-color: #e4e4e4">
-                        <h3 style="margin-left: 10px;
-                              padding: 20px 25px;
-                              vertical-align: top;
-                              font-size: 1.2rem">设置上课天数</h3>
-                    </div>
-                    <a-form :value="value" style="margin-top: 30px;"  :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
-                        <a-form-item label="类型">
-                            <a-select
-                                v-decorator="[
-                                    '类型',
-                                    { rules: [{ required: true, message: '请选择类型！' }] }, ]"
-                                placeholder="小于/大于/等于"
-                                @change="handleSelectChange">
-                            <a-select-option value="1">
-                                小于
-                            </a-select-option>
-                            <a-select-option value="2">
-                                 大于
-                            </a-select-option>
-                            <a-select-option value="3">
-                                 等于
-                            </a-select-option>
-                        </a-select>
-                    </a-form-item>
-                    <a-form-item label="天数">
-                        <a-input placeholder="请输入"  v-decorator="['天数', { rules: [{ required: true, message: '请输入天数！' }] }]"/>
-                    </a-form-item>
-                </a-form>
-            </div>
-            </create-modal>
-<!--            添加弹窗-->
-            <create-modal class="add"
-                          width="700px"
-                          :close="false"
-                          :visible="addvisible"
-                          :loading="load"
-                          @modalClosed="close"
-                          @modalSubmit="AddhandleSubmit">
-                <div slot="content">
-                    <div style="height: 65px;
-                         border-radius: 5px;
-                         margin-top: -23px;
-                         margin-left: -24px;
-                         width:700px;background-color: #e4e4e4">
-                        <h3 style="margin: 0px 0px 50px 0px;
-                              padding: 20px 25px;
-                              vertical-align: top;
-                              font-size: 1.2rem">添加课程</h3>
-                    </div>
-                    <a-form style="margin-top: 30px" :form="form"  @submit="handleSubmit">
-                        <a-form-item label="添加课程：" :label-col="{ span: 5}" :wrapper-col="{ span: 18}">
-                            <a-input-search placeholder="请输入" v-model="inputData"/>
-                        </a-form-item>
-                        <div>数据：{{inputData}}</div>
-                        <a-form-item :wrapper-col="{ span: 33}">
-                            <div style="margin-left: 90px">
-                                <a-tree
-                                        :show-line="showLine"
-                                        @select="onSelect">
-                                    <a-tree-node key="0-0">
-                                        <span slot="title" >物理</span>
-                                        <a-tree-node key="0-0-0" title="物理选修">
-                                        </a-tree-node>
-                                        <a-tree-node key="0-0-1" title="物理学修">
-                                        </a-tree-node>
-                                    </a-tree-node>
-                                    <a-tree-node key="0-1">
-                                        <span slot="title" >语文</span>
-                                        <a-tree-node key="0-1-1">
-                                        </a-tree-node>
-                                    </a-tree-node>
-                                    <a-tree-node key="0-2">
-                                        <span slot="title" >数学</span>
-                                        <a-tree-node key="0-2-1">
-                                        </a-tree-node>
-                                    </a-tree-node>
-                                    <a-tree-node key="0-3">
-                                        <span slot="title" >化学</span>
-                                        <a-tree-node key="0-3-1">
-                                        </a-tree-node>
-                                    </a-tree-node>
-                                    <a-tree-node key="0-4">
-                                        <span slot="title" >生物</span>
-                                        <a-tree-node key="0-4-1">
-                                        </a-tree-node>
-                                    </a-tree-node>
-                                    <a-tree-node key="0-5">
-                                        <span slot="title" >外语</span>
-                                        <a-tree-node key="0-5-1">
-                                        </a-tree-node>
-                                    </a-tree-node>
-                                </a-tree>
-                            </div>
-                        </a-form-item>
-                    </a-form>
-                </div>
-            </create-modal>
-        </div>
+        <a-modal  title="设置上课天数"
+                  :visible='settingLessonDays'
+                  :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
+            </template>
+            <a-form-model  style="margin-top: 30px;"  :model="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
+                <a-form-model-item label="类型">
+                    <a-select placeholder="小于/大于/等于" @change="handleSelectChange">
+                        <a-select-option value="1">小于</a-select-option>
+                        <a-select-option value="2">大于</a-select-option>
+                        <a-select-option value="3">等于</a-select-option>
+                    </a-select>
+                </a-form-model-item>
+                <a-form-model-item label="天数">
+                    <a-input placeholder="请输入"  v-decorator="['天数', { rules: [{ required: true, message: '请输入天数！' }] }]"/>
+                </a-form-model-item>
+            </a-form-model>
+        </a-modal>
     </div>
 </template>
 <script>
-    import CreateModal from "../../../../components/modal/CreateModal";
     const columns = [
         {
+           title:'',
+          dataIndex:'id',
+          align:'center'
+        },
+        {
             title: '学科名称',
-            dataIndex: 'subject',
-            key: 'subject',
+            dataIndex: 'subName',
             align:'center',
-            width:'8%'
         },
         {
             title: '优先级',
             dataIndex: 'priority',
-            key: 'priority',
             align:'center',
             width:'8%',
             scopedSlots: { customRender: 'every_time' },
         },
         {
             title: '每周节数',
-            dataIndex: 'every_times',
-            key: 'every_times',
+            dataIndex: 'lessonWeekly',
             scopedSlots: { customRender: 'every_time' },
             align:'center',
             width:'10%'
         },
         {
             title: '上课天数',
-            dataIndex: 'class_days',
-            key: 'class_days',
+            dataIndex: 'dayNum',
             scopedSlots: { customRender: 'class_day' },
             align:'center',
             width:'8%'
         },
         {
             title: '最大开课数',
-            dataIndex: 'max_class',
-            key: 'max_class',
+            dataIndex: 'lessonMax',
             scopedSlots: { customRender: 'maxClass' },
             align:'center',
             width:'15%'
         },
         {
             title: '每天课时数设置',
-            key: 'every_setting_times',
-            dataIndex: 'every_setting_times',
             scopedSlots: { customRender: 'everySettingTimes' },
             align:'center',
             width:'15%'
         },
         {
             title: '上午课时数',
-            key: 'morning_times',
-            dataIndex: 'morning_times',
+            dataIndex: 'lessonMorning',
             align:'center',
             scopedSlots: { customRender: 'morningClassTimes' },
             width:'15%'
         },
         {
             title: '下午课时数',
-            key: 'after_times',
-            dataIndex: 'after_times',
+            dataIndex: 'lessonafternoon',
             align:'center',
             scopedSlots: { customRender: 'afterClassTimes' },
             width:'15%'
@@ -255,33 +186,61 @@
             width:'5%'
         },
     ];
-    let tableData = [
-        {
-            key:'0',
-            subject:'语文',
-            opt: '删除'
-        },
-        {
-            key:'1',
-            subject:'数学',
-            opt: '删除'
-        },
-        {
-            key:'2',
-            subject:'体育',
-            opt: '删除'
-        },
-        {
-            key:'3',
-            subject:'升国旗',
-            opt: '删除'
-        },
-        {
-            key:'4',
-            subject:'班会',
-            opt: '删除'
+    const x = 3;
+    const y = 2;
+    const z = 1;
+    const gData = [];
+
+    const generateData = (_level, _preKey, _tns) => {
+        const preKey = _preKey || '0';
+        const tns = _tns || gData;
+
+        const children = [];
+        for (let i = 0; i < x; i++) {
+            const key = `${preKey}-${i}`;
+            tns.push({ title: key, key, scopedSlots: { title: 'title' } });
+            if (i < y) {
+                children.push(key);
+            }
         }
-    ];
+        if (_level < 0) {
+            return tns;
+        }
+        const level = _level - 1;
+        children.forEach((key, index) => {
+            tns[index].children = [];
+            return generateData(level, key, tns[index].children);
+        });
+    };
+    generateData(z);
+
+    const dataList = [];
+    const generateList = data => {
+        for (let i = 0; i < data.length; i++) {
+            const node = data[i];
+            const key = node.key;
+            dataList.push({ key, title: key });
+            if (node.children) {
+                generateList(node.children);
+            }
+        }
+    };
+    generateList(gData);
+
+    const getParentKey = (key, tree) => {
+        let parentKey;
+        for (let i = 0; i < tree.length; i++) {
+            const node = tree[i];
+            if (node.children) {
+                if (node.children.some(item => item.key === key)) {
+                    parentKey = node.key;
+                } else if (getParentKey(key, node.children)) {
+                    parentKey = getParentKey(key, node.children);
+                }
+            }
+        }
+        return parentKey;
+    };
     const EditableCell = {
         template: `
       <div class="editable-cell">
@@ -321,131 +280,132 @@
     };
     export default {
         components: {
-            CreateModal,
             EditableCell,
         },
         data() {
             return {
                 inputData: null,
-                tableData,
+                dataSource:[],
                 columns,
-                visible: false,
-                addvisible:false,
-                load:false,
-                loading: false,
-                showLine: true,
+                planData:"",
                 count:5,
                 formLayout:'horizontal',
                 form:this.$form.createForm(this,{name:'coordinated'}),
+                editText:-1,
+                editId:null,
+                id:null,
+                addCourseModal:false,
+                loading:false,
+                expandedKeys: [],
+                searchValue: '',
+                autoExpandParent: true,
+                gData,
+                settingLessonDays:false,
             };
         },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            //学科设置查看
+            let {data}=await this.$api.schedule.adminClass. getCourseSetting({planId:this.planId,scheduleType:"1"});
+            console.log(data)
+            this.dataSource=data.rows
+            console.log(this.dataSource)
+        },
         methods: {
-            editDays: function () {
-                this.visible = true;
+            //删除行数据
+            async onDelete(id){
+                this.editText=this.dataSource.findIndex(item=>item.id==id);
+                this.editId=this.dataSource[ this.editText].id
+                console.log(this.editId)
+                let {data}=await this.$api.schedule.adminClass.deleteCourseSetting({ids:[this.editId]})
+                console.log(data);
+                // const dataSource = [...this. dataSource];
+                // dataSource.splice(event.target.getAttribute('dataIndex'),1);
+                // this. dataSource= dataSource
             },
-            add: function () {
-                this.addvisible = true;
+            //添加课程方法
+            add(){
+                this.addCourseModal=true;
             },
-            change: function () {
-                this.visible = true;
-                this.visib = true;
+            handleOk(){
+              this.addCourseModal=false;
+              this.settingLessonDays =false;
             },
-            closed: function () {
-                this.visible = false
-                this.loading = false
+            handleCancel(){
+                this.addCourseModal=false;
+                this.settingLessonDays =false;
             },
-            close: function () {
-                this.visible = false
-                this.loading = false
+            //添加课程中的树
+            onExpand(expandedKeys) {
+                this.expandedKeys = expandedKeys;
+                this.autoExpandParent = false;
             },
-            AddhandleSubmit: function () {
-                console.log(this.$refs.createForm)
-                this.load = true
-                setTimeout(() => {
-                    this.addvisible = false
-                    this.load = false
-                }, 300)
-                const { count, tableData } = this;
-                const newData = {
-                    key: count,
-                    subject: `语文破碎带复活甲广佛而非`,
-                    priority:'1',
-                    opt:  `删除`,
-                };
-                this.tableData= [...tableData, newData];
-                this.count = count + 1;
-            },
-            edithandleSubmit(e){
-                console.log(23456789)
-                e.preventDefault();
-                this.form.validateFields((err, values) => {
-                    console.log(err)
-                    if (!err) {
-                        //下面这个就没执行
-                        this.loading = true
-                        console.log(23456789)
-                        setTimeout(()=>{
-                            this.visible= false
-                            this.loading = false
-                        },200)
-                        console.log('Received values of form: ', values);
-                    }
+            onChange(e) {
+                const value = e.target.value;
+                const expandedKeys = dataList
+                    .map(item => {
+                        if (item.title.indexOf(value) > -1) {
+                            return getParentKey(item.key, gData);
+                        }
+                        return null;
+                    })
+                    .filter((item, i, self) => item && self.indexOf(item) === i);
+                Object.assign(this, {
+                    expandedKeys,
+                    searchValue: value,
+                    autoExpandParent: true,
                 });
-                this.$emit('change', this.values);
-                this.class_day=false
-
             },
+            editDays: function () {
+                this.settingLessonDays = true;
+            },
+
             handleSelectChange(value){
                 console.log(value);
                 this.form.setFieldsValue({
                     note: `3, ${value === '大于' ? '1' : '2'}!`,
                 });
             },
-            onChange(e){
-                console.log('radio checked',e.target.value)
-            },
-            changeSituation: function(key, index){
+            changeSituation(key, index){
                 console.log(key, index)
             },
-            delSituation: function(key, index){
+            delSituation(key, index){
                 console.log(key, index)
-                this.tableData[key].situation.pop(index)
+                this.dataSource[key].situation.pop(index)
             },
             onSelect(selectedKeys, info) {
                 console.log('selected', selectedKeys, info);
             },
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
+            //下一步
             Next(){
-                this.$router.push('/schedule/detail/class_admin/class')
+                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`)
             },
-            onDelete(){
-                const dataSource = [...this. tableData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this. tableData= dataSource
-            },
+            //返回
             back(){
                 this.$router.go(-1)
             },
-            value(){},
-            handleSubmit1(){},
-            submit(){},
-            handleSubmit(){},
-            record(){},
-
         }
     };
 </script>

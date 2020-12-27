@@ -10,7 +10,6 @@ const classroom = {
     fetchList(params){
         return axios.get(`${baseUrl}/getDataListWithBuilding.json`,params);
     },
-
     // 查询指定教室信息，用于教室规则等的教室选择，编辑模板前，先查询模板信息，利用模板id
     fetchBuilding(params){
         return axios.get(`${baseUrl}/getDataInfo.json`,params);

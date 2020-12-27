@@ -24,15 +24,21 @@
                      :bordered="true"
                      :pagination="false">
                 <div slot="action" slot-scope="scheduleTeacherClassEntities">
-                    <li v-for="(s, index) in scheduleTeacherClassEntities" :key="index" class="situation">
-                        <a-row>
-                            <a-col :span="16"><span>{{s.className}}</span></a-col>
-                            <a-col :span="4"><span>{{s.teacherId}}</span></a-col>
-                            <a-col :span="4"><span>{{s.number}}</span></a-col>
-                            <a-col :span="4"><a style="color:blue" @click="changeSituation" type="dashed">修改</a></a-col>
-                            <a-col :span="4"><a style="color:red" @click="onDelete" type="dashed">删除</a></a-col>
-                        </a-row>
-                    </li>
+                    <template v-if="scheduleTeacherClassEntities.length">
+                        <li v-for="(s, index) in scheduleTeacherClassEntities" :key="index" class="situation">
+                            <a-row>
+                                <a-col :span="7" ><span>{{s.className}}</span></a-col>
+                                <a-col :span="4">
+                                    <span v-if="s.schWxUserEntity && s.schWxUserEntity.userName">{{s.schWxUserEntity.userName}}</span>
+                                    <span v-else>-</span>
+                                </a-col>
+                                <a-col  :span="4"><span>{{s.number}}</span></a-col>
+                                <a-col  :span="4"><a style="color:blue" @click="changeSituation" type="dashed">修改</a></a-col>
+                                <a-col  :span="4"><a style="color:red" @click="onDelete(s)" type="dashed">删除</a></a-col>
+                            </a-row>
+                        </li>
+                    </template>
+                    <div v-else>--</div>
                 </div>
             </a-table>
         </div>
@@ -63,25 +69,28 @@
     import CreateModal from "@/components/modal/CreateModal";
     import TagSelectOption from "../../../../components/tool/TagSelectOption";
     const columns = [
-        { title: '课程名称',
-            dataIndex: 'subId',
+        {   title: '课程名称',
+            dataIndex: 'subjectChildEntity.name',
             align:'center',
+            width:'12%',
         },
         {
             title: '总人数',
             dataIndex: 'total',
             align:'center',
+            width:'12%',
         },
-        // {
-        //     title: '未分班人数',
-        //     dataIndex: 'unsorted',
-        //     align:'center',
-        //     width:'10%',
-        // },
+        {
+            title: '未分班人数',
+            dataIndex: 'unscheduled',
+            align:'center',
+            width:'12%',
+        },
         {
             title: '分班个数',
             dataIndex: 'classNum',
             align:'center',
+            width:'12%',
         },
         {
             title: '分班情况',
@@ -100,6 +109,7 @@
                 loading:false,
                 planData:"",
                 planId:"",
+                id:"",
                 form:{
                     name:"",
                     teacher:"",
@@ -129,6 +139,7 @@
             if (planId) {
                 //获取单个选课计划的信息
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                console.log(result)
                 this.planData = result.name
                 console.log(this.planData);
             };
@@ -140,15 +151,17 @@
         methods: {
             changeSituation () {
                 this.chooseSortClass = true;
-
             },
             //保存修改
             async handleOk(){
-                let formData={
-
-                }
+                // let formData={
+                //  id:this.dataSource.scheduleTeacherClassEntities.id,
+                //  className:this.dataSource.scheduleTeacherClassEntities.className,
+                //  teacherId:this.dataSource.scheduleTeacherClassEntities.teacherId,
+                // }
+                // let addData={...formData}
+                // let {data}=await this.$api.schedule.sortClass.classAlter(addData)
                 this.chooseSortClass=false;
-                let {data}=await this.$api.schedule.sortClass.classAlter();
             },
             //取消
             handleCancel(){
@@ -157,14 +170,20 @@
             back(){
               this.$router.go(-1)
             },
-            async onDelete(id){
-                let {data}=await this.$api.schedule.sortClass.classDelete({ids:[id]});
+            async onDelete(row){
+                console.log(row.id)
+                let {data} = await this.$api.schedule.sortClass.classDelete({"ids":[row.id]});
                 console.log(data);
+                if (data.result) {
+                    // 表示请求成功，我们刷新表格数据，重新加载  调用请求表格数据接口函数
+                    // this.getTableDat()
+                } else {
+                    this.$message.error('请求失败')
+                }
                 // const dataSource = [...this. dataSource];
                 // dataSource.splice(event.target.getAttribute('dataIndex'),1);
                 // this. dataSource= dataSource
             },
-            addClassHandleSubmint(){},
             //手动分班
             manaulSortClass(){
                 this.$router.push(`/schedule/detail/sort_class/manual?planId=${this.planId}`)
@@ -202,7 +221,7 @@
         margin:5px 10px;
         padding:5px 4px;
         border-radius: 4px;
-        width: 70%;
+        width: 100%;
         height: 35px;
         font-size: 1.0em;
         margin-right: 1em;

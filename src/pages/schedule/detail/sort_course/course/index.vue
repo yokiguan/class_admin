@@ -11,7 +11,7 @@
             </div>
             <div class="header-item">
                 <a-row>
-                    <a-col :span="13"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
+                    <a-col :span="13"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                         <a-button style="background-color: #00ccff;
                                     color: white;
                                     height: 40px;
@@ -37,7 +37,7 @@
                         width: 100px" @click="back">返回</button>
                 </a-row>
             </div>
-            <div class="content">
+            <a-card class="content">
                 <a-row class="buttons">
                     <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                     <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
@@ -47,7 +47,7 @@
                 </a-row>
                 <div class="table-content">
                     <a-table
-                            :key="'key'"
+                            :rowKey="'classId'"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
@@ -61,20 +61,18 @@
                         <a-button slot="adds_datas" style="background-color: #00ccff;color:white;" @click="add_class">
                             添加教室
                         </a-button>
-                        <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>
+                        <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">删除</span>
                     </a-table>
-                    <router-link to="/schedule/detail/start_class">
-                        <button style="background-color: #00ccff;
+                    <button style="background-color: #00ccff;
                 border: none;color: white;
                 float: right;
                 height: 40px;
                 border-radius: 5px;
                 width: 150px;
                 margin-right: 50px;
-                margin-top:50px">  下一步</button>
-                    </router-link>
+                margin-top:50px" @click="Next">  下一步</button>
                 </div>
-            </div>
+            </a-card>
         </div>
         <div class="Pop-ups">
 <!--            选择时间段-->
@@ -281,31 +279,26 @@
     import CreateModal from "../../../../../components/modal/CreateModal";
     const columns=[
         {
-            title: '',
-            dataIndex:'num',
-            key:'num',
-            backgroundColor:'#e4e4e4',
-            align:'center'
-        }, {
+          title:'',
+          dataIndex:'classId',
+          align:'center'
+        },
+        {
             title: '课程名称',
-            dataIndex: 'name',
-            key: 'name',
+            dataIndex: 'className',
             align:'center'
         },{
             title:'老师',
-            dataIndex:'teacher',
-            key:'teacher',
+            dataIndex:'userName',
             align:'center'
         },{
             title:'每周课时',
-            dataIndex:'times',
-            key:'times',
+            dataIndex:'lessonNum',
             align:'center',
             scopedSlots: { customRender: 'add_times' }
         },{
             title:'最小上课天数',
-            dataIndex:'datas',
-            key:'datas',
+            dataIndex:'minNum',
             align:'center',
             scopedSlots: { customRender: 'add_datas' }
         },{
@@ -332,58 +325,32 @@
             align:'center',
             scopedSlots: { customRender: 'action' }
         }]
-    let  tableData=[
-        {
-            key:0,
-            num:'1',
-            name:'语文1班',
-            teacher:'张凯元',
-            middle_blank:'  ',
-            opt:'删除'
-        },
-        {
-            key:1,
-            num:'2',
-            name:'语文2班',
-            teacher:'张凯元',
-            middle_blank:'  ',
-            opt:'删除'
-        },
-        {
-            key:2,
-            num:'3',
-            name:'语文3班',
-            teacher:'张凯元',
-            middle_blank:'  ',
-            opt:'删除'
-        },
-        {
-            key:3,
-            num:'4',
-            name:'生物学修1班',
-            teacher:'张凯方',
-            middle_blank:'  ',
-            opt:'删除'
-        },
-        {
-            key:4,
-            num:'5',
-            name:'生物学修2班',
-            teacher:'张凯方',
-            middle_blank:'  ',
-            opt:'删除'
-        }]
     export default {
         components: {CreateModal},
         data() {
             return {
                 columns,
-                tableData,
+                tableData:[],
                 visible: false,
                 classVisible:false,
                 classloading:false,
                 loading:false,
+                planData:"",
             }
+        },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            //课程设置信息查看
+            let {data}=await this.$api.schedule.arrangeClass.getList()
+            console.log(data)
+            this.tableData=data.rows;
         },
         methods:{
             add_time:function () {
@@ -411,28 +378,31 @@
                 console.log('checked = ', checkedValues);
             },
             contrastRegular(){
-                this.$router.push('/schedule/detail/sort_course/course/course/contrast_setting')
+                this.$router.push(`/schedule/detail/sort_course/course/course/contrast_setting?planId=${this.planId}`)
             },
             sameClass(){
-                this.$router.push('/schedule/detail/sort_course/course/course/contrast_setting')
+                this.$router.push(`/schedule/detail/sort_course/course/course/same_class?planId=${this.planId}`)
             },
             banned(){
-                this.$router.push('/schedule/detail/sort_course/course/course/contrast_setting')
+                this.$router.push(`/schedule/detail/sort_course/course/course/banned_subject?planId=${this.planId}`)
             },
             timesSetting(){
-                this.$router.push('/schedule/detail/sort_course/index')
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
             oncesSetting(){
-                this.$router.push('/schedule/detail/sort_course/time')
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
             placeSetting(){
-                this.$router.push('/schedule/detail/sort_course/place')
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
             courseSetting(){
-                this.$router.push('/schedule/detail/sort_course/course/index')
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
             startArray(){
-                this.$router.push('/schedule/detail/start_class')
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
+            },
+            Next(){
+              this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             onDelete(){
                 const dataSource = [...this.tableData];
