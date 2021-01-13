@@ -33,7 +33,7 @@
                                     <span v-else>-</span>
                                 </a-col>
                                 <a-col  :span="4"><span>{{s.number}}</span></a-col>
-                                <a-col  :span="4"><a style="color:blue" @click="changeSituation" type="dashed">修改</a></a-col>
+                                <a-col  :span="4"><a style="color:blue" @click="edit(s.id)" type="dashed">修改</a></a-col>
                                 <a-col  :span="4"><a style="color:red" @click="onDelete(s)" type="dashed">删除</a></a-col>
                             </a-row>
                         </li>
@@ -53,10 +53,10 @@
             <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:15}" style="margin-left: 30px">
                 <a-form-model-item label="班级名称：" props="name" ref="name" >
                     <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
-                    <a-input placeholder="请输入" v-model="form.name"/>
+                    <a-input placeholder="请输入" v-model="form.className"/>
                 </a-form-model-item>
                 <a-form-model-item label="任课教师：" props="teacher" ref="teacher">
-                    <a-select placeholder="请选择任课教师" v-model="form.teacher">
+                    <a-select placeholder="请选择任课教师" v-model="form.teacherId">
                         <a-select-option value="0">智能</a-select-option>
                         <a-select-option value="1">赵老师</a-select-option>
                     </a-select>
@@ -109,6 +109,7 @@
                 loading:false,
                 planData:"",
                 planId:"",
+                editText:-1,
                 id:"",
                 form:{
                     name:"",
@@ -129,7 +130,8 @@
                             trigger:"blur"
                         }
                     ],
-                }
+                },
+                chooseId:''
             };
         },
         async created() {
@@ -149,18 +151,19 @@
             console.log(this.dataSource);
         },
         methods: {
-            changeSituation () {
+            edit (value) {
+                this.chooseId = value
                 this.chooseSortClass = true;
             },
             //保存修改
             async handleOk(){
-                // let formData={
-                //  id:this.dataSource.scheduleTeacherClassEntities.id,
-                //  className:this.dataSource.scheduleTeacherClassEntities.className,
-                //  teacherId:this.dataSource.scheduleTeacherClassEntities.teacherId,
-                // }
-                // let addData={...formData}
-                // let {data}=await this.$api.schedule.sortClass.classAlter(addData)
+                // 老师id未查询？？？？？？
+                let formData={
+                    id:this.chooseId,
+                    ...this.form
+                }
+                let {data}=await this.$api.schedule.sortClass.classAlter(formData)
+                alert(data.result?'修改成功':'修改失败')
                 this.chooseSortClass=false;
             },
             //取消
@@ -168,7 +171,7 @@
                 this.chooseSortClass=false;
             },
             back(){
-              this.$router.go(-1)
+                this.$router.go(-1)
             },
             async onDelete(row){
                 console.log(row.id)

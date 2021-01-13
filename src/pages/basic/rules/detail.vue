@@ -1,25 +1,15 @@
 <template>
   <div>
     <div>
-      <template v-for="(tag, index) in tags">
-<!--      <template>-->
-        <div :key="tag"  @close="() => handleClose(tag)"
-             style="min-height: 250px;width: 200px;border-radius:10px;background: #fff;float: left;margin-left: 20px;">
-          <div style="height: 50px;width: 100%;font-size: 17px;padding: 10px 0px 0px 15px;"><h1>{{form.classType}}</h1></div>
-          <div style="min-height: 140px">{{chooseCourse}}</div>
-          <div class="footer" style="height: 30px;margin-bottom: -20px">
-            <a-divider style="background-color: black;"/>
-            <div style="margin-top:-20px">
-              <h1  @click="edit()" style="float:left;margin-left: 30px">编辑</h1>
-              <h1 @click="Delete()" style="float: right;margin-right: 30px">删除</h1>
-            </div>
-          </div>
-        </div>
-      </template>
       <a-button  class="addButton"  @click="showInput"
                  style="height: 250px;width: 200px;border-radius:10px;background: #fff;
                             borderStyle: dashed;float:left;margin-left: 20px;font-size: 20px">
-        <a-icon type="plus"/> 新增规则
+          <div class="footer" style="height: 30px;margin-bottom: 20px">
+              <a-divider style="background-color: black;"/>
+              <div style="margin-top:-20px">
+                  <h1 @click="Delete()" style="float: right;margin-right: 30px">删除</h1>
+              </div>
+          </div>
       </a-button>
     </div>
     <a-modal :closable="false"

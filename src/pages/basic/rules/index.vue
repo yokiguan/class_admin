@@ -1,9 +1,6 @@
 <template>
   <a-card>
     <div>
-      <div class="operator">
-        <a-button @click="add" type="primary">新建</a-button>
-      </div>
       <a-table
               :rowKey="'ruleId'"
               :columns="columns"
@@ -102,33 +99,6 @@
         this.form.name=this.dataSource[this.editText].name;
         console.log(this.editText);
       },
-      async handleOk() {
-        if(this.changeTitle=="新增教学楼"){
-          let formData = {
-            ...this.form,
-            name: this.form.name,
-          }
-          let addData = {...formData};
-          let {data} = await this.$api.basic.rule.saveRule(addData);
-          this.visible = false;
-          let {data: ruleData} = await this.$api.basic.rule.fetchList();
-          console.log("ruleData", ruleData);
-          this.dataSource = ruleData.rows;
-          this.$refs.ruleForm.resetFields();
-      }else{
-          let formData={
-            ruleId:this.dataSource[this.editText].ruleId,
-            name:this.form.name,
-          }
-          let addData={...formData}
-            let {data:saveData} = await this.$api.basic.rule.saveRule(addData);
-            let {data: ruleData} = await this.$api.basic.rule.fetchList();
-            // this.dataSource.name.push(this.form.name)
-             console.log("ruleData", ruleData)
-            this.dataSource = ruleData.rows
-            this.visible = false;
-         }
-      },
       handleCancel() {
         this.visible = false;
       },
@@ -147,9 +117,6 @@
   .fold {
     width: calc(100% - 216px);
     display: inline-block;
-  }
-  .operator {
-    margin-bottom: 18px;
   }
   @media screen and (max-width: 900px) {
     .fold {

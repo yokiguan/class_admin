@@ -1,11 +1,11 @@
 /**
  * class模块接口列表(行政班)
  */
-import base from '../base'; // 导入接口域名列表
-import axios from '../../axios'; // 导入http中创建的axios实例
+import base from '../api/base'; // 导入接口域名列表
+import axios from '../axios'; // 导入http中创建的axios实例
 const baseUrl=base.root+'/a/class'
 const basicUrl=base.root +'/basic'
-const student = {
+const adminClass = {
     // 查询全部行政班的简要信息
     fetchList(params){
         return axios.get(`${baseUrl}/getDataList.json`,params);
@@ -40,6 +40,7 @@ const student = {
     updateClassMember(params){
         return axios.post(`${basicUrl}/updateMainclassMember`,params);
     },
+
     // 行政班人员删除
     deleteClassMember(params){
         return axios.post(`${basicUrl}/delMainclassMember`,params)
@@ -51,4 +52,4 @@ const student = {
     }
 }
 
-export default student;
+export default adminClass;

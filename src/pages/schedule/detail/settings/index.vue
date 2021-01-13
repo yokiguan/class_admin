@@ -9,16 +9,8 @@
             </a-breadcrumb>
         </div>
         <a-card>
-            <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules" style="overflow: hidden;margin-bottom: 30px"
-                          :label-col="{span:4}"
+            <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules" style="overflow: hidden;margin-bottom: 30px" :label-col="{span:4}"
                           :wrapper-col="{span:10}">
-                <a-form-model-item label="选课规则" prop="ruleId" ref="rule">
-                    <a-select placeholder="请选择" v-model="form.ruleId" :default-value="ruleData[0].ruleId">
-                        <a-select-option v-for="(item,index) in ruleData" :value="item.ruleId" :key="index">
-                            {{item.name}}
-                        </a-select-option>
-                    </a-select>
-                </a-form-model-item>
                 <a-form-model-item label="选课类型" prop="selectType">
                     <a-select placeholder="请选择" v-model="form.selectType">
                         <a-select-option value="1">按照老师选择</a-select-option>
@@ -47,42 +39,43 @@
                 </a-form-model-item>
             </a-form-model>
             <a-table :key="'no'" :columns="columns" :dataSource="dataSource" :pagination='false'>
-                <div slot="subjects" slot-scope="data">
+                <div slot="subChildIds" slot-scope="text, record,index_1">
                     <a-table
                             :key="'key'"
-                            :dataSource="data"
+                            :dataSource="text"
                             :columns="columnsSubjects"
                             :showHeader="false"
                             :pagination="false"
                             bordered
                     >
-                        <div slot="isMust" slot-scope="isMust">
-                            <a-select  style="width: 100px" >
-                                <a-select-option :value="true"> 必选 </a-select-option>
-                                <a-select-option :value="false"> 可选 </a-select-option>
+                        <div slot="isable" slot-scope="text,record,index_2">
+                            <a-select  style="width: 100px" v-model="dataSource[index_1].subChildIds[index_2].isable">
+                                <a-select-option :value="0"> 必选 </a-select-option>
+                                <a-select-option :value="1"> 可选 </a-select-option>
                             </a-select>
                         </div>
-                        <div slot="teacher" slot-scope="teacher">
+                        <div slot="teahcherIds" slot-scope="text,record,index_2">
                             <a-form-model ref="dynamicValidateForm" :model="dynamicValidateForm">
                                 <a-form-model-item
-                                        v-for="(domain, index) in dynamicValidateForm.domains"
+                                        v-for="(domain, index) in text"
                                         :key="domain.key"
-                                        :prop="'domains.' + index + '.value'"
                                         :rules="{ required: true,message: '请输入人数',trigger: 'blur',}">
-                                    <a v-if="dynamicValidateForm.domains.length >1"
-                                       style="float: left;color: black"
-                                       v-model="dynamicValidateForm.name"></a>
                                     <a-input
-                                            v-if="dynamicValidateForm.domains.length >1"
-                                            v-model="domain.value"
-                                            placeholder="请输入人数"
-                                            style="width: 60%; margin-right: 8px"/>
+                                       style="float: left;color: black;width: 50px;border:none;background-color:#fff"
+                                        :value="domain.teacherName"
+                                        v-model="dataSource[index_1].subChildIds[index_2].teahcherIds[index].teacherName"
+                                        disabled
+                                      >
+                                    </a-input>
+                                    <a-input
+                                        placeholder="请输入人数"
+                                        style="width: 60%; margin-right: 8px"
+                                       v-model="dataSource[index_1].subChildIds[index_2].teahcherIds[index].capacity"
+                                        :value="domain.capacity"/>
                                     <a
-                                            v-if="dynamicValidateForm.domains.length >1"
                                             class="dynamic-delete-button"
                                             type="minus-circle-o"
-                                            :disabled="dynamicValidateForm.domains.length === 1"
-                                            @click="removeDomain(domain)"
+                                            @click="removeDomain(domain.teacherId)"
                                             style="color: blue;float: right">删除</a>
                                 </a-form-model-item>
                                 <a-form-model-item>
@@ -92,15 +85,15 @@
                         </div>
                     </a-table>
                 </div>
-                <a-form-item slot="regular" has-feedback>
+                <!-- <a-form-item slot="regular" has-feedback>
                     <a-select
                             v-decorator="['rule',{ rules: [{ required: true, message: '请选择规则!' }] },]"
                             placeholder="覆盖2科"
                             @change="handleSelectChange" style="width: 150px">
-                        <!--          <a-select-option value="male">male</a-select-option>-->
-                        <!--          <a-select-option value="female">female</a-select-option>-->
+                                 <a-select-option value="male">male</a-select-option>
+                                 <a-select-option value="female">female</a-select-option>
                     </a-select>
-                </a-form-item>
+                </a-form-item> -->
                 <a slot='operate' @click="deleteTypical">删除</a>
             </a-table>
             <div style="margin-top: 30px">
@@ -108,10 +101,9 @@
                 <a-textarea placeholder="请输入" :rows="8" style="width: 1200px" />
             </div>
             <a-row style=" margin-left:500px;margin-top:50px;margin-bottom:10px">
-                <button @click="saveAll">baocun</button>
-                <!-- <a-col :span="5"><a-button  style="width: 100px;height: 40px;background-color: #1abc9c;color: white" @click="saveAll">保存323232</a-button></a-col> -->
                 <a-col :span="5"><a-button style="width: 100px;height: 40px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>
-                <a-col> <a-button style="width: 100px;height: 40px;background-color:blue;color: white" @click="back">返回</a-button></a-col>
+                <a-col :span="5"> <a-button style="width: 100px;height: 40px;background-color:blue;color: white" @click="back">返回</a-button></a-col>
+                <a-col :span="5"><a-button  style="width: 100px;height: 40px;background-color: #1abc9c;color: white;" @click="saveAll">保存</a-button></a-col>
             </a-row>
             <a-modal
                     :visible='addVisit'
@@ -143,18 +135,18 @@
     const columns = [
         {
             title: "类型",
-            dataIndex: "type",
+            dataIndex: "name",
             align:'center',
         },
         {
             title: "课程",
-            dataIndex: "subjects",
-            scopedSlots: { customRender: "subjects" },
+            dataIndex: "subChildIds",
+            scopedSlots:{ customRender: 'subChildIds' },
             align:'center',
         },
         {
             title: "规则",
-            dataIndex: "rule",
+            dataIndex: "coverRule",
             scopedSlots: { customRender: "regular" },
             align:'center',
         },
@@ -168,52 +160,20 @@
     const columnsSubjects = [
         {
             title: "科目",
-            dataIndex: "name",
+            dataIndex: "subChildName",
             align:'center',
         },
         {
             title: "是否可选",
-            dataIndex: "isMust",
-            scopedSlots: { customRender: "isMust" },
+            dataIndex: "isable",
+            scopedSlots: { customRender: "isable" },
             align:'center',
         },
         {
             title: "老师",
-            dataIndex: "teacher",
-            scopedSlots: { customRender: "teacher" },
+            dataIndex: "teahcherIds",
+            scopedSlots: { customRender: "teahcherIds" },
             align:'center',
-        },
-    ];
-    const dataSource = [
-        {
-            key: '1',
-            type: "必修课",
-            subjects:[
-                {
-                    name: "高一数学",
-                    isMust: true,
-                },
-                {
-                    name: "高一语文",
-                    isMust: true,
-                },
-            ],
-            rule: "覆盖2科",
-        },
-        {
-            key: '2',
-            type: "选修课",
-            subjects: [
-                {
-                    name: "高一物理选修",
-                    isMust: true,
-                },
-                {
-                    name: "高一生物选修",
-                    isMust: true,
-                },
-            ],
-            rule: "覆盖2科",
         },
     ];
     const treeData=[
@@ -263,7 +223,7 @@
             return {
                 columns,
                 columnsSubjects,
-                dataSource: dataSource,
+                dataSource: [],
                 loading:false,
                 addVisit: false,
                 value: ['张凯元'],
@@ -273,23 +233,11 @@
                 endValue: null,
                 endOpen: false,
                 dynamicValidateForm: {
-                    domains: [],
-                },
-                dynamicValidateForm: {
-                    domains: [{
-                        value: ''
-                    }],
+                    teacherIds:[{teacherName:'',capacity:''}]
                 },
                 form: {
                 },
                 rules: {
-                    ruleId: [
-                        {
-                            required: true,
-                            message: "请选择所需选课规则",
-                            trigger: "blur",
-                        },
-                    ],
                     selectType: [
                         {
                             required: true,
@@ -312,7 +260,6 @@
                         },
                     ],
                 },
-                ruleData:[{name:"",ruleId:""}], //选课规则
                 planId:""
             };
         },
@@ -321,12 +268,9 @@
         },
         async created(){
             this.planId = window.location.href.split('?')[1].split('=')[1]
-            // 查询所有的选课规则
-            let {data} = await this.$api.basic.rule.fetchList()
-            this.ruleData = data.rows
             // 选课设置查看
-            // let {data:settingData} = await this.$api.schedule.setting.settingGet({planId:this.planId})
-            // let this.form
+            let {data:settingData} = await this.$api.schedule.setting.settingGet({planId:this.planId})
+            this.dataSource =settingData.result[0].setInfo
         },
         watch: {
             startValue(val) {
@@ -389,14 +333,15 @@
                 this.addVisit=false;
             },
             async saveAll(){
-                let {data} = this.$api.schedule.setting.settingAdd({
+                let {data} = await this.$api.schedule.setting.settingAdd({
                     planId:this.planId,
-                    ...this.form,
+                    setInfo:this.dataSource,
                     time_limit: this.startValue + ' - '+this.endValue,
                     tips:'',
 
                 })
-                console.log("saveall",data)
+
+                alert(data.success?'修改成功':'修改失败')
             },
             Clear(){
                 this.form.setFieldsValue();
@@ -404,11 +349,19 @@
             back(){
                 this.$router.go(-1)
             },
-            removeDomain(item) {
-                let index = this.dynamicValidateForm.domains.indexOf(item);
-                if (index !== -1) {
-                    this.dynamicValidateForm.domains.splice(index, 1);
+            removeDomain(value) {
+                for(let i = 0;i< this.dataSource.length;i++){
+                    let item = this.dataSource[i].subChildIds
+                    for(let j =0;j<item.length;j++){
+                        for(let k = 0;k<item[j].teahcherIds.length;k++){
+                          if(item[j].teahcherIds[k].teacherId === value){
+                            this.dataSource[i].subChildIds[j].teahcherIds.splice(k,1)
+                          }
+                        }
+                    }
+
                 }
+                this.saveAll()
             },
             addDomain() {
                 this.dynamicValidateForm.domains.push({

@@ -140,11 +140,13 @@ export default new Router({
               path: '/basic/rule',
               name: '选课规则',
               component: BlankView,
-              children:[{
-                path: '/basic/rule/admin',
-                name: '规则管理',
-                component:() => import('@/pages/basic/rules/index')
-              },{
+              children:[
+              //     {
+              //   path: '/basic/rule/admin',
+              //   name: '规则管理',
+              //   component:() => import('@/pages/basic/rules/index')
+              // },
+                {
                 path: '/basic/rule/detail',
                 name: '规则设计',
                 component:() => import('@/pages/basic/rules/detail')
