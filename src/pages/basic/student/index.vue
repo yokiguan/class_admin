@@ -1,52 +1,46 @@
 <template>
   <a-card>
-<!--    <div class="left">-->
-<!--      <a-tree-->
-<!--              v-model="form.classData"-->
-<!--              ref="tree"-->
-<!--              :tree-data="treeData"-->
-<!--              :replace-fields="replaceFields"-->
-<!--              @select="onSelect"-->
-<!--              @check="onCheck"-->
-<!--              checkable-->
-<!--              style="font-size: 1.3em;"/>-->
-<!--    </div>-->
-    <div class="right">
-      <a-form layout="horizontal">
+      <a-form-model layout="horizontal">
         <a-row>
-          <a-col :md="8" :sm="24">
-            <a-form-item
-                    label="年级"
-                    :labelCol="{ span: 5 }"
-                    :wrapperCol="{ span: 18, offset: 1 }" prop="gradeData">
-              <a-select placeholder="请选择" v-model="form.gradeData">
-                <a-select-option value="高一">高一</a-select-option>
-                <a-select-option value="高二">高二</a-select-option>
+          <a-col :md="7" :sm="24">
+            <a-form-model-item label="级部" :labelCol="{ span: 5 }" :wrapperCol="{ span: 18, offset: 1 }">
+              <a-select placeholder="请选择"  v-model="form.adminId" @change="handleAdminChange">
+                <a-select-option v-for="(admin,index) in this.adminData" :key="index">
+                  {{admin.departName}}
+                </a-select-option>
               </a-select>
-            </a-form-item>
+            </a-form-model-item>
           </a-col>
-          <a-col :md="8" :sm="24">
-            <a-form-item
-                    label="年级"
-                    :labelCol="{ span: 5 }"
-                    :wrapperCol="{ span: 18, offset: 1 }" prop="classData">
-              <a-select placeholder="请选择" v-model="form.classData">
-                <a-select-option value="高一1班">高一1班</a-select-option>
-                <a-select-option value="高二1班">高二1班</a-select-option>
+          <a-col :md="7" :sm="24">
+            <a-form-model-item label="年级" :labelCol="{ span: 5 }" :wrapperCol="{ span: 18, offset: 1 }">
+              <a-select placeholder="请选择" v-model="form.gradeId" @change="handleGradeChange">
+                <a-select-option v-for="(grade,index) in this.gradeData" :key="index">
+                  {{grade.gradeName}}
+                </a-select-option>
               </a-select>
-            </a-form-item>
+            </a-form-model-item>
+          </a-col>
+          <a-col :md="7" :sm="24">
+            <a-form-model-item label="班级" :labelCol="{ span: 5 }" :wrapperCol="{ span: 18, offset: 1 }">
+              <a-select placeholder="请选择" v-model="form.classId" @change="handleClassChange">
+                <a-select-option v-for="(className,index) in this.classData" :key="index">
+                  {{className.className}}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
           </a-col>
         </a-row>
-      </a-form>
+      </a-form-model>
       <div>
-        <student-table
-                ref="editStudent"
-                :rowKey="'key'"
+        <a-table
+                :rowKey="'wxUid'"
                 :columns="columns"
-                :dataSource="dataSource"
-                :selectedRows="selectedRows"
-                @change="onchange"
-        />
+                :dataSource="dataSource">
+          <div slot="operation">
+            <a>查看</a>|
+            <a>修改</a>
+          </div>
+        </a-table>
       </div>
       <a-modal
               :visible='addClassVisit'
@@ -70,31 +64,29 @@
           </a-form-model-item>
         </a-form-model>
       </a-modal>
-    </div>
   </a-card>
 </template>
 <script>
-  import StudentTable from "../../../components/table/StudentTable";
   const columns = [
+    // {
+    //   title: '序号',
+    //   dataIndex: 'no'
+    // },
     {
-      title: '序号',
-      dataIndex: 'no'
-    },
-    {
-      title: '名称',
-      dataIndex: 'name'
+      title: '学生',
+      dataIndex: 'userName'
     },
     {
       title: '学号',
-      dataIndex: 'studentID',
+      dataIndex: 'wxUid',
     },
     {
-      title: '所属年级',
-      dataIndex: 'grade',
+      title: '年级名称',
+      dataIndex: 'gradeName',
     },
     {
-      title: '班级',
-      dataIndex: 'class',
+      title: '班级名称',
+      dataIndex: 'className',
     },
     {
       title: '操作',
@@ -102,74 +94,21 @@
       scopedSlots: { customRender: 'operation' },
     }
   ]
-  const dataSource = [
-          {
-    key:1,
-    no:1,
-    name:'车西明',
-    studentID:'021921',
-    grade:'高一',
-    class:'高一（1）',
-  },{
-    key:2,
-    no:2,
-    name:'小管',
-    grade:'高一',
-    class:'高一（2）',
-  },{
-    key:3,
-    no:3,
-    name:'Evan Hansen',
-    studentID:'2324424',
-    grade:'高二',
-    class:'高一（1）',
-  }]
-  // const treeData = [
-  //   {
-  //     name: '高中部',
-  //     key: '高中部',
-  //     child: [
-  //       { name: '高一',
-  //         key: '高一',
-  //         child:[
-  //           { name: '高一1班', key: '高一1班' },
-  //           {name:'高一2班',key:'高一2班'},
-  //           {name:'高一3班',key:'高一3班'},
-  //           {name:'高一4班',key:'高一4班'},
-  //         ],
-  //       },
-  //       { name: '高二', key: '高二' },
-  //       { name: '高三', key: '高三' },
-  //     ],
-  //   },{
-  //     name: '初中部',
-  //     key: '初中部',
-  //     child: [
-  //       { name: '初一', key: '初一'},
-  //       { name: '初二', key: '初二' },
-  //       { name: '初三', key: '初三' },
-  //     ],
-  //   },
-  // ];
   export default {
     name: 'student',
-    components: {StudentTable},
     data () {
       return {
         columns: columns,
-        dataSource: dataSource,
-        // treeData,
-        selectedRowKeys: [],
-        selectedRows: [],
+        dataSource: [],
+        adminData:[],
+        gradeData:[],
+        classData:[],
+        result:null,
         addClassVisit:false,
         loading:false,
         disabled: false,
-        // replaceFields: {
-        //   children: 'child',
-        //   title: 'name',
-        // },
         form:{
-          student_name:'',
+          adminName:'',
           student_num:'',
           classData:[],
         },
@@ -201,14 +140,44 @@
         }
       }
     },
+    //获取年级信息接口
+    async created(){
+      let {data:{result,success}}=await this.$api.basic.student.fetchGradeList();
+      console.log(result);
+      //获取级部
+      this.adminData=result;
+      console.log(this.adminData);
+
+    },
     methods: {
-      onchange (selectedRowKeys, selectedRows) {
-        this.selectedRowKeys = selectedRowKeys
-        this.selectedRows = selectedRows
+      handleAdminChange(){
+        for (let i=0;i<this.adminData.length;i++){
+          if(i==this.form.adminId){
+            //获取年级
+              this.gradeData=this.adminData[i].trees,
+            console.log(this.gradeData)
+          }
+        }
       },
-      remove () {
-        this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+      handleGradeChange(){
+        for (let i=0;i<this.gradeData.length;i++){
+          if(i==this.form.gradeId){
+            //获取班级信息
+            this.classData=this.gradeData[i].trees
+            console.log(this.classData)
+          }
+        }
+      },
+      async handleClassChange(){
+        for(let i=0;i<this.classData.length;i++){
+          if(i==this.form.classData){
+            //获取表格信息
+            let {data}=await this.$api.basic.student.fetchList({id:this.classData[i].classId});
+            console.log(data);
+            this.dataSource=data.rows;
+            console.log(this.dataSource)
+          }
+        }
       },
       addNew () {
         this.addClassVisit=true
@@ -248,35 +217,11 @@
         this.addClassVisit=true
         console.log(text,record);
       },
-      // onCheck(checkedKeys) {
-      //   console.log('onCheck', checkedKeys);
-      //   this.checkedKeys = checkedKeys;
-      // },
-      // onSelect(selectedKeys, info) {
-      //   console.log('onSelect', info);
-      //   this.selectedKeys = selectedKeys;
-      // },
     }
   }
 </script>
 
 <style lang="less" scoped>
-  /*.left{*/
-  /*  width: 300px;*/
-  /*  height: 900px;*/
-  /*  background-color: white;*/
-  /*  margin: 0px 0px 20px 0px;*/
-  /*  padding: 20px 25px;*/
-  /*  border-radius: 10px;*/
-  /*}*/
-  /*.right{*/
-  /*  border-radius: 5px;*/
-  /*  margin-top: -920px;*/
-  /*  margin-left: 320px;*/
-  /*  background-color: white;*/
-  /*  padding: 20px 25px;*/
-  /*  height:700px;*/
-  /*}*/
   .search{
     margin-bottom: 54px;
   }

@@ -52,7 +52,6 @@
             </template>
             <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:15}" style="margin-left: 30px">
                 <a-form-model-item label="班级名称：" props="name" ref="name" >
-                    <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
                     <a-input placeholder="请输入" v-model="form.className"/>
                 </a-form-model-item>
                 <a-form-model-item label="任课教师：" props="teacher" ref="teacher">
@@ -109,7 +108,6 @@
                 loading:false,
                 planData:"",
                 planId:"",
-                editText:-1,
                 id:"",
                 form:{
                     name:"",
@@ -154,6 +152,8 @@
             edit (value) {
                 this.chooseId = value
                 this.chooseSortClass = true;
+                this.form.className=this.dataSource.scheduleTeacherClassEntities.className;
+                // this.form.
             },
             //保存修改
             async handleOk(){

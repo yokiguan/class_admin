@@ -25,12 +25,12 @@ module.exports = {
     host:'localhost',
     port:8080,
     proxy: {
-      '/api': {
+      '/': {
         target: 'https://zbpk.tgk12.cn',
         ws: true,
         changeOrigin: true,
         pathRewrite: {
-          '^/api': ''
+          '^/': '/'
         }
       },
     }

@@ -2,7 +2,7 @@
  * 接口域名的管理
  */
 const base = {
-   root:'/api',
+   root:'',
 }
 
 export default base;
