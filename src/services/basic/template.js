@@ -4,6 +4,7 @@
 import base from '../api/base'; // 导入接口域名列表
 import axios from '../axios'; // 导入http中创建的axios实例
 const baseUrl=base.root+'/a/curriculumTemplates'
+// const baseUrl='/a/curriculumTemplates'
 const curriculumTemplates = {
     // 查询全部课表模板的简要信息
     fetchList(){

@@ -55,7 +55,7 @@ module.exports = {
       }
     }
   },
-  publicPath: './',
+  publicPath: '/classv/',
   outputDir: 'dist',
   assetsDir: 'static',
   productionSourceMap: false
