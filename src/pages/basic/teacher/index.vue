@@ -1,52 +1,92 @@
 <template>
-  <EasyScrollbar :barOption="myBarOption">
-    <div id="wrapper" style="width: 600px">
-      <div style="width: 1800px">
-        <div class="left">
-          <a-tree
-                  :tree-data="treeData"
-                  :replace-fields="replaceFields"
-                  @select="onSelect"
-                  @check="onCheck"
-                  checkable
-                  style="font-size: 1.3em;"/>
+  <a-card>
+    <a-form-model layout="horizontal" :form="form" >
+      <a-row>
+        <a-col :md="7" :sm="24">
+          <a-form-model-item label="级部" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
+            <a-select placeholder="请选择"  v-model="form.adminId" @change="handleAdminChange">
+              <a-select-option v-for="(admin,index) in this.adminData" :key="index">
+                {{admin.adminName}}
+              </a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+        <a-col :md="7" :sm="24">
+          <a-form-model-item label="年级" :labelCol="{ span: 3}" :wrapperCol="{ span: 15, offset: 1 }">
+            <a-select placeholder="请选择" v-model="form.gradeId" @change="handleGradeChange">
+              <a-select-option v-for="(grade,index) in this.gradeData" :key="index">
+                {{grade.gradeName}}
+              </a-select-option>
+            </a-select>
+          </a-form-model-item>
+        </a-col>
+        <a-col :md="7" :sm="24">
+          <a-form-model-item label="按姓名查找" :labelCol="{ span: 5 }" :wrapperCol="{ span: 15, offset: 1 }">
+           <a-input-search placeholder="请输入老师姓名"  v-model="form.teacherName" @search="onSearch"/>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+    </a-form-model>
+    <div>
+      <a-table
+              :rowKey="'teacherId'"
+              :columns="columns"
+              :dataSource="dataSource">
+        <div slot="operation">
+          <span>规则设置</span>
         </div>
-        <div class="right">
-            <standard-table
-                    :rowKey="'key'"
-                    :columns="columns"
-                    :subName="'规则设置'"
-                    :dataSource="dataSource"
-                    :selectedRows="selectedRows"
-                    @change="onchange"/>
-        </div>
-      </div>
+      </a-table>
     </div>
-  </EasyScrollbar>
-
+  </a-card>
 </template>
 <script>
-  import StandardTable from "../../../components/table/StandardTable";
   const columns = [
     {
-      title: '序号',
-      dataIndex: 'no'
+      title: '教师工号',
+      dataIndex: 'teacherId',
     },
     {
-      title: '名称',
-      dataIndex: 'name'
+      title: '教师名称',
+      dataIndex: 'teacherName'
     },
     {
       title: '所授课程',
-      dataIndex: 'subjects',
+      dataIndex: 'subjectTeacherDtos',
+      customRender: (text,index,i)=>{
+        let course=""
+        for(var j=0;j<text.length;j++){
+          if(course==""){
+            course=text[j].subName;
+          }else{
+            course=course+"+"+text[j].subName;
+          }
+        }
+        return course;
+    }
     },
     {
       title: '是否为班主任',
-      dataIndex: 'isAdmin',
+      dataIndex: 'teacherRoleDtos',
+      customRender: (text,index,i)=>{
+        let teacherRole=""
+          if(text.length==0){
+            teacherRole='非班主任'
+          }else if(text.length==1){
+            teacherRole=text[0].headteacherGradeName+text[0].headteacherClassName;
+          }else{
+            for(var j=0;j<text.length;j++){
+              if(teacherRole==""){
+                teacherRole=text[j].headteacherGradeName+text[j].headteacherClassName;
+              }
+              teacherRole=teacherRole+"+"+text[j].headteacherGradeName+text[j].headteacherClassName;
+          }
+        }
+        return teacherRole;
+      }
     },
     {
       title: '手机号码',
-      dataIndex: 'phone',
+      dataIndex: 'tel',
     },
     {
       title: '操作',
@@ -54,169 +94,85 @@
       scopedSlots: { customRender: 'operation' },
     }
   ]
-  const dataSource = [{
-    key:1,
-    no:1,
-    name:'车西明',
-    subjects:'高一数学',
-    isAdmin:'高一（1）',
-    phone:'1234567890'
-  },{
-    key:2,
-    no:2,
-    name:'小管',
-    subjects:'高二物理选修；高二物理学修',
-    isAdmin:'无',
-    phone:'15868123431'
-  },{
-    key:3,
-    no:3,
-    name:'Evan Hansen',
-    subjects:'高二物理选修；高二物理学修',
-    isAdmin:'无',
-    phone:'15868123431'
-  }]
-  const treeData = [
-    {
-      name: '高中部',
-      key: '0-0',
-      child: [
-        { name: '高一',
-          key: '0-0-0',
-          child:[
-            { name: '高一1班', key: '0-0-0-0' },
-            {name:'高一2班',key:'0-0-0-1'},
-            {name:'高一3班',key:'0-0-0-2'},
-            {name:'高一4班',key:'0-0-0-3'},
-          ],
-        },
-        { name: '高二', key: '0-0-1' },
-        { name: '高三', key: '0-0-2' },
-      ],
-    },{
-      name: '初中部',
-      key: '0-1',
-      child: [
-        { name: '初一', key: '0-1-0'},
-        { name: '初二', key: '0-1-1' },
-        { name: '初三', key: '0-1-2' },
-      ],
-    },
-  ];
   export default {
-    components:{StandardTable},
-    data() {
+    name: 'teacher',
+    data () {
       return {
-        columns,
-        dataSource,
-        treeData,
-        loading:false,
-        addClassVisit: false,
-        editVisit: false,
-        value: ['高一1班'],
-        myBarOption:{
-          barColor:'block'
+        columns: columns,
+        dataSource: [],
+        adminData:[],
+        gradeData:[],
+        teacherNameData:[],
+        form:{
         },
-        replaceFields: {
-          children: 'child',
-          title: 'name',
-        },
-        disabled: false,
-        selectedRowKeys: [],
-        selectedRows: []
-      };
-    },
-    methods: {
-      addClass() {
-        this.addClassVisit = true;
-      },
-      handleOk() {
-        this.loading = true;
-        setTimeout(() => {
-          this.addClassVisit = false;
-          this.loading = false;
-        }, 2000);
-      },
-      handleCancel() {
-        this.addClassVisit = false;
-      },
-      onSelect(selectedKeys, info) {
-        console.log('selected', selectedKeys, info);
-      },
-      onCheck(checkedKeys, info) {
-        console.log('onCheck', checkedKeys, info);
-      },
-      onchange (selectedRowKeys, selectedRows) {
-        this.selectedRowKeys = selectedRowKeys
-        this.selectedRows = selectedRows
-      },
-      remove () {
-        this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-        this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      },
-      addNew () {
-        this.dataSource.unshift({
-          key:3,
-          no:3,
-          name:'Hamilton',
-          subjects:'高二物理选修；高二物理学修',
-          isAdmin:'无',
-          phone:'15868123431'
-        })
-      },
-      handleMenuClick (e) {
-        if (e.key === 'delete') {
-          this.remove()
-        }
       }
     },
-  };
+    async created(){
+      //获取年级信息接口
+      let {data:{result,success}}=await this.$api.basic.grade.fetchList();
+      console.log(result);
+      //获取级部
+      this.adminData=result;
+      console.log(this.adminData);
+      //获取所有教师信息
+      let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList();
+      console.log(allTeacherData);
+      this.dataSource=allTeacherData.rows;
+      console.log(this.dataSource)
+    },
+    methods: {
+      async handleAdminChange(){
+        console.log(this.form.adminId)
+        for (let i=0;i<this.adminData.length;i++){
+          if(i==this.form.adminId){
+            // //获取年级
+            this.gradeData=this.adminData[i].adminGrades,
+            console.log(this.gradeData)
+            // // //根据年级选择教师
+            let {data}=await this.$api.basic.teacher.fetchTeacherList({adminId: this.adminData[i].adminId});
+            console.log(data.rows);
+            let newObj = []
+            for(let i in data.rows){
+              if(data.rows[i]) {
+                newObj.push((data.rows[i]))
+              }
+            }
+            console.log(newObj)
+            this.dataSource=newObj;
+          }
+        }
+      },
+       async handleGradeChange(){
+        // console.log(this.form.gradeId)
+        for (let i=0;i<this.gradeData.length;i++){
+          if(i==this.form.gradeId){
+            console.log(this.adminData[this.form.adminId].adminId)
+            //根据年级信息调用接口
+            let {data}=await this.$api.basic.teacher.fetchTeacherList({adminId:this.adminData[this.form.adminId].adminId,gradeId:this.gradeData[i].gradeId});
+            console.log(data);
+            // this.dataSource=data.rows;
+          }
+        }
+       },
+      async onSearch(value) {
+        console.log(value);
+        console.log(this.form.teacherName);
+        // //只根据姓名查找教师信息
+        // let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({teacherName:this.form.teacherName});
+        // console.log(allTeacherData);
+        // this.dataSource=allTeacherData.rows;
+        // console.log(this.dataSource)
+        let {data}=await this.$api.basic.teacher.fetchTeacherList({adminId: this.adminData[this.form.adminId].adminId,gradeId: this.gradeData[this.form.gradeId].gradeId,teacherName: this.form.teacherName})
+        console.log(data)
+        this.dataSource=data.rows;
+
+      },
+
+    }
+  }
 </script>
+
 <style lang="less" scoped>
-  .result{
-    width: 100%;
-    background-color: white;
-    height:50px;
-    margin: 20px 0px 10px 0px;
-    padding-left: 25px;
-    padding-top: 15px;
-    vertical-align: top;
-    border-radius: 5px;
-  }
-  .left{
-    width: 300px;
-    height: 900px;
-    background-color: white;
-    margin: 0px 0px 20px 0px;
-    padding: 20px 25px;
-    border-radius: 10px;
-  }
-  .right{
-    border-radius: 5px;
-    margin-top: -915px;
-    margin-left: 320px;
-    padding: 20px 0px 0px 20px;
-    background-color: white;
-    height:700px;
-  }
-  .title{
-    width: 100%;
-    background-color: #fff;
-    height: 170px;
-    padding: 20px 25px;
-    border-radius: 10px;
-    margin-bottom: 50px;
-  }
-  .buttons{
-    margin:0px 5px 20px 5px;
-    padding:2px 4px;
-    margin-left: 30px;
-  }
-  .buttons button{
-    width: 110px;
-    height: 45px;
-    color:white;
-  }
   .search{
     margin-bottom: 54px;
   }
@@ -232,10 +188,4 @@
       width: 100%;
     }
   }
-  /deep/ Table {
-    .ant-table-thead > tr > th {
-      background-color: #f4f4f4;
-    }
-  }
 </style>
-

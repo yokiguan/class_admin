@@ -52,7 +52,7 @@
                             :data-source="tableData"
                             :pagination="false"
                             :bordered="true">
-                        <a-input slot="add_times"></a-input>
+                        <a-input slot="add_times" :value="className"></a-input>
                         <a-input slot="add_datas"></a-input>
                         <a-button slot="adds_times" style="background-color: #00ccff;
                         color:white;" @click="add_time">
@@ -351,6 +351,7 @@
             let {data}=await this.$api.schedule.arrangeClass.getList()
             console.log(data)
             this.tableData=data.rows;
+            console.log( this.tableData);
         },
         methods:{
             add_time:function () {

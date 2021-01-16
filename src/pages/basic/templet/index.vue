@@ -9,10 +9,18 @@
         :columns="columns"
         :dataSource="dataSource"
         subPath="/basic/template/detail"
-      ><span slot="operation" slot-scope="text, record">
-     <a @click="gotoNew(record.id)">编辑</a>
-     |
-     <a @click="deleteItem(record.id)">删除</a>
+      >
+      <span slot="operation" slot-scope="text, record">
+        <a @click="gotoNew(record.id)">编辑</a>
+        |
+        <a-popconfirm v-if="dataSource.length"
+                   title="确认删除?"
+                   cancelText="取消"
+                   okText="确定"
+                   @confirm="() => deleteItem(record.id)"
+           >
+          <a href="javascript:;">删除</a>
+        </a-popconfirm>
     </span></a-table>
     </div>
   </a-card>

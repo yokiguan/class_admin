@@ -4,7 +4,16 @@
 import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'; // 导入http中创建的axios实例
 const baseUrl=base.root+'/a/teacherRule'
+const findUrl=base.root+'/a/basicSettingQuery'
 const teacher = {
+    //所有教师信息查询
+    fetchAllTeacherList(params){
+        return axios.get(`${findUrl}/getAllTeacherDataList.json`,{params});
+    },
+    //按级部、年级查询老师
+    fetchTeacherList(params){
+        return axios.get(`${findUrl}/getTeacherDataList.json`,{params});
+    },
     // 查询全部教师时间规则的
     fetchList(params){
         return axios.get(`${baseUrl}/getData.json`,params);

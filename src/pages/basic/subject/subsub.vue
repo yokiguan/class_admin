@@ -34,7 +34,7 @@
                    style="width: 275px"></a-input>
         </a-form-model-item>
         <a-form-model-item label="所属年级：" prop="gradeIds" ref="gradeIds">
-          <a-select v-model="form.gradeIds" :default-value="adminData[0]" placeholder="请选择年级" style="width: 275px">
+          <a-select v-model="form.gradeIds" placeholder="请选择年级" style="width: 275px">
             <a-select-option v-for="(grade,index) in adminData" :key="index" :value="grade.gradeId">
                 {{ grade.gradeName }}
             </a-select-option>
