@@ -97,25 +97,36 @@
       //编辑按钮的实现
       async edit(editId){
         this.editVisit=true;
-        let {data}=await this.$api.basic.subject.fetchSubjectList();
+        let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
         console.log(data.result);
         for(let i in data.result){
-          //第一层(主课程）
-          let mainCourse={}
-          mainCourse.title=data.result[i].subName;
-          // mainCourse.key=data.result[i].id;
-          if(data.result[i].subjectChildEntitys.length){
-            //第二层（子课程）
-            mainCourse.children=[]
-            for(let j=0;j<data.result[i].subjectChildEntitys.length;j++){
-              let item=data.result[i].subjectChildEntitys[j]
+          //第一层(级部）
+          let adminTree={};
+          adminTree.title=data.result[i].adminName;
+          adminTree.key=data.result[i].adminId;
+          if(data.result[i].adminGrades.length){
+            //第二层(年级）
+            adminTree.children=[];
+            for(let j=0;j<data.result[i].adminGrades.length;j++){
+              let gradeItem=data.result[i].adminGrades[j];
               let childData={}
-              childData.key=item.subChildId;
-              childData.title=item.name;
-              mainCourse.children.push(childData);
-            }          }
-          this.treeData.push(mainCourse);
-          console.log(this.treeData);
+              childData.key=gradeItem.gradeId;
+              childData.title=gradeItem.gradeName;
+              if(gradeItem.subjectEntities.length){
+                //第三层(主课程)
+                childData.children=[];
+                for(let k in gradeItem.subjectEntities){
+                  let mainCourse={};
+                  mainCourse.key=gradeItem.gradeId+gradeItem.subjectEntities[k].subChildId;
+                  mainCourse.title=gradeItem.subjectEntities[k].name;
+                  childData.children.push(mainCourse)
+                }
+              }
+              adminTree.children.push(childData);
+            }
+          }
+          this.treeData.push(adminTree);
+          console.log(data.result[i]);
         }
         // console.log(this.treeData);
         this.editText=this.dataSource.findIndex(item=>item.id==editId);
