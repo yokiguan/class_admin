@@ -17,11 +17,10 @@
             </a-form-model>
         </a-row>
         <a-row>
-            <a-table :rowKey="'serialNum'" :columns="columnsPlace"
-                 :bordered="true" :pagination="false"
-                 :data-source="placeData"
-                 style="width: 45%;margin-left: 50px;margin-top: 20px">
-                <a-checkbox slot="checkBox" @change="change"></a-checkbox>
+            <a-table :rowKey="'ruleId'" :columns="columnsPlace"
+                     :bordered="true" :pagination="false"
+                     :data-source="placeData"
+                     style="width: 45%;margin-left: 50px;margin-top: 20px">
                 <span slot="action">查看</span>
             </a-table>
         </a-row>
@@ -30,67 +29,40 @@
 <script>
     const columnsPlace=[
         {
-            title:'',
-            dataIndex:'blank',
-            scopedSlots:{customRender:'checkBox'},
-            align:'center',
-            width:'8%'
-        },
-        {
             title:'序号',
-            dataIndex:'serialNum',
+            dataIndex:'ruleId',
             align:'center',
-            width:'13%'
         },
         {
             title:'规则名称',
-            dataIndex:'regularName',
+            dataIndex:'name',
             align:'center',
-            width:'40%'
         },
         {
-            title:'包含老师数量',
-            dataIndex:'num',
+            title:'包含教室数量',
+            dataIndex:'number',
             align:'center',
-            width:'24%'
         },
         {
             title:'操作',
             dataIndex:'opts',
             align:'center',
-            width:'15%',
             scopedSlots: { customRender: 'action' },
         },
-    ]
-    const placeData=[
-        {
-            serialNum:1,
-            regularName:'英语老师时间规则',
-            num:'2',
-        },
-        {
-            serialNum:2,
-            regularName:'数学老师时间规则',
-            num:'1',
-        },
-        {
-            serialNum:3,
-            regularName:'体育老师时间规则',
-            num:'3',
-        }
     ]
     export default {
         data(){
             return{
                 columnsPlace,
-                placeData,
+                placeData:[],
                 modelName:[],
                 modalInfo:[],
                 modalName:"",
-                modalIds:[],
+                modalIds:"",
                 form:{
                     modal:" ",
-                }
+                },
+                templateId:''
             }
         },
         async created(){
@@ -98,18 +70,16 @@
             let {data}=await this.$api.basic.template.fetchList()
             this.modalInfo=data.rows;
             console.log(this.modalInfo);
-            for(var i=0;i<this.modalInfo.length;i++){
-                this.modalIds.push(this.modalInfo[i].id);
-            }
-            console.log(this.modalIds);
-            //获取场地信息
-            let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:this.modalIds})
-            console.log(placeData)
-
         },
         methods:{
             change(){},
-            handleSelectChange(){},
+            async handleSelectChange(){
+                console.log(this.form.modal)
+                //获取场地信息
+                let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:this.form.modal})
+                console.log(placeData);
+                this.placeData=placeData.rows;
+            },
         },
         watch:{
             "form.modal" () {

@@ -65,12 +65,13 @@ export default {
     };
   },
   async created(){
-   let {data}=await this.$api.basic.template.fetchList()
+   let {data}=await this.$api.basic.template.fetchList();
     this.dataSource=data.rows
   },
   methods: {
     gotoNew(id) {
-      this.$router.push('/basic/template/detail?id='+id)
+      this.$router.push('/basic/template/detail?id='+id);
+
     },
     async deleteItem(id){
       let {data}= await this.$api.basic.template.deleteTemplate({ids:id})

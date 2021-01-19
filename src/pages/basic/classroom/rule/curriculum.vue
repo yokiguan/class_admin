@@ -6,42 +6,16 @@
             </a-col>
         </a-row>
         <a-row class="buttons-sub">
-            <a-col :span="2">
-                <a-button type="danger" style="color:white;
-                              width: 100px;
-                                height: 40px;">禁选</a-button>
-            </a-col>
-            <a-col :span="2">
-                <a-button style="background-color:grey;
-                      width: 100px;
-                        height: 40px;color:white">普通</a-button>
-            </a-col>
-            <a-col :span="3">
-                <a-button style="color:white;background-color: #1abc9c;width: 100px;
-                              height: 40px;">优先</a-button>
-            </a-col>
-            <a-col :span="6" >
-                <h3 style="float:left;">未设置默认为普通</h3>
-            </a-col>
-            <a-col :span="3">
-                <a-button style="background-color:#1abc9c;
-                              width: 100px;
-                              height: 40px;color:white">保存</a-button>
-            </a-col>
-            <a-col :span="1">
-                <a-button style="background-color:#1abc9c;
-                              width: 100px;
-                              height: 40px;color:white">重置</a-button>
-            </a-col>
-            <a-col >
-                <a-button type="danger" style="color:white;
-                              width: 100px;
-                                height: 40px;">删除</a-button>
-            </a-col>
+            <a-button type="danger" style="color:white;width: 100px;height: 40px;float:left">禁选</a-button>
+            <a-button style="background-color:grey;width: 100px;height: 40px;color:white;float:left;margin-left: 20px">普通</a-button>
+            <h3 style="float:left;margin-left: 20px">未设置默认为普通</h3>
+            <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white" @click="saveData">保存</a-button>
+            <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white;margin-left: 20px">重置</a-button>
+            <a-button type="danger" style="color:white;width: 100px;height: 40px;margin-left: 20px">删除</a-button>
         </a-row>
         <a-row>
-            <a-table id="Table"
-                     :rowKey="'blank'"
+            <a-table
+                     :rowKey="'activity'"
                      :columns="columns"
                      :data-source="tableData"
                      :pagination="false"
@@ -49,6 +23,19 @@
                      style="margin-top: 30px">
             </a-table>
         </a-row>
+        <a-modal
+                :visible='saveVisit'
+                :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
+            </template>
+            <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:18}">
+                <a-form-model-item label="规则名称" prop="ruleName" ref="ruleName">
+                    <a-input placeholder="请输入" v-model="form.ruleName"></a-input>
+                </a-form-model-item>
+            </a-form-model>
+        </a-modal>
     </a-card>
 </template>
 <script>
@@ -137,35 +124,69 @@
                 tableData:[],
                 timeData:[],
                 currId:"",
+                saveVisit:false,
+                loading:false,
                 activity,
+                form:{
+                    ruleName:undefined,
+                },
+                rules:{
+                    ruleName:[
+                        {
+                            required:true,
+                            message:"请输入规则名称",
+                            trigger:"blur"
+                        }
+                    ]
+                }
             }
         },
-        async created(id) {
-            let {data}=await this.$api.basic.template.fetchTemplate({id:this.form.modalId})
-            console.log(data.result);
-            this.currId=this.form.modalId;
-            console.log(this.currId);
-            let activities = [];
-            let timeDatas = [];
-            let list = [...this.activity];
-            list.forEach(item => {
-                for (let i = 1; i <= data.result[item.value]; i++) {
-                    activities.push({
-                        activity: item.name + i,
-                        value: item.value + i
-                    });
-                    timeDatas.push({
-                        activity: item.name + i,
-                        value: item.value + i,
-                        time: [moment(undefined), moment(undefined)]
-                    });
-                }
-            });
-            this.tableData = activities;
-            this.timeData = timeDatas;
+        props:['templateId'],
+        watch:{
+            'templateId':{
+                handler(val){
+                    console.log("templateId val",val)
+                    this.initData()
+                },
+                immediate:true
+            }
+        },
+        async created() {
+
         },
         methods:{
-
+            async initData(){
+                console.log("this.tem",this.templateId)
+                let {data}=await this.$api.basic.template.fetchTemplate({id:this.templateId})
+                console.log(data.result);
+                this.currId= this.templateId
+                console.log(this.templateId);
+                let activities = [];
+                let timeDatas = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    for (let i = 1; i <= data.result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                        timeDatas.push({
+                            activity: item.name + i,
+                            value: item.value + i,
+                            // time: [moment(undefined), moment(undefined)]
+                        });
+                    }
+                });
+                this.tableData = activities;
+                this.timeData = timeDatas;
+            },
+            saveData(){
+                this.saveVisit=true;
+            },
+            handleOk(){},
+            handleCancel(){
+                this.saveVisit=false;
+            },
         }
     }
 </script>
@@ -177,7 +198,7 @@
         border-radius: 10px;
         text-align: center;
         width: 100%;
-        height: 800px;
+        min-height: 800px;
     }
     .buttons{
         margin:0px 5px 20px 5px;
@@ -193,22 +214,22 @@
         margin-top: 10px;
         padding:2px 4px;
     }
-    /deep/ Table {
-        .ant-table-thead > tr > th {
-            background-color: #f4f4f4;
-        }
-        .ant-table-tbody > tr:nth-child(2) > td:nth-child(2){
-            background-color: #f00;
-            color: white;
-        }
-        .ant-table-tbody > tr:first-child > td:nth-child(5),
-        .ant-table-tbody > tr:first-child > td:nth-child(4),
-        .ant-table-tbody > tr:first-child > td:nth-child(3){
-            background-color: #bcbcbc;
-        }
-        .ant-table-tbody > tr:nth-child(2) > td:nth-child(3){
-            background-color: #1abc9c;
-        }
-    }
+    /*/deep/ Table {*/
+    /*    .ant-table-thead > tr > th {*/
+    /*        background-color: #f4f4f4;*/
+    /*    }*/
+    /*    .ant-table-tbody > tr:nth-child(2) > td:nth-child(2){*/
+    /*        background-color: #f00;*/
+    /*        color: white;*/
+    /*    }*/
+    /*    .ant-table-tbody > tr:first-child > td:nth-child(5),*/
+    /*    .ant-table-tbody > tr:first-child > td:nth-child(4),*/
+    /*    .ant-table-tbody > tr:first-child > td:nth-child(3){*/
+    /*        background-color: #bcbcbc;*/
+    /*    }*/
+    /*    .ant-table-tbody > tr:nth-child(2) > td:nth-child(3){*/
+    /*        background-color: #1abc9c;*/
+    /*    }*/
+    /*}*/
 
 </style>

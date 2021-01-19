@@ -12,7 +12,13 @@
         @change="onchange">
       <span slot="operation" slot-scope="text,record">
         <a @click="edit(record.buildingId)">编辑</a>
-        <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
+        <a-popconfirm v-if="dataSource.length"
+                      title="确认删除?"
+                      cancelText="取消"
+                      okText="确定"
+                      @confirm="() => deleteItem(record.buildingId)">
+          <a href="javascript:;" style="margin-left: 50px" >删除</a>
+        </a-popconfirm>
     </span>
       </a-table>
     </div>
@@ -58,7 +64,7 @@ const columns = [
   {
     title: '状态',
     dataIndex: 'status',
-    customRender:(text)=>text==1?'可用':'已占用'
+    customRender:(text)=>text==1?'可用':'不可用'
   },
   {
     title: '操作',
@@ -72,7 +78,7 @@ export default {
         let {data} = await this.$api.basic.building.fetchList();
         this.dataSource = data.rows;
         console.log(data);
-    }, 
+    },
     data() {
         return {
             show: false,
@@ -82,6 +88,7 @@ export default {
             selectedRowKeys: [],
             selectedRows: [],
             editText:-1,
+            newName:"",
             formItemLayout: {
                 labelCol: {span: 6},
                 wrapperCol: {span: 14}
@@ -121,21 +128,28 @@ export default {
             this.show = true;
         },
         async handleOk() {
+          console.log(this.form.name);
           if(this.changeTitle=="新增教学楼"){
+            for(let i=0;i<this.dataSource.length;i++){
+              if(this.form.name==this.dataSource[i].name){
+                alert("教学楼已存在，请输入新的教学楼！");
+              } else{
+                this.newName=this.form.name;
+                this.show = false;
+              }
+            }
             let formData = {
-              ...this.form,
-              name:this.form.name,
+              name:this.newName,
               floor: parseInt(this.form.floor),
               status: this.form.status ? 1 : 0
             };
             let addData={...formData}
             let {data} = await this.$api.basic.building.saveBuilding(addData);
             console.log(data);
-            this.show = false;
             let {data:buildData} = await this.$api.basic.building.fetchList()
             console.log("buildData",buildData)
             this.dataSource = buildData.rows
-          }else{
+          } else{
             let  formData={
               buildingId:this.dataSource[this.editText].buildingId,
               name:this.form.name,

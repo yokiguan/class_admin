@@ -5,8 +5,8 @@
                 <div class="result">
                     <a-breadcrumb>
                         <a-breadcrumb-item>首页</a-breadcrumb-item>
-                        <a-breadcrumb-item><a href="">基础数据</a></a-breadcrumb-item>
-                        <a-breadcrumb-item><a href="">教学场地排课规则</a></a-breadcrumb-item>
+                        <a-breadcrumb-item>基础数据</a-breadcrumb-item>
+                        <a-breadcrumb-item>教学场地排课规则</a-breadcrumb-item>
                     </a-breadcrumb>
                 </div>
                 <div class="left">
@@ -25,11 +25,12 @@
                             v-model="checkedBuildingKeys"
                             :selected-keys="selectBuildingKeys"
                             @select="selectBuilding"
+                            @check="onCheck"
                             style="font-size: 1.3em;"/>
                 </div>
                 <div class="right">
                     <LocationRegular v-if="showcomLocation" @form-modal-change="changeEvent"></LocationRegular>
-                    <CurriculumRegular v-if="showcomCurriculum"></CurriculumRegular>
+                    <CurriculumRegular v-if="showcomCurriculum" :templateId ="templateId"></CurriculumRegular>
                 </div>
             </div>
         </div>
@@ -61,20 +62,20 @@
                     children: 'child',
                     title: 'name',
                 },
+                templateId:''
             };
         },
-         created(){
+        created(){
             this.getData();
 
         },
         watch:{
-          checkedBuildingKeys(val){
-              console.log('onCheck',val);
-          }
+            checkedBuildingKeys(val){
+                console.log('onCheck',val);
+            }
         },
         methods: {
             async getData () {
-                console.log(this.$api.basic.building.fetchList())
                 let {data} = await this.$api.basic.classroom.fetchRoomList();
                 // this.buildingsData = data.result
                 console.log(data.result)
@@ -84,7 +85,7 @@
                     numberTree.title = data.result[i].building_name
                     numberTree.key = data.result[i].building_Id
                     if (data.result[i].floor_list.length) {
-                    //    第二层
+                        //    第二层
                         numberTree.children = []
                         for (let j = 0; j < data.result[i].floor_list.length; j++) {
                             let item = data.result[i].floor_list[j]
@@ -109,9 +110,9 @@
                 console.log(this.buildingsData)
             },
             onCheck(checkedKeys){
-              this.selectBuildingKeys=checkedKeys;
-              // this.$router.push('/basic/classroom/rule/location');
-              this.showcomLocation=true;
+                this.selectBuildingKeys=checkedKeys;
+                // this.$router.push('/basic/classroom/rule/location');
+                this.showcomLocation=true;
             },
             selectBuilding(selectBuildingsKeys,info){
                 this.selectBuildingKeys=selectBuildingsKeys;
@@ -119,7 +120,8 @@
                 this.showcomLocation=true;
             },
             changeEvent (modal) {
-                console.log(modal)
+                console.log('modal',modal)
+                this.templateId = modal
                 modal ? this.showcomCurriculum = true : this.showcomCurriculum = false
             }
         },
@@ -178,4 +180,3 @@
     /*    height: 800px;*/
     /*}*/
 </style>
-

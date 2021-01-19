@@ -345,9 +345,35 @@
     async created() {
       let queryString=(window.location.hash || " ").split('?')[1]
       let id=(queryString || " ").split('=')[1]
-      if(id){
-        let { data } = await this.$api.basic.template.fetchTemplate({id});
-        console.log(data);
+      if(id) {
+        let {data} = await this.$api.basic.template.fetchTemplate({id});
+        console.log(data.result);
+        let activities = [];
+        let timeDatas = [];
+        let list = [...this.activity];
+        list.forEach(item => {
+          for (let i = 1; i <= data.result[item.value]; i++) {
+            activities.push({
+              activity: item.name + i,
+              value: item.value + i
+            });
+            timeDatas.push({
+              activity: item.name + i,
+              value: item.value + i,
+              time: [moment(undefined), moment(undefined)]
+            });
+          }
+        });
+        this.dataSource = activities;
+        this.timeData = timeDatas;
+        this.form.templateName=data.result.templateName;
+        this.form.workday=data.result.workday;
+        this.form.restday=data.result.restday;
+        this.form.afternoon=data.result.afternoon;
+        this.form.evening=data.result.evening;
+        this.form.morning=data.result.morning;
+        this.form.morningread=data.result.morningread;
+        this.form.noon=data.result.noon;
       }
     },
     methods: {

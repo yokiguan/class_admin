@@ -27,7 +27,7 @@ const classroom = {
 
     // 场地规则列表查看
     fetchRuleList(params){
-     return axios.get(`${ruleUrl}/getDataListByCurrId.json`,params);
+     return axios.get(`${ruleUrl}/getDataListByCurrId.json`,{params});
     },
 
     // 场地规则项查看

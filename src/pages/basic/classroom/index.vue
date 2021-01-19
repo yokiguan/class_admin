@@ -16,9 +16,15 @@
         </span>
         </template>
         <template slot="operation" slot-scope="text, record">
-           <span @click="edit(record.roomId)">编辑</span>|
-           <span @click="deleteItem(record)">删除</span>|
-          <span @click="gotoNew(record.roomId)">规则设置</span>
+           <span @click="edit(record.roomId)" style="color:blue">编辑</span>|
+          <a-popconfirm v-if="dataSource.length"
+                        title="确认删除?"
+                        cancelText="取消"
+                        okText="确定"
+                        @confirm="() => deleteItem(record.roomId)">
+            <a href="javascript:;" style="color: red">删除</a>
+          </a-popconfirm>
+          <span @click="gotoNew(record.roomId)" style="color:#1abc9c">规则设置</span>
         </template>
       </a-table>
     </div>
@@ -31,8 +37,8 @@
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <a-form-model :model="form" :rules="rules" ref="ruleForm">
-        <a-form-model-item label="教室名称" ref="name" prop="name">
-          <a-input v-model="form.name" placeholder="请输入你想要新增的场地名称"></a-input>
+        <a-form-model-item label="教室名称" ref="classroomName" prop="classroomName">
+          <a-input v-model="form.classroomName" placeholder="请输入你想要新增的场地名称"></a-input>
         </a-form-model-item>
         <a-form-item label="所属教学楼" ref="buildingId" prop="buildingId">
           <a-select v-model="form.buildingId" :default-value="buildings[0].buildingId" placeholder="请选择场地所在教学楼" @change="changeBuilding">
@@ -95,14 +101,8 @@
       title: "所属教学楼",
       dataIndex: "buildingEntity",
       // scopedSlots: { customRender: "classroom" }
-      customRender:(text,index,i)=>{
-        // let buildName="";
-        // console.log(text)
-        return text.name
-        // for (let j=0;j<text.length;j++){
-        //   buildName+=text[j].name
-        // }
-        // return buildName;
+      customRender:(text)=>{
+        return text.name;
       }
     },
     {
@@ -119,7 +119,6 @@
 
   export default {
     name: "classroom",
-    components: {Templet},
     data() {
       return {
         show: false,
@@ -138,7 +137,7 @@
           wrapperCol: { span: 14 }
         },
         form:{
-          name:"",
+          classroomName:"",
           floor:'',
           type: '',
           buildingId:"",
@@ -146,7 +145,7 @@
           status:''
         },
         rules:{
-          name:[
+          classroomName:[
             {
               required:true,
               message:"请输入教室名称！",
@@ -185,6 +184,7 @@
       let {data} = await this.$api.basic.classroom.fetchList();
       this.dataSource=data.rows;
       console.log(this.dataSource)
+      // this.dataSource.buildingEntity
       //获取教室和教学楼相关信息
       let {data:buildings}=await this.$api.basic.building.fetchList();
       this.buildings =buildings.rows
@@ -199,7 +199,7 @@
         if(this.changeTitle=="新增教室"){
           let formData = {
             ...this.form,
-            name:this.form.name,
+            name:this.form.classroomName,
             buildingId:this.form.buildingId,
             floor:this.form.floor,
             capacity: Number(this.form.capacity),
@@ -217,7 +217,7 @@
         }else{
           let formData = {
             roomId:this.dataSource[this.editText].roomId,
-            name:this.form.name,
+            name:this.form.classroomName,
             buildingId:this.form.buildingId,
             floor:this.form.floor,
             capacity: Number(this.form.capacity),
@@ -255,7 +255,7 @@
         this.changeTitle='编辑教室';
         this.show = true;
         this.editText=this.dataSource.findIndex(item=>item.roomId==id);
-        this.form.name=this.dataSource[this.editText].name;
+        this.form.classroomName=this.dataSource[this.editText].name;
         this.form.buildingId=this.dataSource[this.editText].buildingId;
         this.form.floor=this.dataSource[this.editText].floor;
         this.form.capacity=this.dataSource[this.editText].capacity;

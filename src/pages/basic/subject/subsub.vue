@@ -3,6 +3,7 @@
     <div>
       <div class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
+        <a-button @click="backMainCourse" type="success" style="margin-left: 20px">返回</a-button>
       </div>
       <a-table
               :rowKey="'subChildId'"
@@ -34,11 +35,14 @@
                    style="width: 275px"></a-input>
         </a-form-model-item>
         <a-form-model-item label="所属年级：" prop="gradeIds" ref="gradeIds">
-          <a-select v-model="form.gradeIds" placeholder="请选择年级" style="width: 275px">
-            <a-select-option v-for="(grade,index) in adminData" :key="index" :value="grade.gradeId">
-                {{ grade.gradeName }}
-            </a-select-option>
-          </a-select>
+          <a-tree-select v-model="form.gradeIds"
+                         placeholder="请选择年级"
+                         style="width: 275px"
+                        :tree-data="treeData"
+                         :checkedKeys="checkedKeys"
+                         tree-checkable
+                         :show-checked-strategy="SHOW_PARENT">
+          </a-tree-select>
         </a-form-model-item>
         <a-form-model-item label="所属类别：" prop="type" ref="type">
           <a-select v-model="form.type"
@@ -52,6 +56,8 @@
   </a-card>
 </template>
 <script>
+  import { TreeSelect } from 'ant-design-vue';
+  const SHOW_PARENT = TreeSelect.SHOW_PARENT;
   const columns = [
     {
       title: '子课程编号',
@@ -67,7 +73,11 @@
       customRender:(text,index,i)=>{
         let grade="";
         for(var j=0;j<text.length;j++){
-          grade+=text[j].gradeName;
+          if(grade==""){
+            grade=text[j].gradeName
+          }else{
+            grade=grade+"+"+text[j].gradeName;
+          }
         }
       return  grade
       }
@@ -82,13 +92,14 @@
       scopedSlots:{customRender:"operation"}
     }
   ]
-
 export default {
   name: 'subsubject',
   data () {
     return {
       columns: columns,
-      adminData:[],
+      treeData:[],
+      SHOW_PARENT,
+      checkedKeys:[],
       dataSource: [],
       selectedRowKeys: [],
       selectedRows: [],
@@ -124,10 +135,10 @@ export default {
           }
         ],
       }
-
     }
   },
     async created() {
+    //获取子课程全部信息
         let queryString=(window.location.hash || " ").split('?')[1]
         let id=(queryString || " ").split('=')[1]
         if(id){
@@ -141,27 +152,53 @@ export default {
         this.selectedRowKeys = selectedRowKeys
         this.selectedRows = selectedRows
       },
-      async addNew () {
+      //获取年级信息
+      async grade(){
+        let {data:{result,success}}=await this.$api.basic.grade.fetchList();
+        console.log(result);
+        for(let i in result){
+          //第一层（级部）
+          let adminData={};
+          adminData.title=result[i].adminName;
+          adminData.key=adminData.value=result[i].adminId;
+          if(result[i].adminGrades.length){
+            //第二层（年级）
+            adminData.children=[];
+            for(let j=0;j<result[i].adminGrades.length;j++){
+              let item=result[i].adminGrades[j];
+              let gradeData={};
+              gradeData.key=gradeData.value=item.gradeId;
+              gradeData.title=item.gradeName;
+              adminData.children.push(gradeData);
+            }
+          }
+          this.treeData.push(adminData);
+        }
+      },
+      addNew () {
         this.addClassVisit=true;
         this.changeTitle='新增子课程';
-        let {data:{result,success}}=await this.$api.basic.grade.fetchGradeList();
-        this.adminData=result;
-        console.log(this.adminData);
+        this.grade();
       },
-      edit(id){
+      edit(editId){
+        let selectData = this.dataSource.filter(item => item.id === editId)
+        selectData[0].subChildIds.forEach((item)=>{
+          this.checkedKeys.push(item.subChildId)
+        })
         this.changeTitle='编辑子课程';
         this.addClassVisit=true;
-        this.editText=this.dataSource.findIndex(item=>item.subChildId==id);
+        this.editText=this.dataSource.findIndex(item=>item.subChildId==editId);
         this.form.name=this.dataSource[this.editText].name;
-        [this.form.gradeIds]=this.dataSource[this.editText].childSubjectGrade.gradeName
-        console.log(this.dataSource[this.editText].childSubjectGrade.gradeName)
+        this.form.gradeIds=this.dataSource[this.editText].childSubjectGrade.gradeName
+        // console.log(this.dataSource[this.editText].childSubjectGrade.gradeName)
         this.form.type=this.dataSource[this.editText].type==1?'行政班课':'走班课'
+        this.grade();
       },
       async handleOk() {
         if(this.changeTitle=='新增子课程'){
           let formData={
             name: this.form.name,
-            gradeIds: [this.form.gradeIds],
+            gradeIds: this.form.gradeIds,
             type: Number(this.form.type),
             subFatherId: this.$router.history.current.query.id
           };
@@ -179,7 +216,7 @@ export default {
           let formData={
             subChildId:this.dataSource[this.editText].subChildId,
             name: this.form.name,
-            gradeIds: [this.form.gradeIds],
+            gradeIds: this.form.gradeIds,
             type: this.form.type?1:0,
             subFatherId: this.$router.history.current.query.id
           };
@@ -194,18 +231,23 @@ export default {
       handleCancel() {
         this.addClassVisit = false
       },
+    //删除子课程
       async deleteItem(id) {
         let {data}=await this.$api.basic.subject.deleteSubject({ids:[id]});
         console.log(data)
         if(data&&data.success){
           let { data:{result,success} } = await this.$api.basic.subject.fetchChildList();
-          console.log(result.subjectChildEntitys)
+          // console.log(result.subjectChildEntitys)
           this.dataSource=result.subjectChildEntitys;
           message.info('删除成功');
         }else{
           message.info('删除失败');
         }
     },
+    //返回主课程
+      backMainCourse(){
+        this.$router.go(-1)
+      },
     }
   }
 </script>

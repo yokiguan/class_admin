@@ -3,13 +3,13 @@
     <div class="result">
       <a-breadcrumb>
         <a-breadcrumb-item>首页</a-breadcrumb-item>
-        <a-breadcrumb-item><a href="">选课规则</a></a-breadcrumb-item>
+        <a-breadcrumb-item>< a href="">选课规则</ a></a-breadcrumb-item>
       </a-breadcrumb>
     </div>
     <div class="detailRule" style="background-color: white">
       <a-table :rowKey="'id'"
-              :columns="columns"
-          :dataSource="dataSource">
+               :columns="columns"
+               :dataSource="dataSource">
         <div slot="operation" slot-scope="text, record">
           <span @click="edit(record.id)">编辑</span>
         </div>
@@ -24,7 +24,7 @@
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
       <template>
-<!--        v-model="checkedKeys"-->
+        <!--        v-model="checkedKeys"-->
         <a-tree
                 v-model="checkedKeys"
                 checkable
@@ -46,23 +46,23 @@
       title:'课程类型',
       dataIndex:'name',
     },{
-       title: '课程',
-       dataIndex: 'subChildIds',
+      title: '课程',
+      dataIndex: 'subChildIds',
       customRender: (text,index,i)=>{
-         let course="";
-         for (var j=0;j<text.length;j++){
-           if(course==""){
-             course=text[j].subChildName;
-           }else{
-             course=course+"+"+text[j].subChildName;
-           }
-         }
+        let course="";
+        for (var j=0;j<text.length;j++){
+          if(course==""){
+            course=text[j].subChildName;
+          }else{
+            course=course+"+"+text[j].subChildName;
+          }
+        }
         return course
-    }
+      }
     },{
-       title:'操作',
-       dataIndex:'option',
-       scopedSlots:{customRender:'operation'}
+      title:'操作',
+      dataIndex:'option',
+      scopedSlots:{customRender:'operation'}
     }
   ]
   export default {
@@ -78,6 +78,7 @@
         treeData:[],
         form:[],
         editText:-1,
+        expandedKeys:[]
       };
     },
     //查看规则详细信息
@@ -96,7 +97,13 @@
     methods:{
       //编辑按钮的实现
       async edit(editId){
+        this.treeData = []
+        this.checkedKeys = []
         this.editVisit=true;
+        let selectData = this.dataSource.filter(item => item.id === editId)
+        selectData[0].subChildIds.forEach((item)=>{
+          this.checkedKeys.push(item.subChildId)
+        })
         let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
         console.log(data.result);
         for(let i in data.result){
@@ -117,7 +124,7 @@
                 childData.children=[];
                 for(let k in gradeItem.subjectEntities){
                   let mainCourse={};
-                  mainCourse.key=gradeItem.gradeId+gradeItem.subjectEntities[k].subChildId;
+                  mainCourse.key=gradeItem.subjectEntities[k].subChildId;
                   mainCourse.title=gradeItem.subjectEntities[k].name;
                   childData.children.push(mainCourse)
                 }
@@ -128,7 +135,6 @@
           this.treeData.push(adminTree);
           console.log(data.result[i]);
         }
-        // console.log(this.treeData);
         this.editText=this.dataSource.findIndex(item=>item.id==editId);
         console.log(this.editText);
         // this.checkedKeys=this.dataSource.subChildIds
@@ -141,6 +147,10 @@
       async handleOk(){
         this.editVisit=false;
         let {data}=await this.$api.basic.rule.saveRuleItem({ id:this.dataSource[this.editText].id,subChildId:this.checkedKeys.join(',')})
+        if(data.success){
+          let {data}=await this.$api.basic.rule.fetchRuleList();
+          this.dataSource=data.result;
+        }
       },
       //关闭编辑弹框
       handleCancel(){

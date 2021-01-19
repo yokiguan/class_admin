@@ -336,7 +336,7 @@
                 let {data} = await this.$api.schedule.setting.settingAdd({
                     planId:this.planId,
                     setInfo:this.dataSource,
-                    time_limit: this.startValue + ' - '+this.endValue,
+                    timeLimit: this.startValue + ' - '+this.endValue,
                     tips:'',
 
                 })
