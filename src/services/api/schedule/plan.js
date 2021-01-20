@@ -6,35 +6,32 @@ import axios from '../../axios'      //导入从http众创建的axios实例
 const baseUrl=base.root+'/a/schedulePlan'
 const baseUrl2=base.root+'/a/qualifiedStudent'
 const plan={
-    // 新增/修改排课计划
-    scheduleAdd(params){
-        return axios.get(`${baseUrl}/saveData.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+    // 新增/修改排课计划（已调）
+    saveCoursetime(params){
+        return axios.post(`${baseUrl}/saveData.json`,params);
     },
-    //排课计划删除
-    scheduleDelete(params){
-        return axios.get(`${baseUrl}/deleteData.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+    //排课计划删除（已调）
+    deleteSchedulePlan(params){
+        return axios.get(`${baseUrl}/deleteData.json`,{params:params})
     },
-    //排课计划查看（全部）
-    schedulegetList(params){
+    //排课计划查看（全部）（已调）
+    getSchedulePlan(params){
         return axios.get(`${baseUrl}/getDataList.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
-    //排课计划查看（单个）
+    //排课计划查看（单个）（已调）
     schedulegetInfo(params){
         return axios.get(`${baseUrl}/getDataInfo.json`,{params});
     },
-    //发布选课查看学生
+    //发布选课查看学生(已调）
     scheduleDistribute(params){
-        return axios.get(`${baseUrl}/getDistribute.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl}/getDistribute.json`,{params});
     },
     //发布选课
     schedulesaveQua(params){
         return axios.post(`${baseUrl2}/saveQualification.json`,params, {
             'Content-Type': 'multipart/form-data'});
-    }
+    },
 }
 export default plan
 

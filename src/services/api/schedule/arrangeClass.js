@@ -21,14 +21,6 @@ const arrangeClass={
     getList(params){
         return axios.get(`${baseUrl1}/getClassTeaDataList.json`,params);
     },
-    // 排课计划查看
-    getSchedulePlan(params){
-        return axios.get(`${baseUrl1}/getDataList.json`,params, {
-            'Content-Type': 'multipart/form-data'});
-    },
-    deleteSchedulePlan(params){
-        return axios.get(`${baseUrl1}/deleteData.json`,{params:params})
-    },
     //教室设置查看
     getClass(params){
         return axios.get(`${baseUrl2}/getDatasList.json`,params);
@@ -58,7 +50,6 @@ const arrangeClass={
             'Content-Type': 'multipart/form-data'
         });
     },
-
     //课节设置 查看
     getLesson(params) {
         return axios.get(`${baseUrl1}/getSelectLessonDataInfo.json`, {params});

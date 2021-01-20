@@ -380,11 +380,6 @@ export default new Router({
                     }]
                 },
               ]},
-            {
-              path: '/schedule/train',
-              name: '练习',
-              component: () => import('@/pages/schedule/train'),
-            }
           ]
         },
           //数据字典

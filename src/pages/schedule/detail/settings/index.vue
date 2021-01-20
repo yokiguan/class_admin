@@ -338,7 +338,6 @@
                     setInfo:this.dataSource,
                     timeLimit: this.startValue + ' - '+this.endValue,
                     tips:'',
-
                 })
 
                 alert(data.success?'修改成功':'修改失败')

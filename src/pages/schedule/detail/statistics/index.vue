@@ -5,7 +5,7 @@
                 <a-col :span="12">
                         <span style="font-size:1.5em">{{this.planData}}</span>
                         <br>
-                        <span class="link-font-color" style="margin-left:2em">选课时间：{{form.startChooseTime}} ——{{form.endChooseTime}}</span>
+                        <span class="link-font-color" style="margin-left:2em">选课时间：{{this.result.timeLimit}}</span>
                         <span class="link-font-color" style="margin-left:2em">选课中</span>
                 </a-col>
                 <a-col :span="12">
@@ -114,6 +114,7 @@
                 planData:" ",
                 xName:[],
                 yNumber:[],
+                result:{},
                 form:{
                   startChooseTime:null,
                   endChooseTime:null,
@@ -165,27 +166,40 @@
               let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId})
               this.planData=result.name
           }
-            //查询课程组合以及选课人数
-            let {data}=await this.$api.schedule.statics.getSubjectCombination({planId});
-            this.dataSource=data.result;
-             //统计选课人数以及课程被选情况
-            let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId});
-            this.chooseCourseData=chooseCourse.result;
-            this.staticChooseData=chooseCourse.result.selectPerSubNumberDtos;
-            console.log(this.staticChooseData);
-            for(let i=1;i<this.staticChooseData.length;i++){
-                let arrDatas = {
-                    name: this.staticChooseData[i].subName,
-                    value: this.staticChooseData[i].number,
-                }
-                this.tipsName.push(this.staticChooseData[i].subName)
-                this.xName.push(this.staticChooseData[i].subName)
-                this.yNumber.push(this.staticChooseData[i].number)
-                this.echartsDataCircle.push(arrDatas)
-            }
-            console.log(this.echartsDataCircle)
+          this.staticCourse();
+          this.lookInfo();
     },
         methods: {
+            //指定排课计划信息查看
+            async lookInfo(){
+                this.planId = window.location.href.split('?')[1].split('=')[1];
+                let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
+                console.log(result);
+                this.result=result;
+                console.log(this.result);
+            },
+            //查询课程统计情况
+            async staticCourse(){
+                //查询课程组合以及选课人数
+                let {data}=await this.$api.schedule.statics.getSubjectCombination({planId:this.planId});
+                this.dataSource=data.result;
+                //统计选课人数以及课程被选情况
+                let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId:this.planId});
+                this.chooseCourseData=chooseCourse.result;
+                this.staticChooseData=chooseCourse.result.selectPerSubNumberDtos;
+                console.log(this.staticChooseData);
+                for(let i=1;i<this.staticChooseData.length;i++){
+                    let arrDatas = {
+                        name: this.staticChooseData[i].subName,
+                        value: this.staticChooseData[i].number,
+                    }
+                    this.tipsName.push(this.staticChooseData[i].subName)
+                    this.xName.push(this.staticChooseData[i].subName)
+                    this.yNumber.push(this.staticChooseData[i].number)
+                    this.echartsDataCircle.push(arrDatas)
+                }
+                console.log(this.echartsDataCircle)
+            },
             disabledStartDate(startValue){
                 const endValue=this.form.startChooseTime
               if(!startValue||!endValue){
@@ -286,7 +300,7 @@
                 let addData={id,timeLimit}
                 let {data:changeChooseTime}=await this.$api.schedule.statics.alterTime(addData);
                 console.log(changeChooseTime)
-                // this.dataSource=data.result;
+                this.lookInfo();
             },
             handleCancel(){
                 this.changeChooseTimeModal=false;

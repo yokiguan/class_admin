@@ -22,8 +22,8 @@
                 <div style="margin-bottom: 3px" slot="title">{{item.name}}</div>
                 <a-avatar class="card-avatar" slot="avatar" :src="item.avatar" size="large" />
                 <div class="meta-content" slot="description">
-                  <div>学期:{{item.term}}</div>
-                  <div>参与年级:{{item.gradeId}}</div>
+                  <div>学期:第{{item.term}}学期</div>
+                  <div>参与年级:{{item.gradeName}}</div>
                 </div>
               </a-card-meta>
               <router-link slot="actions" :to="`/schedule/detail/index?planId=${item.planId}`">操作</router-link>
@@ -33,93 +33,67 @@
         </a-list-item>
       </a-list>
       <!-- 添加排课规则 -->
-      <create-modal
+      <a-modal
               title="添加排课规则"
-              :close="false"
-              :visible="visible"
-              :loading="loading"
-              @modalClosed="closed"
-              @modalSubmit="handleSubmit">
-        <div slot="content">
-          <a-form-model v-bind="formItemLayout" :model="form" @submit="handleSubmit" ref="createForm">
+              :closable="false"
+              :visible="addVisit">
+        <template slot="footer">
+          <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+          <a-button key="back" @click="handleCancel">取消</a-button>
+        </template>
+        <a-form-model v-bind="formItemLayout" :model="form" ref="createForm">
             <a-form-model-item label="计划名称">
-              <!-- <a-date-picker v-decorator="['date-picker', config]" /> -->
               <a-input placeholder="请输入计划名称" v-model="form.name"/>
             </a-form-model-item>
-            <!-- <a-form-model-item label="年份">
-              <a-select :default-value="yearRange[0]" style="width: 120px" @change="handleYearChange" >
-                <a-select-option v-for="(startYear, index) in yearRange" :key="index" >
-                  {{ startYear }}
-                </a-select-option>
-              </a-select>
-              <a-select :default-value="endYearRange[0]" style="width: 120px">
-                <a-select-option v-for="(endYear, index) in endYearRange" :key="index">
-                  {{ endYear }}
-                </a-select-option>
-              </a-select>
-            </a-form-model-item> -->
             <a-form-model-item label="所属学期">
               <a-select default-value="1" style="width: 120px" v-model="form.term">
-                <a-select-option value="1">
-                  第一学期
-                </a-select-option>
-                <a-select-option value="2">
-                  第二学期
-                </a-select-option>
+                <a-select-option value="1">第一学期</a-select-option>
+                <a-select-option value="2">第二学期</a-select-option>
               </a-select>
             </a-form-model-item>
             <a-form-model-item label="所属年级">
-              <a-select default-value="1" style="width: 120px" v-model="form.gradeId">
-                <a-select-option value="1">
-                  高一
-                </a-select-option>
-                <a-select-option value="2">
-                  高二
-                </a-select-option>
-                <a-select-option value="3">
-                  高三
-                </a-select-option>
-              </a-select>
+              <a-tree-select
+                      v-model="form.gradeId"
+                      style="width: 100%"
+                      placeholder="请选择所属年级"
+                      :treeData="treeData"
+                      allow-clear
+                      tree-default-expand-all>
+              </a-tree-select>
             </a-form-model-item>
             <a-form-model-item label="启用功能">
-              <a-radio-group v-model="form.type">
-                <a-radio value="0">行政班排课</a-radio>
-                <a-radio value="1">走班排课</a-radio>
-              </a-radio-group>
+              <a-checkbox-group
+                      v-model="form.type"
+                      :options="plainOptions"
+                      @change="onChange"/>
             </a-form-model-item>
-
           </a-form-model>
-        </div>
-      </create-modal>
+      </a-modal>
     </div>
   </div>
 </template>
-
 <script>
-  import CreateModal from '../../../components/modal/CreateModal'
+  const plainOptions = ['行政班排课', '走班排课'];
   export default {
-    components : {CreateModal,},
     name: "CardList",
     data() {
       return {
         dataSource:[],
-        // modal
-        visible : false,
-        loading : false,
+        plainOptions,
+        addVisit : false,
+        loading:false,
+        treeData:[],
         form:{},
         formItemLayout: {
           labelCol: {
-            xs: { span: 24 },
-            sm: { span: 8 },
+            xs: { span: 15 },
+            sm: { span: 6 },
           },
           wrapperCol: {
-            xs: { span: 24 },
+            xs: { span: 15},
             sm: { span: 16 },
           },
         },
-        //年份
-        yearRange : [2020, 2021, 2022, 2023, 2024],
-        endYearRange : [2021, 2022, 2023, 2024]
       };
     },
     async created() {
@@ -128,39 +102,72 @@
     methods : {
       async initSearch(){
         // 查询排课计划
-        let {data} = await this.$api.schedule.arrangeClass.getSchedulePlan()
+        let {data} = await this.$api.schedule.plan.getSchedulePlan()
         this.dataSource = data.rows
+        console.log(this.dataSource)
         this.dataSource.unshift({
           add: true,
         });
       },
-      addNew : function(){
-        this.visible = true
-      },
-      closed : function(){
-        this.visible = false
-        this.loading = false
-      },
-      async handleSubmit(){
-        this.loading = true
-        let {data} = await this.$api.schedule.arrangeClass.saveCoursetime(this.form)
-        if(data.success){
-          this.visible = false
-          this.loading = false
+      //保存排课计划
+      async handleOk(){
+        let formData={
+          name:this.form.name,
+          term:this.form.term,
+          gradeId:this.form.gradeId,
+          type:this.form.type=='行政班课'?1:0,
+        };
+        let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
+        console.log(data);
+        if(data&&data.success){
+          this.addVisit = false
         }
         this.initSearch()
       },
-      handleYearChange : function(index){
-        console.log(this.yearRange, index)
-        let temp = this.yearRange
-        this.endYearRange = temp.slice(index, this.yearRange.length)
-        console.log(this.endYearRange)
+      //取消
+      handleCancel(){
+        this.addVisit=false;
       },
       async handleDeletePlan(value){
         // 删除排课计划
-        let {data} = this.$api.schedule.arrangeClass.deleteSchedulePlan({ids:value})
+        let {data} = this.$api.schedule.plan.deleteSchedulePlan({ids:value})
         this.initSearch()
-      }
+      },
+      //选择课程类型
+      onChange(checkedValues) {
+        console.log('checked = ', checkedValues);
+        console.log('value = ', this.value);
+      },
+      //新增排课计划
+      addNew(){
+        this.addVisit=true;
+        this.grade();
+      },
+      //获取年级信息
+      async grade(){
+        this.treeData = []
+        let {data:{result,success}}=await this.$api.basic.grade.fetchList();
+        console.log(result);
+        for(let i in result){
+          //第一层（级部）
+          let adminData={};
+          adminData.title=result[i].adminName;
+          adminData.key=adminData.value=result[i].adminId;
+          if(result[i].adminGrades.length){
+            //第二层（年级）
+            adminData.children=[];
+            for(let j=0;j<result[i].adminGrades.length;j++){
+              let item=result[i].adminGrades[j];
+              let gradeData={};
+              gradeData.key=gradeData.value=item.gradeId;
+              gradeData.title=item.gradeName;
+              adminData.children.push(gradeData);
+            }
+          }
+          this.treeData.push(adminData);
+          console.log(this.treeData);
+        }
+      },
     }
   };
 </script>
