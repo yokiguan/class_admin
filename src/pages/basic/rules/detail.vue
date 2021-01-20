@@ -3,7 +3,7 @@
     <div class="result">
       <a-breadcrumb>
         <a-breadcrumb-item>首页</a-breadcrumb-item>
-        <a-breadcrumb-item>< a href="">选课规则</ a></a-breadcrumb-item>
+        <a-breadcrumb-item>选课规则</a-breadcrumb-item>
       </a-breadcrumb>
     </div>
     <div class="detailRule" style="background-color: white">
@@ -72,13 +72,10 @@
         columns,
         loading:false,
         editVisit:false,
-        autoExpandParent: true,
         checkedKeys: [],
-        selectedKeys: [],
         treeData:[],
         form:[],
         editText:-1,
-        expandedKeys:[]
       };
     },
     //查看规则详细信息

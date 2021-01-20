@@ -10,12 +10,10 @@ const subject = {
     fetchMainList(params){
         return axios.get(`${baseUrl}/getDataList.json`,params);
     },
-
     // 查询指定主课程
     fetchMainItem(params){
         return axios.post(`${baseUrl}/getDataInfo.json`,params);
     },
-
     // 主课程新增接口
     saveMain(params){
         return axios.post(`${baseUrl}/saveData.json`,params);

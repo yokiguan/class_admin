@@ -134,7 +134,7 @@ export default {
       )]
       let itemArr = []
       menu.children.forEach(function (item) {
-        if(item.name==='教室时间规则' || item.name === '排课操作' ||item.name==='课表模板新增'||item.name==='子课程管理') return
+        if(item.name==='教室时间规则' || item.name === '排课操作' ||item.name==='课表模板新增'||item.name==='子课程管理'||item.name==='课程管理') return
         itemArr.push(this_.renderItem(h, item))
       })
       return h(SubMenu, {key: menu.fullPath},

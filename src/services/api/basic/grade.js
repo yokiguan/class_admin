@@ -6,32 +6,29 @@ import axios from '../../axios'; // 导入http中创建的axios实例
 const baseUrl=base.root+'/a/admin'
 const gradeUrl=base.root+'/a/grade'
 const grade = {
-    // 查询全部级部的简要信息
+    // 查询全部级部的简要信息(已调)
     fetchList(params){
         return axios.get(`${baseUrl}/getAdminGradeDataList.json`,params);
     },
-
-    // 查询年级的简要信息
+    // 查询年级的简要信息(已调)
     fetchGradeList(params){
         return axios.get(`${gradeUrl}/getGradeDataList.json`,params);
     },
-
-    // 查询指定年级信息
+    // 查询指定年级信息(已调）
     fetchGrade(params){
-        return axios.post(`${gradeUrl}/getGradeDataInfo.json`,{params});
+        return axios.get(`${gradeUrl}/getGradeDataInfo.json`,{params});
     },
-
     // 年级新增接口
     saveGrade(params){
         return axios.post(`${gradeUrl}/saveGradeSubjectData.json`,params);
     },
 
-    // 年级删除接口
+    // 年级删除接口（不需要）
     deleteGrade(params){
         return axios.post(`${gradeUrl}/deleteGradeSubByGradeIds.json`,params);
     },
 
-    // 年级子课程新增
+    // 年级子课程新增（不需要）
     saveGradeSubject(params){
      return axios.post(`${gradeUrl}/insertSubToGrade.json`,params);
     },

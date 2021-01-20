@@ -5,10 +5,7 @@
         :rowKey="'gradeId'"
         :columns="columns"
         :subName="'查看课程'"
-        :dataSource="dataSource"
-        :selectedRows="selectedRows"
-        @change="onchange"
-      >
+        :dataSource="dataSource">
         <span slot="operation" slot-scope="text, record">
           <a @click="gotoNew(record.gradeId)">查看课程</a>
         </span>
@@ -16,11 +13,7 @@
     </div>
   </a-card>
 </template>
-
 <script>
-import { message } from "ant-design-vue";
-import { TreeSelect } from 'ant-design-vue';
-const SHOW_PARENT = TreeSelect.SHOW_PARENT;
 const columns = [
   {
     title: "序号",
@@ -34,6 +27,11 @@ const columns = [
     title: "级部",
     dataIndex: "adminName"
   },
+  // {
+  //   title:"课程",
+  //   dataIndex:"subjectEntities"
+  //
+  // },
   {
     title: "操作",
     key: "operation",
@@ -47,28 +45,16 @@ export default {
       subject:[],
       columns: columns,
       dataSource: [],
-      selectedRowKeys: [],
-      selectedRows: [],
-      formItemLayout: {
-        labelCol: { span: 6 },
-        wrapperCol: { span: 14 }
-      },
-      SHOW_PARENT,
-      value:[],
     };
   },
   async created() {
     let {data:{result,success}} = await this.$api.basic.grade.fetchGradeList();
-    console.log(result, success);
+    console.log(result);
     if (success) {
       this.dataSource = result;
     }
   },
   methods: {
-    onchange(selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys;
-      this.selectedRows = selectedRows;
-    },
     gotoNew(id) {
       this.$router.push("/basic/grade/subject?id=" + id);
     },

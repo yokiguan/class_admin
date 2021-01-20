@@ -14,7 +14,13 @@
         ><span slot="operation" slot-scope="text,record">
           <a @click="edit(record.id)">编辑</a>
           |
-          <a @click="deleteItem(record.id)">删除</a>
+          <a-popconfirm v-if="dataSource.length"
+                      title="确认删除?"
+                      cancelText="取消"
+                      okText="确定"
+                      @confirm="() => deleteItem(record.id)">
+          <a href="javascript:;">删除</a>
+        </a-popconfirm>
           |<a @click="gotoNew(record.id)">子课程</a>
         </span>
         </a-table>
@@ -36,6 +42,7 @@
   </a-card>
 </template>
 <script>
+  import { message } from 'ant-design-vue';
 const columns = [
   {
     title: "课程编号",

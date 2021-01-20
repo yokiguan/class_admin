@@ -34,8 +34,8 @@
               :pagination="pagination"
               :dataSource="dataSource"
               @change="handleTableChange">
-        <div slot="operation">
-          <span @click="edit">编辑</span>|
+        <div slot="operation" slot-scope="text,record">
+          <span @click="edit(record.teacherId)">编辑</span>|
           <span @click="settingRule">规则设置</span>
         </div>
       </a-table>
@@ -50,50 +50,37 @@
       </template>
       <a-form-model :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" style="margin-left: 70px">
         <a-form-model-item label="老师姓名">
-          <a-input style="width: 300px" disabled="false" v-model="form.teacherName"/>
+          <a-input style="width: 300px" disabled="disabled" v-model="form.teacherName"/>
         </a-form-model-item>
         <a-form-model-item label="联系电话">
-          <a-input style="width: 300px" disabled="false" v-model="form.tel"/>
+          <a-input style="width: 300px" disabled="disabled" v-model="form.tel"/>
         </a-form-model-item>
         <a-form-model-item label="是否是班主任" style="margin-left: 30px">
-          <a-radio-group v-model="form.type" disabled="disabled" style="margin-left: 40px">
-            <a-radio :value="1">是</a-radio>
-            <a-radio :value="0">否</a-radio>
-          </a-radio-group>
-        </a-form-model-item>
-        <a-form-model-item label="其他授课年级" style="margin-left: 30px">
-          <a-select v-model="form.grade" style="width: 270px" disabled="disabled">
-            <a-select-option value="china">China</a-select-option>
-          </a-select>
-        </a-form-model-item>
-        <a-form-model-item label="选择班级">
-          <a-select v-model="form.class" style="width: 300px" disabled="disabled">
-            <a-select-option value="china">China</a-select-option>
-          </a-select>
+          <a-input v-model="form.type" disabled="disabled" style="width: 270px"></a-input>
+<!--          <a-radio-group v-model="form.type" disabled="disabled" style="margin-left: 40px">-->
+<!--            <a-radio value="0">是</a-radio>-->
+<!--            <a-radio value="1">否</a-radio>-->
+<!--          </a-radio-group>-->
         </a-form-model-item>
         <a-form-item label="所授课程">
-          <a-input-search style="margin-bottom: 8px" placeholder="请输入" @search="onSearch" />
-<!--          <a-tree-->
-<!--                  :show-line="showLine"-->
-<!--                  :expanded-keys="expandedKeys"-->
-<!--                  :auto-expand-parent="autoExpandParent"-->
-<!--                  :tree-data="gData"-->
-<!--                  @expand="onExpand">-->
-<!--            <template slot="title" slot-scope="{ title }">-->
-<!--                  <span v-if="title.indexOf(searchValue) > -1">-->
-<!--                    {{ title.substr(0, title.indexOf(searchValue)) }}-->
-<!--                     <span style="color: #f50">{{ searchValue }}</span>-->
-<!--                      {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}-->
-<!--                    </span>-->
-<!--              <span v-else>{{ title }}</span>-->
-<!--            </template>-->
-<!--          </a-tree>-->
+          <a-tree-select v-model="form.addSub"
+                         placeholder="请选择所授课程"
+                         style="width: 275px"
+                         :checkedKeys="checkedKeys"
+                         :tree-data="treeData"
+                         checkStrictly="true"
+                         tree-checkable
+                         :show-checked-strategy="SHOW_PARENT">
+          </a-tree-select>
         </a-form-item>
       </a-form-model>
     </a-modal>
   </a-card>
 </template>
 <script>
+  import { TreeSelect } from 'ant-design-vue';
+  import { message } from 'ant-design-vue';
+  const SHOW_PARENT = TreeSelect.SHOW_PARENT;
   const columns = [
     {
       title: '教师工号',
@@ -159,6 +146,9 @@
         teacherNameData:[],
         editVisit:false,
         loading:false,
+        treeData:[],
+        SHOW_PARENT,
+        checkedKeys:[],
         pagination:{
           total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
           pageSize:20,    //默认每页显示的条数
@@ -168,6 +158,7 @@
           },
           showTotal:total=>`共有${total}条数据`,            //分页中显示的数据总数
         },
+        editText:-1,
         form:{
         },
       }
@@ -179,14 +170,18 @@
       //获取级部
       this.adminData=result;
       console.log(this.adminData);
-      //获取所有教师信息
-      let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({current:1,rowCount:20});
-      console.log(allTeacherData);
-      this.dataSource=allTeacherData.rows;
-      console.log(this.dataSource)
-      this.pagination.total=allTeacherData.total;
+      this.allTeacher();
     },
     methods: {
+      //获取所有教师信息
+      async allTeacher(){
+        //获取所有教师信息
+        let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({current:1,rowCount:20});
+        console.log(allTeacherData);
+        this.dataSource=allTeacherData.rows;
+        console.log(this.dataSource)
+        this.pagination.total=allTeacherData.total;
+      },
       //表格监听
       async handleTableChange(pagination){
         this.pagination.current=pagination.current;
@@ -240,7 +235,7 @@
           }
         }
        },
-      async onSearch(value) {
+       async onSearch(value) {
         console.log(value);
         console.log(this.form.teacherName);
         if(this.form.adminId==undefined||this.form.gradeId==undefined){
@@ -257,12 +252,62 @@
           this.pagination.total=data.total;
         }
       },
-      //编辑
-      edit(){
+      //获取课程信息
+      async edit(editId){
+        this.treeData=[];
         this.editVisit=true;
+        this.editText=this.dataSource.findIndex(item=>item.teacherId==editId);
+          console.log(this.editText);
+        this.form.teacherName=this.dataSource[this.editText].teacherName;
+          this.form.tel=this.dataSource[this.editText].tel;
+          console.log(this.dataSource[this.editText].teacherRoleDtos);
+          if(this.dataSource[this.editText].teacherRoleDtos.length==0){
+            this.form.type='否';
+          }else{
+            this.form.type='是'
+          }
+          //获取所属课程信息
+        this.checkedKeys = []
+        let selectData = this.dataSource.filter(item => item.id === editId)
+        selectData[0].subjectTeacherDtos.forEach((item)=>{
+          this.checkedKeys.push(item.subChildId)
+        })
+        let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
+        console.log(data.result);
+        for(let i in data.result){
+          //第一层(级部）
+          let adminTree={};
+          adminTree.title=data.result[i].adminName;
+          adminTree.key=data.result[i].adminId;
+          if(data.result[i].adminGrades.length){
+            //第二层(年级）
+            adminTree.children=[];
+            for(let j=0;j<data.result[i].adminGrades.length;j++){
+              let gradeItem=data.result[i].adminGrades[j];
+              let childData={}
+              childData.key=gradeItem.gradeId;
+              childData.title=gradeItem.gradeName;
+              if(gradeItem.subjectEntities.length){
+                //第三层(主课程)
+                childData.children=[];
+                for(let k in gradeItem.subjectEntities){
+                  let mainCourse={};
+                  mainCourse.key=gradeItem.subjectEntities[k].subChildId;
+                  mainCourse.title=gradeItem.subjectEntities[k].name;
+                  childData.children.push(mainCourse)
+                }
+              }
+              adminTree.children.push(childData);
+            }
+          }
+          this.treeData.push(adminTree);
+          console.log(data.result[i]);
+        }
       },
       //规则设置
-      settingRule(){},
+      settingRule(id){
+        this.$router.push("/basic/teacher/rule?id=" + id);
+      },
       //编辑信息的保存
       handleOk(){
         this.editVisit=false;

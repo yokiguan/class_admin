@@ -2,13 +2,20 @@
   <a-card>
       <div class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
+        <a-button @click="backGrade" type="success" style="margin-left: 20px">返回</a-button>
       </div>
       <a-table
         :rowKey="'subChildId'"
         :columns="columns"
         :dataSource="dataSource">
           <span slot="operation" slot-scope="text, record">
-            <a style="margin-left: 50px" @click="deleteItem(record.buildingId)">删除</a>
+              <a-popconfirm v-if="dataSource.length"
+                            title="确认删除?"
+                            cancelText="取消"
+                            okText="确定"
+                            @confirm="() => deleteItem(record.subChildId)">
+                <a href="javascript:;">删除</a>
+              </a-popconfirm>
           </span>
       </a-table>
       <a-modal title="新增课程"
@@ -20,7 +27,15 @@
           </template>
          <a-form-model :model="form" :rules="rules":label-col="{span:5}" :wrapper-col="{span:12}">
              <a-form-model-item label='课程名' prop="addsub" ref="addsub">
-                 <a-input placeholder='请输入你想要新增的课程名'  v-model="form.addSub"></a-input>
+                 <a-tree-select v-model="form.addSub"
+                                placeholder="请选择课程"
+                                style="width: 275px"
+                                :checkedKeys="checkedKeys"
+                                :tree-data="treeData"
+                                checkStrictly="true"
+                                tree-checkable
+                                :show-checked-strategy="SHOW_PARENT">
+                 </a-tree-select>
              </a-form-model-item>
          </a-form-model>
       </a-modal>
@@ -28,6 +43,9 @@
 </template>
 
 <script>
+import { TreeSelect } from 'ant-design-vue';
+import { message } from 'ant-design-vue';
+const SHOW_PARENT = TreeSelect.SHOW_PARENT;
 const columns = [
   {
     title: "课程编号",
@@ -49,9 +67,13 @@ export default {
       columns,
       loading:false,
       showSubject:false,
-      dataSource:[],
+      treeData:[],
+      SHOW_PARENT,
+      dataSource: [],
+      treeExpandedKeys: [],
+      checkedKeys:[],
+      subject:[],
       form:{
-          addSub:"",
       },
       rules:{
           addSub:[
@@ -64,39 +86,70 @@ export default {
         },
     };
   },
-  // async created(){
-  //     let querystring=(window.location.hash ||" ").split('?')[1]
-  //     let id=(querystring || " ").split('=')[1];
-  //     if(id){
-  //         let {data:{result,success}}=await this.$api.basic.subject.fetchGrade({id});
-  //         console.log(result.subjectChildEntitys)
-  //     }
-  // }  ,
+  async created(){
+     this.gainBaseInfo();
+  }  ,
   methods: {
-    addNew() {
+      //获取课程基本信息
+      async gainBaseInfo(){
+          let querystring=(window.location.hash ||" ").split('?')[1]
+          let id=(querystring || " ").split('=')[1];
+          if(id){
+              let {data:{result,success}}=await this.$api.basic.grade.fetchGrade({gradeId:id});
+              console.log(result.subjectEntities);
+              this.dataSource=result.subjectEntities;
+          }
+      },
+      async addNew() {
         this.showSubject=true;
+        // this.checkedKeys=[];
+        // let selectData=this.dataSource.filter(item=>item.id===this.dataSource.subChildId);
+        // selectData[0].names.forEach((item)=>{
+        //     this.checkedKeys.push(item.gradeSubChildIds)
+        // })
+        //获取课程信息
+        this.treeData = []
+        let {data:{result,success}}=await this.$api.basic.subject.fetchSubjectList();
+        console.log(result);
+        for(let i in result){
+            //第一层（级部）
+            let mainCourseData={};
+            mainCourseData.title=result[i].subName;
+            mainCourseData.key=mainCourseData.value=result[i].id;
+            if(result[i].subjectChildEntitys.length){
+                //第二层（年级）
+                mainCourseData.children=[];
+                for(let j=0;j<result[i].subjectChildEntitys.length;j++){
+                    let item=result[i].subjectChildEntitys[j];
+                    let courseData={};
+                    courseData.key=courseData.value=item.subChildId;
+                    courseData.title=item.name;
+                    mainCourseData.children.push(courseData);
+                }
+            }
+            this.treeData.push(mainCourseData);
+        }
     },
+      //取消
     handleCancel(){
         this.showSubject=false
     },
+      //保存
     async handleOk(){
-        let formData={
-            ...this.form,
-            name:this.form.addSub,
-        }
-        let addData={...formData};
-        let {res}=await this.$api.basic.grade.saveGradeSubject(addData);
-        console.log(res);
+        console.log(this.form.addSub);
+        let {data}=await this.$api.basic.grade.saveGrade({gradeId:this.$router.history.current.query.id,gradeSubChildIds:this.form.addSub});
+        console.log(data);
         this.showSubject=false;
-        this.dataSource.unshift(addData);
+        this.gainBaseInfo();
+      },
+      //返回年级
+      backGrade(){
+          this.$router.go(-1);
       },
     async deleteItem(id){
-        let {data}=this.api.basic.grade.deleteGradeSubject({subChildIds:id})
-        if(data.success){
-            this.dataSource=this.dataSource.filter(item => item.subChildId==id);
-            message.info('删除成功')
-        }
-        return success
+        let {data}=await this.$api.basic.grade.deleteGradeSubject({gradeId:this.$router.history.current.query.id,gradeSubChildIds:[id]});
+        console.log(data);
+        this.gainBaseInfo();
     }
   },
 };

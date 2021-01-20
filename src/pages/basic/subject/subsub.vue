@@ -8,13 +8,17 @@
       <a-table
               :rowKey="'subChildId'"
               :columns="columns"
-              :dataSource="dataSource"
-              :selectedRows="selectedRows"
-              @change="onchange"
-      >
+              :dataSource="dataSource">
         <span slot="operation" slot-scope="text, record">
           <a @click="edit(record.subChildId)">编辑</a>|
-          <a  @click="deleteItem(record.subChildId)">删除</a>
+          <a-popconfirm v-if="dataSource.length"
+                        title="确认删除?"
+                        cancelText="取消"
+                        okText="确定"
+                        @confirm="() => deleteItem(record.subChildId)"
+          >
+          <a href="javascript:;">删除</a>
+        </a-popconfirm>
     </span>
       </a-table>
     </div>
@@ -38,8 +42,8 @@
           <a-tree-select v-model="form.gradeIds"
                          placeholder="请选择年级"
                          style="width: 275px"
-                        :tree-data="treeData"
                          :checkedKeys="checkedKeys"
+                        :tree-data="treeData"
                          tree-checkable
                          :show-checked-strategy="SHOW_PARENT">
           </a-tree-select>
@@ -57,6 +61,7 @@
 </template>
 <script>
   import { TreeSelect } from 'ant-design-vue';
+  import { message } from 'ant-design-vue';
   const SHOW_PARENT = TreeSelect.SHOW_PARENT;
   const columns = [
     {
@@ -99,10 +104,8 @@ export default {
       columns: columns,
       treeData:[],
       SHOW_PARENT,
-      checkedKeys:[],
       dataSource: [],
-      selectedRowKeys: [],
-      selectedRows: [],
+      checkedKeys:[],
       addClassVisit:false,
       loading:false,
       changeTitle:'新增子课程',
@@ -137,23 +140,25 @@ export default {
       }
     }
   },
-    async created() {
-    //获取子课程全部信息
+  created() {
+        this.subCourseInfo();
+    },
+  watch:{
+  },
+  methods: {
+    //获取子课程信息
+      async subCourseInfo(){
         let queryString=(window.location.hash || " ").split('?')[1]
         let id=(queryString || " ").split('=')[1]
         if(id){
-        let { data:{result,success} } = await this.$api.basic.subject.fetchChildList({id});
-        console.log(result.subjectChildEntitys)
-        this.dataSource=result.subjectChildEntitys;
-      }
-    },
-  methods: {
-      onchange (selectedRowKeys, selectedRows) {
-        this.selectedRowKeys = selectedRowKeys
-        this.selectedRows = selectedRows
+          let { data:{result,success} } = await this.$api.basic.subject.fetchChildList({id});
+          console.log(result.subjectChildEntitys)
+          this.dataSource=result.subjectChildEntitys;
+        }
       },
       //获取年级信息
       async grade(){
+        this.treeData = []
         let {data:{result,success}}=await this.$api.basic.grade.fetchList();
         console.log(result);
         for(let i in result){
@@ -181,18 +186,23 @@ export default {
         this.grade();
       },
       edit(editId){
-        let selectData = this.dataSource.filter(item => item.id === editId)
-        selectData[0].subChildIds.forEach((item)=>{
-          this.checkedKeys.push(item.subChildId)
-        })
+        this.form.gradeIds = []
         this.changeTitle='编辑子课程';
+        this.checkedKeys=[];
+        // let selectData = this.dataSource.filter(item => item.id === editId)
+        // console.log(selectData);
+        // selectData[0].childSubjectGrade.forEach((item)=>{
+        //   this.checkedKeys.push(item.gradeIds)
+        // })
         this.addClassVisit=true;
         this.editText=this.dataSource.findIndex(item=>item.subChildId==editId);
         this.form.name=this.dataSource[this.editText].name;
-        this.form.gradeIds=this.dataSource[this.editText].childSubjectGrade.gradeName
+        console.log(this.dataSource[this.editText].childSubjectGrade[0].gradeName)
+        this.form.gradeIds=this.dataSource[this.editText].childSubjectGrade[0].gradeName
         // console.log(this.dataSource[this.editText].childSubjectGrade.gradeName)
         this.form.type=this.dataSource[this.editText].type==1?'行政班课':'走班课'
         this.grade();
+        console.log(this.dataSource[this.editText].subChildId)
       },
       async handleOk() {
         if(this.changeTitle=='新增子课程'){
@@ -206,12 +216,7 @@ export default {
           let {data} = await this.$api.basic.subject.saveChildrenSubject(addData);
           console.log(data);
           this.addClassVisit = false;
-          let queryString=(window.location.hash || " ").split('?')[1]
-          let id=(queryString || " ").split('=')[1]
-          if(id){
-            let { data:{result,success} } = await this.$api.basic.subject.fetchChildList({id});
-            this.dataSource=result.subjectChildEntitys;
-          }
+          this.subCourseInfo();
         }else{
           let formData={
             subChildId:this.dataSource[this.editText].subChildId,
@@ -223,8 +228,14 @@ export default {
           let addData={...formData};
           let {data} = await this.$api.basic.subject.saveChildrenSubject(addData);
           this.addClassVisit = false;
-          let { data:{result,success} } = await this.$api.basic.subject.fetchChildList();
-          this.dataSource=result.subjectChildEntitys;
+          let queryString=(window.location.hash || " ").split('?')[1]
+          let id=(queryString || " ").split('=')[1]
+          if(id){
+            let { data:{result,success} } = await this.$api.basic.subject.fetchChildList({id});
+            this.dataSource=result.subjectChildEntitys;
+          }
+          // let { data:{result,success} } = await this.$api.basic.subject.fetchChildList();
+          // this.dataSource=result;
           // this.$refs.ruleForm.resetFields();
         }
       },
@@ -236,9 +247,7 @@ export default {
         let {data}=await this.$api.basic.subject.deleteSubject({ids:[id]});
         console.log(data)
         if(data&&data.success){
-          let { data:{result,success} } = await this.$api.basic.subject.fetchChildList();
-          // console.log(result.subjectChildEntitys)
-          this.dataSource=result.subjectChildEntitys;
+          this.subCourseInfo();
           message.info('删除成功');
         }else{
           message.info('删除失败');

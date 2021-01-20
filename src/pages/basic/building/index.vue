@@ -74,10 +74,8 @@ const columns = [
 ]
 export default {
     name: 'classroom',
-    async created() {
-        let {data} = await this.$api.basic.building.fetchList();
-        this.dataSource = data.rows;
-        console.log(data);
+    created() {
+      this.gainBaseInfo();
     },
     data() {
         return {
@@ -127,28 +125,44 @@ export default {
             this.changeTitle = '新增教学楼'
             this.show = true;
         },
+      //获取基本信息
+      async gainBaseInfo(){
+        let {data} = await this.$api.basic.building.fetchList();
+        this.dataSource = data.rows;
+        console.log(data);
+      },
+      handleOk1 () {
+        // true this.handleOk()
+      },
         async handleOk() {
           console.log(this.form.name);
+          console.log(this.changeTitle);
           if(this.changeTitle=="新增教学楼"){
+            let noHave = true;
             for(let i=0;i<this.dataSource.length;i++){
-              if(this.form.name==this.dataSource[i].name){
-                alert("教学楼已存在，请输入新的教学楼！");
-              } else{
-                this.newName=this.form.name;
-                this.show = false;
+              console.log(this.form.name === this.dataSource[i].name)
+              if(this.form.name === this.dataSource[i].name){
+                this.$message.info("教学楼已存在，请输入新的教学楼！");
+                noHave = false;
+                break;
               }
             }
-            let formData = {
-              name:this.newName,
-              floor: parseInt(this.form.floor),
-              status: this.form.status ? 1 : 0
-            };
-            let addData={...formData}
-            let {data} = await this.$api.basic.building.saveBuilding(addData);
-            console.log(data);
-            let {data:buildData} = await this.$api.basic.building.fetchList()
-            console.log("buildData",buildData)
-            this.dataSource = buildData.rows
+            console.log(noHave)
+            if (noHave) {
+              this.show = false;
+              let formData = {
+                name: this.form.name,
+                floor: parseInt(this.form.floor),
+                status: this.form.status ? 1 : 0
+              };
+              let addData={...formData};
+              console.log(addData);
+              let {data} = await this.$api.basic.building.saveBuilding(addData);
+              console.log(data);
+              this.gainBaseInfo();
+            } else {
+              this.$message.warning("保存失败！")
+            }
           } else{
             let  formData={
               buildingId:this.dataSource[this.editText].buildingId,
@@ -158,9 +172,7 @@ export default {
             }
             let addData={...formData}
             let {data:saveData}=await this.$api.basic.building.saveBuilding(addData);
-            let {data:buildingData}=await this.$api.basic.building.fetchList();
-            console.log("buildingData",buildingData)
-            this.dataSource=buildingData.rows;
+            this.gainBaseInfo();
             this.show=false;
           }
         },
