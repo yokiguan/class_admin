@@ -5,7 +5,12 @@ import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'      //导入从http众创建的axios实例
 const baseUrl=base.root+'/a/schedulePlan'
 const baseUrl2=base.root+'/a/qualifiedStudent'
+const tableUrl=base.root+'a/tabTermInfo'
 const plan={
+    //学期信息查看（已测）
+    termInfo(params){
+        return axios.get(`${tableUrl}/getTermList.json`,params);
+    },
     // 新增/修改排课计划（已调）
     saveCoursetime(params){
         return axios.post(`${baseUrl}/saveData.json`,params);
@@ -16,7 +21,7 @@ const plan={
     },
     //排课计划查看（全部）（已调）
     getSchedulePlan(params){
-        return axios.get(`${baseUrl}/getDataList.json`,params, {
+        return axios.get(`${baseUrl}/getDatasList.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
     //排课计划查看（单个）（已调）
@@ -27,9 +32,9 @@ const plan={
     scheduleDistribute(params){
         return axios.get(`${baseUrl}/getDistribute.json`,{params});
     },
-    //发布选课
+    //发布选课(已调）
     schedulesaveQua(params){
-        return axios.post(`${baseUrl2}/saveQualification.json`,params, {
+        return axios.post(`${baseUrl2}/publishSelection.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
 }

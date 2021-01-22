@@ -21,19 +21,20 @@
             border-top: solid black 1px;"></div>
                     <a-tree
                             :tree-data="treeData"
-                            :default-expanded-keys="['0-0-0', '0-0-1']"
-                            :default-selected-keys="['0-0-0', '0-0-1']"
-                            :default-checked-keys="['0-0-0', '0-0-1']"
-                            :replace-fields="replaceFields"
-                            @select="onSelect"
-                            @check="onCheck"
                             checkable
+                            v-model="checkedBuildingKeys"
+                            :selected-keys="selectBuildingKeys"
+                            @select="selectBuilding"
+                            @check="onCheck"
                             style="font-size: 1.3em;"/>
                 </div>
                 <div class="right">
                     <ClassRegular/>
                     <LocationRegular/>
                     <CurriculumRegular/>
+<!--                    <ClassRegular v-if="showcomClass"/>-->
+<!--                    <LocationRegular v-if="showcomLocation" @form-modal-change="changeEvent"/>-->
+<!--                    <CurriculumRegular v-if="showcomCurriculum" :templateId ="templateId"/>-->
                 </div>
             </div>
         </div>
@@ -44,60 +45,81 @@
     import ClassRegular from './class'
     import LocationRegular from './location'
     import CurriculumRegular from "./curriculum"
-    const treeData = [
-        {
-            name: '教学组',
-            key: '0-0',
-            child: [
-                { name: '高一',
-                    key: '0-0-0',
-                    child:[{name:'语文',key:'0-0-0-0'}]
-                },
-                { name: '高二', key: '0-0-1' ,
-                    child:[
-                        { name:'语文', key: '0-0-2-0',},
-                        {name:'数学',key:'0-0-2-1'},
-                        {name:'英语',key:'0-0-2-2',
-                            child:[{
-                                name:'赵卫民',key:'0-0-0-2-0'},
-                                {name:'李援朝',key: '0-0-0-2-1'}]},
-                    ],},
-                { name: '高三', key: '0-0-2' },
-            ],
-        },{
-            name: '教务组',
-            key: '0-1',
-            child: [
-                { name: '初一', key: '0-1-0'},
-                { name: '初二', key: '0-1-1' },
-                { name: '初三', key: '0-1-2' },
-            ],
-        },
-    ];
     export default {
         name:'teacherRule',
         components: {ClassRegular,LocationRegular,CurriculumRegular},
         data() {
             return {
-                treeData,
+                treeData:[],
                 myBarOption:{
                     barColor:'block'
                 },
                 disabled: false,
-                replaceFields: {
-                    children: 'child',
-                    title: 'name',
-                },
+                // showcomClass:false,
+                // showcomCurriculum: false,
+                // showcomLocation:false,
+                selectBuildingKeys:[],
             };
         },
+        created() {
+            this.getData();
+        },
+        watch:{
+            checkedBuildingKeys(val){
+                console.log('onCheck',val);
+            }
+        },
         methods: {
-            onSelect(selectedKeys, info) {
+            //获取数据
+            async getData(){
+                let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
+                console.log(data.result);
+                for(let i in data.result){
+                    //第一层(级部）
+                    let adminTree={};
+                    adminTree.title=data.result[i].adminName;
+                    adminTree.key=data.result[i].adminId;
+                    if(data.result[i].adminGrades.length){
+                        //第二层(年级）
+                        adminTree.children=[];
+                        for(let j=0;j<data.result[i].adminGrades.length;j++){
+                            let gradeItem=data.result[i].adminGrades[j];
+                            let childData={}
+                            childData.key=gradeItem.gradeId;
+                            childData.title=gradeItem.gradeName;
+                            if(gradeItem.subjectEntities.length){
+                                //第三层(主课程)
+                                childData.children=[];
+                                for(let k in gradeItem.subjectEntities){
+                                    let mainCourse={};
+                                    mainCourse.key=gradeItem.subjectEntities[k].subChildId;
+                                    mainCourse.title=gradeItem.subjectEntities[k].name;
+                                    childData.children.push(mainCourse)
+                                }
+                            }
+                            adminTree.children.push(childData);
+                        }
+                    }
+                    this.treeData.push(adminTree);
+                    console.log(data.result[i]);
+                }
+            },
+            selectBuilding(selectedKeys, info) {
                 console.log('selected', selectedKeys, info);
             },
-            onCheck(checkedKeys, info) {
-                console.log('onCheck', checkedKeys, info);
+            onCheck(checkedKeys){
+                this.selectBuildingKeys=checkedKeys;
+                this.showcomClass=true;
             },
-            change(){},
+            selectBuilding(selectBuildingsKeys,info){
+                this.selectBuildingKeys=selectBuildingsKeys;
+                this.showcomClass=true;
+            },
+            changeEvent (modal) {
+                // console.log('modal',modal)
+                // this.templateId = modal
+                // modal ? this.showcomLocation = true : showcomLocation = false
+            }
         },
     };
 </script>

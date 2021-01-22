@@ -11,7 +11,7 @@
         subPath="/basic/template/detail"
       >
       <span slot="operation" slot-scope="text, record">
-        <a @click="gotoNew(record.id)">编辑</a>
+        <a @click="edit(record.id)">编辑</a>
         |
         <a-popconfirm v-if="dataSource.length"
                    title="确认删除?"
@@ -25,7 +25,6 @@
     </div>
   </a-card>
 </template>
-
 <script>
 import{message} from 'ant-design-vue'
 // import {success} from  '@/'
@@ -33,24 +32,32 @@ const columns = [
   {
     title: "模板编号",
     dataIndex: "id",
+    align:'center',
+    customRender: function(t, r, index) {
+      return parseInt(index) + 1
+    }
   },
   {
     title: "模板名称",
     dataIndex: "templateName",
+    align:'center',
   },
   {
     title: "一周工作日",
     dataIndex: "workday",
+    align:'center',
     customRender: (text) => text + " 天",
   },
   {
     title: "休息天数",
     dataIndex: "restday",
+    align:'center',
     customRender: (text) => text + " 天",
   },
   {
     title: "操作",
     key: "operation",
+    align:'center',
     scopedSlots: { customRender: "operation" },
   },
 ];
@@ -62,6 +69,7 @@ export default {
       dataSource: [],
       selectedRowKeys: [],
       selectedRows: [],
+      addModal:false,
     };
   },
   async created(){
@@ -71,7 +79,11 @@ export default {
   methods: {
     gotoNew(id) {
       this.$router.push('/basic/template/detail?id='+id);
-
+      this.addModal=true;
+    },
+    edit(id) {
+      this.$router.push('/basic/template/detail?id='+id);
+      this.addModal=false;
     },
     async deleteItem(id){
       let {data}= await this.$api.basic.template.deleteTemplate({ids:id})

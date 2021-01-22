@@ -50,26 +50,33 @@
 <script>
   const columns = [
     {
+      title:'序号',
+      dataIndex:'num',
+      align:'center',
+      customRender: function(t, r, index) {
+        return parseInt(index) + 1
+      }
+    },
+    {
       title: '学号',
       dataIndex: 'wxUid',
+      align:'center',
     },
     {
       title: '学生',
-      dataIndex: 'userName'
+      dataIndex: 'userName',
+      align:'center',
     },
     {
       title: '年级名称',
       dataIndex: 'gradeName',
+      align:'center',
     },
     {
       title: '班级名称',
       dataIndex: 'className',
+      align:'center',
     },
-    // {
-    //   title: '操作',
-    //   dataIndex: 'operation',
-    //   scopedSlots: { customRender: 'operation' },
-    // }
   ]
   export default {
     name: 'student',

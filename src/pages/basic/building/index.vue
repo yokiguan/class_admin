@@ -51,24 +51,32 @@ import {message} from 'ant-design-vue'
 const columns = [
   {
     title: '教学楼编号',
-    dataIndex: 'buildingId'
+    dataIndex: 'buildingId',
+    align:'center',
+    customRender: function(t, r, index) {
+      return parseInt(index) + 1
+    }
   },
   {
     title: '教学楼名称',
-    dataIndex: 'name'
+    dataIndex: 'name',
+    align:'center',
   },
   {
     title: '楼层',
     dataIndex: 'floor',
+    align:'center',
   },
   {
     title: '状态',
     dataIndex: 'status',
+    align:'center',
     customRender:(text)=>text==1?'可用':'不可用'
   },
   {
     title: '操作',
     dataIndex: 'operation',
+    align:'center',
     scopedSlots: { customRender: 'operation' },
   }
 ]

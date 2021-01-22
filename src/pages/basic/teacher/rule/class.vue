@@ -11,11 +11,8 @@
        <a-row>
            <a-form-model :form="form" :label-col="{span:4}" :wrapper-col="{span:7}" @submit="addClassHandleSubmint">
                <a-form-model-item label="选择授课年级/班级">
-                   <a-select v-decorator="['选择课表模板',{ rules: [{ required: true, message: '请选择课表模板!' }] },]"
-                             placeholder="请选择，可多选">
+                   <a-select  @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modal">
                        <a-select-option value="one">高一组课表模板</a-select-option>
-                       <a-select-option value="two">高二组课表模板</a-select-option>
-                       <a-select-option value="three">高三组课表模板</a-select-option>
                    </a-select>
                </a-form-model-item>
            </a-form-model>
@@ -28,6 +25,9 @@
             return{
                 form:{},
             }
+        },
+        watch:{
+
         },
         methods:{
             addClassHandleSubmint(){},

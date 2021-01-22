@@ -66,15 +66,21 @@
   const columns = [
     {
       title: '子课程编号',
-      dataIndex: 'subChildId'
+      dataIndex: 'subChildId',
+      align:'center',
+      customRender: function(t, r, index) {
+        return parseInt(index) + 1
+      }
     },
     {
       title: '名称',
-      dataIndex: 'name'
+      dataIndex: 'name',
+      align:'center',
     },
     {
       title: '年级',
       dataIndex: 'childSubjectGrade',
+      align:'center',
       customRender:(text,index,i)=>{
         let grade="";
         for(var j=0;j<text.length;j++){
@@ -90,10 +96,12 @@
     {
       title: '类型',
       dataIndex: 'type',
+      align:'center',
       customRender:(text)=>text==1?'行政班课':'走班课'
     },{
       title:"操作",
       key:"operation",
+      align:'center',
       scopedSlots:{customRender:"operation"}
     }
   ]

@@ -27,25 +27,26 @@
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
-      <a-form-model :model="form" :label-col="{span:5}" :wrapper-col="{span:12}">
-        <a-form-model-item label="选课计划名称">
-          <a-input placeholder="请输入选课计划名称" style="width: 380px" v-model="form.name"/>
+      <a-form-model v-bind="formItemLayout" :model="form" ref="createForm" :rules="rules">
+        <a-form-model-item label="计划名称" prop="name" ref="name">
+          <a-input placeholder="请输入计划名称" v-model="form.name"/>
         </a-form-model-item>
-        <a-form-model-item label="年级：">
+        <a-form-model-item label="所属学期" prop="term" ref="prop">
+          <a-select placeholder="请选择学期" v-model="form.term">
+            <a-select-option v-for="(terms,index) in this.tearmData" :key="index">
+              {{terms.termName}}
+            </a-select-option>
+          </a-select>
+        </a-form-model-item>
+        <a-form-model-item label="所属年级" prop="gradeId" ref="gradeId">
           <a-tree-select
                   v-model="form.gradeId"
-                  style="width: 100%"
                   placeholder="请选择所属年级"
                   :treeData="treeData"
+                  :checkedKeys="checkedKeys"
                   allow-clear
                   tree-default-expand-all>
           </a-tree-select>
-        </a-form-model-item>
-        <a-form-model-item label="所属学期">
-          <a-select  v-model="form.term">
-            <a-select-option value="18——19上">2018-2019学年上学期</a-select-option>
-            <a-select-option value="18——19下">2018-2019学年下学期</a-select-option>
-          </a-select>
         </a-form-model-item>
         <a-form-model-item label="启用功能">
           <a-checkbox-group
@@ -65,7 +66,7 @@
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">确定</a-button>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
-      <span>共计发送1000人</span>
+      <span>共计发送{{this.total}}人</span>
       <a-table :rowKey="'uid'"
                :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
                :selectedRows="selectedRows"
@@ -80,6 +81,8 @@
   </div>
 </template>
 <script>
+  import {message} from "ant-design-vue";
+
   const operationList = [
     {
       icon: "edit",
@@ -151,6 +154,7 @@
         publishVisit:false,
         loading:false,
         treeData:[],
+        checkedKeys:[],
         columns,
         data:[],
         selectedRowKeys: [], // Check here to configure the default column
@@ -158,6 +162,44 @@
         form:{},
         planId:"",
         result:{},
+        tearmData:[],
+        total:"",
+        checkedValues:[],
+        formItemLayout: {
+          labelCol: {
+            xs: { span: 15 },
+            sm: { span: 6 },
+          },
+          wrapperCol: {
+            xs: { span: 15},
+            sm: { span: 16 },
+          },
+        },
+        form:{
+        },
+        rules:{
+          name:[
+            {
+              required:true,
+              message:"请输入计划名称！",
+              trigger:"blur",
+            }
+          ],
+          term:[
+            {
+              required:true,
+              message:"请选择学期！",
+              trigger:"change",
+            }
+          ],
+          gradeId:[
+            {
+              required:true,
+              message:"请选择年级！",
+              trigger:"change",
+            }
+          ],
+        },
       };
     },
     created(){
@@ -170,6 +212,7 @@
           this.editVisit=true;
           this.grade();
           this.editInfo();
+          this.termInf();
         }else if(item.text==='选课设置'){
           this.$router.push(`/schedule/detail/setting?planId=${this.planId}`)
         }else if(item.text==='发布选课'){
@@ -203,7 +246,15 @@
         this.form.name=this.result.name;
         this.form.term=this.result.term;
         this.form.gradeId=this.result.gradeId;
-        this.form.type=this.result.type==0?['走班排课']:['行政班'];
+        console.log(this.result.type);
+        if(this.result.type==0){
+          this.form.type=["走班排课"];
+        }else if(this.form.type==1){
+          this.form.type=["行政班"];
+        }else if(this.result.type==2){
+          this.form.type=["走班排课","行政班"]
+        }
+        this.form.type=(this.result.type==0?['走班课']:(this.result.type==1?['行政班']:['走班课','行政班']));
       },
       //查看发布选课学生
       async lookPublicStudent(){
@@ -211,6 +262,8 @@
         let {data:{result,success}}=await this.$api.schedule.plan.scheduleDistribute({planId:this.planId});
         console.log(result);
         this.data=result;
+        this.total=result.length;
+        console.log(this.total);
       },
       onSelectChange( selectedRowKeys,selectedRows) {
         this.selectedRowKeys = selectedRowKeys;
@@ -221,20 +274,23 @@
       //保存
       async handleOk(){
         //保存排课计划
-        let formData={
-          planId:this.result.planId,
-          name:this.form.name,
-          term:this.form.term,
-          gradeId:this.form.gradeId,
-          type:this.form.type=='行政班课'?1:0,
-        };
-        let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
-        console.log(data);
-        this.editVisit=false;
+        if(this.form.name==undefined||this.form.term==undefined||this.form.gradeId==undefined){
+          message.info('输入信息不能为空！')
+        }else{
+          let formData={
+            planId:this.result.planId,
+            name:this.form.name,
+            term:this.form.term,
+            gradeId:this.form.gradeId,
+            type:this.form.type=='行政班课'?1:(this.form.type=='走班课'?0:2),
+          };
+          let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
+          console.log(data);
+          this.editVisit=false;
+        }
         //发布选课保存
-        let {data:savdPublish} =  await this.$api.schedule.plan.schedulesaveQua({planId:this.planId,idsList: this.selectedRowKeys})
-        console.log("xuedandan",data)
-
+        let {data:savdPublish} =  await this.$api.schedule.plan.schedulesaveQua({planId:this.planId,stringList: this.selectedRowKeys})
+        console.log(savdPublish)
       },
       handleCancel() {
         this.editVisit = false;
@@ -265,11 +321,18 @@
         }
       },
       //选择课程类型
+      //选择课程类型
       onChange(checkedValues) {
-        console.log('checked = ', checkedValues);
+        console.log('checked = ',checkedValues);
+        this.checkedValues=checkedValues;
         console.log('value = ', this.value);
       },
-
+      //获取学期信息
+      async termInf(){
+        let {data:{result,success}}=await this.$api.schedule.plan.termInfo();
+        this.tearmData=result;
+        console.log(this.tearmData);
+      },
     },
   };
 </script>

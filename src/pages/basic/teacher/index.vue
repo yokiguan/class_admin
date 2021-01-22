@@ -83,16 +83,27 @@
   const SHOW_PARENT = TreeSelect.SHOW_PARENT;
   const columns = [
     {
+      title:'序号',
+      dataIndex:'num',
+      align:'center',
+      customRender: function(t, r, index) {
+        return parseInt(index) + 1
+      }
+    },,
+    {
       title: '教师工号',
       dataIndex: 'teacherId',
+      align:'center',
     },
     {
       title: '教师名称',
-      dataIndex: 'teacherName'
+      dataIndex: 'teacherName',
+      align:'center',
     },
     {
       title: '所授课程',
       dataIndex: 'subjectTeacherDtos',
+      align:'center',
       customRender: (text,index,i)=>{
         let course=""
         for(var j=0;j<text.length;j++){
@@ -108,6 +119,7 @@
     {
       title: '是否为班主任',
       dataIndex: 'teacherRoleDtos',
+      align:'center',
       customRender: (text,index,i)=>{
         let teacherRole=""
           if(text.length==0){
@@ -128,10 +140,12 @@
     {
       title: '手机号码',
       dataIndex: 'tel',
+      align:'center',
     },
     {
       title: '操作',
       dataIndex: 'operation',
+      align:'center',
       scopedSlots: { customRender: 'operation' },
     }
   ]

@@ -50,6 +50,9 @@ const columns = [
   {
     title: "课程编号",
     dataIndex: "subChildId",
+    customRender: function(t, r, index) {
+        return parseInt(index) + 1
+    }
   },
   {
     title: "课程名称",

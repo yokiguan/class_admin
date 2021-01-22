@@ -41,13 +41,19 @@
     {
       title:'序号',
       dataIndex:'id',
+      align:'center',
+      customRender: function(t, r, index) {
+        return parseInt(index) + 1
+      }
     },
     {
       title:'课程类型',
       dataIndex:'name',
+      align:'center',
     },{
       title: '课程',
       dataIndex: 'subChildIds',
+      align:'center',
       customRender: (text,index,i)=>{
         let course="";
         for (var j=0;j<text.length;j++){
@@ -62,6 +68,7 @@
     },{
       title:'操作',
       dataIndex:'option',
+      align:'center',
       scopedSlots:{customRender:'operation'}
     }
   ]
@@ -101,44 +108,33 @@
         selectData[0].subChildIds.forEach((item)=>{
           this.checkedKeys.push(item.subChildId)
         })
-        let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
+        //获取课程信息
+        let {data}=await this.$api.basic.subject.fetchSubjectList()
         console.log(data.result);
         for(let i in data.result){
           //第一层(级部）
-          let adminTree={};
-          adminTree.title=data.result[i].adminName;
-          adminTree.key=data.result[i].adminId;
-          if(data.result[i].adminGrades.length){
+          let mainCourseTree={};
+          mainCourseTree.title=data.result[i].subName;
+          mainCourseTree.key=data.result[i].id;
+          if(data.result[i].subjectChildEntitys.length){
             //第二层(年级）
-            adminTree.children=[];
-            for(let j=0;j<data.result[i].adminGrades.length;j++){
-              let gradeItem=data.result[i].adminGrades[j];
+            mainCourseTree.children=[];
+            for(let j=0;j<data.result[i].subjectChildEntitys.length;j++){
+              let gradeItem=data.result[i].subjectChildEntitys[j];
               let childData={}
-              childData.key=gradeItem.gradeId;
-              childData.title=gradeItem.gradeName;
-              if(gradeItem.subjectEntities.length){
-                //第三层(主课程)
-                childData.children=[];
-                for(let k in gradeItem.subjectEntities){
-                  let mainCourse={};
-                  mainCourse.key=gradeItem.subjectEntities[k].subChildId;
-                  mainCourse.title=gradeItem.subjectEntities[k].name;
-                  childData.children.push(mainCourse)
-                }
-              }
-              adminTree.children.push(childData);
+              childData.key=gradeItem.subChildId;
+              childData.title=gradeItem.name;
+              mainCourseTree.children.push(childData);
             }
           }
-          this.treeData.push(adminTree);
+          this.treeData.push(mainCourseTree);
           console.log(data.result[i]);
         }
         this.editText=this.dataSource.findIndex(item=>item.id==editId);
         console.log(this.editText);
-        // this.checkedKeys=this.dataSource.subChildIds
       },
       onCheck(e) {
         console.log('onCheck', e);
-        // this.checkedKeys = checkedKeys;
       },
       //保存编辑信息
       async handleOk(){

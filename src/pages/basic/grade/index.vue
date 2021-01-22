@@ -17,7 +17,10 @@
 const columns = [
   {
     title: "序号",
-    dataIndex: "gradeId"
+    dataIndex: "gradeId",
+    customRender: function(t, r, index) {
+      return parseInt(index) + 1
+    }
   },
   {
     title: "年级",
@@ -27,11 +30,6 @@ const columns = [
     title: "级部",
     dataIndex: "adminName"
   },
-  // {
-  //   title:"课程",
-  //   dataIndex:"subjectEntities"
-  //
-  // },
   {
     title: "操作",
     key: "operation",

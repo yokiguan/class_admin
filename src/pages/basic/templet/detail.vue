@@ -424,19 +424,20 @@
       goBackAdmin() {
         this.$router.push("/basic/template/admin");
       },
-      showPublicModal() {
-        this.publicModal = true;
-      },
-      handlePublicok() {
-        this.publicModal = false;
-      },
-      handlePublicCancel() {
-        this.publicModal = false;
-      },
+      // showPublicModal() {
+      //   this.publicModal = true;
+      // },
+      // handlePublicok() {
+      //   this.publicModal = false;
+      // },
+      // handlePublicCancel() {
+      //   this.publicModal = false;
+      // },
       showTimeModal() {
         this.timeModal = true;
       },
       handleOkTime() {
+
         this.timeModal = false;
         this.timeData.forEach(item=>{
           let time=[]

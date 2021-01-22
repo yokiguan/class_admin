@@ -28,7 +28,8 @@ export default new Router({
               name: '课表模板',
               component: BlankView,
               redirect: '/basic/template/admin',
-              children: [{
+              children: [
+                  {
                 path: '/basic/template/admin',
                   name: '课表模板管理',
                 component: () => import('@/pages/basic/templet/index'),
@@ -40,6 +41,11 @@ export default new Router({
                   component: () => import('@/pages/basic/templet/detail')
                 }
               ]
+            },
+            {
+              path: '/basic/building',
+              name: '教学楼',
+              component: () => import('@/pages/basic/building/index'),
             },
             {
               path: '/basic/classroom',
@@ -58,11 +64,7 @@ export default new Router({
                 }
               ]
             },
-            {
-              path: '/basic/building',
-              name: '教学楼',
-              component: () => import('@/pages/basic/building/index'),
-            },
+
             {
               path: '/basic/subject',
               name: '课程',

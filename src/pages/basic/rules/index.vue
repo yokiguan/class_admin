@@ -32,7 +32,10 @@
   const columns = [
     {
       title: "序号",
-      dataIndex: "ruleId"
+      dataIndex: "ruleId",
+      customRender: function(t, r, index) {
+        return parseInt(index) + 1
+      }
     },
     {
       title: "名称",

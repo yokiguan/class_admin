@@ -11,7 +11,7 @@
             <a-row>
                 <a-col :span="12">
                         <span style="font-size:1.5em">{{this.planData}}</span>
-                        <span class="link-font-color" style="margin-left:2em">选课时间：{{form.startChooseTime}} ——{{form.endChooseTime}}</span>
+                        <span class="link-font-color" style="margin-left:2em">选课时间：{{this.result.timeLimit}}</span>
                         <span class="link-font-color" style="margin-left:2em">选课中</span>
                 </a-col>
                 <a-col :span="12">
@@ -89,14 +89,13 @@
                 <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
-            <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}"
-                    style="">
+            <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}" style="">
                 <a-form-model-item label="未选课人员：" prop="unStudent" ref="unStudent">
-                    <a-radio-group v-model="form.unStudent">
-                        <a-radio v-for="(unChoosePerson,index) in this.unChooseNums" :key="index" :value="unChoosePerson.stuId">
+                    <a-checkbox-group v-model="form.unStudent">
+                        <a-checkbox v-for="(unChoosePerson,index) in this.unChooseNums"  @change="onChange" :value="unChoosePerson.stuId">
                            {{unChoosePerson.stuName}}
-                        </a-radio>
-                    </a-radio-group>
+                        </a-checkbox>
+                    </a-checkbox-group>
                 </a-form-model-item>
             </a-form-model>
         </a-modal>
@@ -137,6 +136,7 @@
                 columns,
                 visible:false,
                 addVisit:false,
+                planId:"",
                 changeChooseTimeModal:false,
                 chooseCourseData:"",
                 planData:" ",
@@ -171,6 +171,7 @@
                 subChildId: null,
                 editText:-1,
                 unChooseNums:[],
+                result:[],
             };
         },
     async created(){
@@ -193,11 +194,23 @@
         }
         console.log(this.tags);
         //统计选课人数以及课程被选情况
-        let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId});
+        let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId:this.planId});
         this.chooseCourseData=chooseCourse.result;
-        console.log(this.chooseCourseData)
+        console.log(this.chooseCourseData);
+        this.lookInfo();
     },
         methods: {
+            //指定排课计划信息查看
+            async lookInfo(){
+                this.planId = window.location.href.split('?')[1].split('=')[1];
+                let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
+                console.log(result);
+                this.result=result;
+                console.log(this.result);
+            },
+            onChange(checkedValues) {
+                console.log('checked = ', checkedValues);
+            },
             changeTime(){
                 this.changeChooseTimeModal=true;
             },
@@ -235,7 +248,6 @@
                 this.unChooseNums=data.result;
                 console.log( this.unChooseNums);
             },
-
             async handleOk(id) {
                 id=this.planId;
                 //保存选课时间
@@ -245,13 +257,13 @@
                 let {data:changeChooseTime}=await this.$api.schedule.statics.alterTime(addData);
                 console.log(changeChooseTime)
                 ////将未选课的学生添加进已选课程中
-                let {data:saveData}=await this.$api.schedule.statics.alterResultButtonResult({planId:this.planId,subId:this.subId,stuIdList:[this.form.unStudent]})
+                let {data:saveData}=await this.$api.schedule.statics.alterResultButtonResult({planId:this.planId,subId:this.subId,stuIdList:this.form.unStudent})
                 console.log(saveData);
                 this.changeChooseTimeModal=false;
                 this.addVisit = false;
                 //刷新界面
                 // //选课结果详情查看
-                let {data}=await this.$api.schedule.statics.getResult({planId});
+                let {data}=await this.$api.schedule.statics.getResult({planId:this.planId});
                 console.log(data.result)
                 this.dataSource=data.result.splice(1,data.result.length - 1);
                 console.log(this.dataSource);

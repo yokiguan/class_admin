@@ -78,31 +78,47 @@
   const columns = [
     {
       title: "教室编号",
-      dataIndex: "roomId"
+      dataIndex: "roomId",
+      align:'center',
+      customRender: function(t, r, index) {
+        return parseInt(index) + 1
+      }
     },
     {
       title: "教室名称",
-      dataIndex: "name"
+      dataIndex: "name",
+      align:'center',
     },
     {
       title: "楼层",
-      dataIndex: "floor"
+      dataIndex: "floor",
+      align:'center',
     },
     {
       title: "类型",
       dataIndex: "type",
+      align:'center',
       customRender:(text)=>text==0?'专业教学场地':text==1? '公共教学场地':'行政班教室'
     },
     {
       title: "容纳人数",
-      dataIndex: "capacity"
+      dataIndex: "capacity",
+      align:'center',
     },
     {
       title: "所属教学楼",
       dataIndex: "buildingEntity",
+      align:'center',
       // scopedSlots: { customRender: "classroom" }
       customRender:(text)=>{
-        return text.name;
+        let building="";
+        if(text.name==""){
+         building="----";
+        }
+        else{
+          building=text.name;
+        }
+        return building;
       }
     },
     {
