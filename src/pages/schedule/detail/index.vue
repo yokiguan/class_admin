@@ -49,10 +49,10 @@
           </a-tree-select>
         </a-form-model-item>
         <a-form-model-item label="启用功能">
-          <a-checkbox-group
-                  v-model="form.type"
-                  :options="plainOptions"
-                  @change="onChange"/>
+          <a-checkbox-group v-model="form.type" @change="onChange">
+            <a-checkbox value="走班排课">走班排课</a-checkbox>
+            <a-checkbox value="行政班课">行政班课</a-checkbox>
+          </a-checkbox-group>
         </a-form-model-item>
       </a-form-model>
     </a-modal>
@@ -109,20 +109,20 @@
       text: "选课排课",
     },
     {
+      icon: "calendar",
+      text: "走班排课任务",
+    },
+    {
       icon: "schedule",
       text: "行政班排课",
     },
     {
       icon: "calendar",
-      text: "走班排课任务",
+      text: "行政班排课任务",
     },
     {
       icon: "cloud-upload",
       text: "课表",
-    },
-    {
-      icon: "calendar",
-      text: "行政班排课任务",
     },
   ];
   const columns=[
@@ -146,10 +146,6 @@
     data() {
       return {
         operationList,
-        plainOptions :[
-          {label: '走班排课',value: '走班排课'},
-          {label:'行政班',value:'行政班'},
-        ],
         editVisit:false,
         publishVisit:false,
         loading:false,
@@ -247,14 +243,14 @@
         this.form.term=this.result.term;
         this.form.gradeId=this.result.gradeId;
         console.log(this.result.type);
-        if(this.result.type==0){
-          this.form.type=["走班排课"];
-        }else if(this.form.type==1){
-          this.form.type=["行政班"];
-        }else if(this.result.type==2){
-          this.form.type=["走班排课","行政班"]
-        }
-        this.form.type=(this.result.type==0?['走班课']:(this.result.type==1?['行政班']:['走班课','行政班']));
+        // if(this.result.type==0){
+        //   this.form.type=["行政班课"];
+        // }else if(this.form.type==1){
+        //   this.form.type=["走班排课"];
+        // }else if(this.result.type==2){
+        //   this.form.type=["走班排课","行政班课"]
+        // }
+        this.form.type=this.result.type==0?['走班排课']:this.result.type==1?['行政班课']:['走班排课','行政班课'];
       },
       //查看发布选课学生
       async lookPublicStudent(){

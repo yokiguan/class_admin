@@ -62,10 +62,10 @@
               </a-tree-select>
             </a-form-model-item>
             <a-form-model-item label="启用功能">
-              <a-checkbox-group
-                      v-model="form.type"
-                      :options="plainOptions"
-                      @change="onChange"/>
+              <a-checkbox-group v-model="form.type" @change="onChange">
+                <a-checkbox value="走班排课">走班排课</a-checkbox>
+                <a-checkbox value="行政班课">行政班课</a-checkbox>
+              </a-checkbox-group>
             </a-form-model-item>
           </a-form-model>
       </a-modal>
@@ -74,13 +74,11 @@
 </template>
 <script>
   import { message } from 'ant-design-vue';
-  const plainOptions = ['行政班排课', '走班排课'];
   export default {
     name: "CardList",
     data() {
       return {
         dataSource:[],
-        plainOptions,
         addVisit : false,
         loading:false,
         treeData:[],
@@ -137,6 +135,7 @@
       },
       //保存排课计划
       async handleOk(){
+        console.log(this.form.type);
         if(this.form.name==undefined||this.form.term==undefined||this.form.gradeId==undefined){
           message.info('输入信息不能为空！')
         }else{
@@ -144,7 +143,7 @@
             name:this.form.name,
             term:this.tearmData[this.form.term].termName,
             gradeId:this.form.gradeId,
-            type:this.form.type=='行政班课'?1:(this.form.type=='走班课'?0:2),
+            type:this.form.type=='行政班排课'?1:this.form.type=='走班排课'?0:2,
           };
           let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
           console.log(data);
