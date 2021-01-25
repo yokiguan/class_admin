@@ -27,7 +27,14 @@
                 </div>
               </a-card-meta>
               <router-link slot="actions" :to="`/schedule/detail/index?planId=${item.planId}`">操作</router-link>
-              <a slot="actions" @click="handleDeletePlan(item.planId)">删除</a>
+              <a-popconfirm slot="actions"
+                            v-if="dataSource.length"
+                            title="确认删除?"
+                            cancelText="取消"
+                            okText="确定"
+                            @confirm="() => handleDeletePlan(item.planId)">
+                <a >删除</a>
+              </a-popconfirm>
             </a-card>
           </template>
         </a-list-item>
@@ -152,6 +159,7 @@
           }
           this.initSearch()
         }
+        this.$refs.createForm.resetFields();
       },
       //取消
       handleCancel(){

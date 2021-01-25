@@ -31,9 +31,9 @@
         <a-form-model-item label="计划名称" prop="name" ref="name">
           <a-input placeholder="请输入计划名称" v-model="form.name"/>
         </a-form-model-item>
-        <a-form-model-item label="所属学期" prop="term" ref="prop">
-          <a-select placeholder="请选择学期" v-model="form.term">
-            <a-select-option v-for="(terms,index) in this.tearmData" :key="index">
+        <a-form-model-item label="所属学期" prop="term" ref="term">
+          <a-select placeholder="请选择学期" v-model="form.term" @change="changeTerm">
+            <a-select-option v-for="(terms,index) in this.tearmData" :key="index" :value="terms.termName">
               {{terms.termName}}
             </a-select-option>
           </a-select>
@@ -63,10 +63,10 @@
             :closable="false"
             on-ok="handleOk">
       <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">确定</a-button>
+        <a-button key="Save" type="primary" :loading="loading" @click="handlePublic">确定</a-button>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
-      <span>共计发送{{this.total}}人</span>
+      <span>共计发送{{this.total}}个班</span>
       <a-table :rowKey="'uid'"
                :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
                :selectedRows="selectedRows"
@@ -82,7 +82,6 @@
 </template>
 <script>
   import {message} from "ant-design-vue";
-
   const operationList = [
     {
       icon: "edit",
@@ -127,17 +126,8 @@
   ];
   const columns=[
     {
-      title: '学号',
-      dataIndex:'uid',
-      align: 'center',
-    },
-    {
-      title: '名称',
-      dataIndex:'uName',
-      align: 'center',
-    },{
       title: '班级',
-      dataIndex:'gradeName',
+      dataIndex:'className',
       align: 'center',
     }
   ]
@@ -229,6 +219,7 @@
         }else if(item.text==='行政班排课任务'){
           this.$router.push(`/schedule/detail/task_admin/index?planId=${this.planId}`)
         }  },
+      changeTerm(){},
       //指定排课计划信息查看
       async lookInfo(){
         this.planId = window.location.href.split('?')[1].split('=')[1];
@@ -243,22 +234,15 @@
         this.form.term=this.result.term;
         this.form.gradeId=this.result.gradeId;
         console.log(this.result.type);
-        // if(this.result.type==0){
-        //   this.form.type=["行政班课"];
-        // }else if(this.form.type==1){
-        //   this.form.type=["走班排课"];
-        // }else if(this.result.type==2){
-        //   this.form.type=["走班排课","行政班课"]
-        // }
         this.form.type=this.result.type==0?['走班排课']:this.result.type==1?['行政班课']:['走班排课','行政班课'];
       },
       //查看发布选课学生
       async lookPublicStudent(){
         this.planId = window.location.href.split('?')[1].split('=')[1];
-        let {data:{result,success}}=await this.$api.schedule.plan.scheduleDistribute({planId:this.planId});
-        console.log(result);
-        this.data=result;
-        this.total=result.length;
+        let {data}=await this.$api.schedule.plan.scheduleDistribute({planId:this.planId});
+        console.log(data);
+        this.data=data.rows;
+        this.total=data.total;
         console.log(this.total);
       },
       onSelectChange( selectedRowKeys,selectedRows) {
@@ -267,9 +251,8 @@
         console.log(this.selectedRowKeys);
         console.log(this.selectedRows);
       },
-      //保存
+      //保存排课计划
       async handleOk(){
-        //保存排课计划
         if(this.form.name==undefined||this.form.term==undefined||this.form.gradeId==undefined){
           message.info('输入信息不能为空！')
         }else{
@@ -284,10 +267,13 @@
           console.log(data);
           this.editVisit=false;
         }
-        //发布选课保存
+      },
+      //发布选课保存
+      async handlePublic(){
         let {data:savdPublish} =  await this.$api.schedule.plan.schedulesaveQua({planId:this.planId,stringList: this.selectedRowKeys})
         console.log(savdPublish)
       },
+      //取消
       handleCancel() {
         this.editVisit = false;
         this.publishVisit=false;

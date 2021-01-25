@@ -69,7 +69,6 @@ export default {
       dataSource: [],
       selectedRowKeys: [],
       selectedRows: [],
-      addModal:false,
     };
   },
   async created(){
@@ -78,12 +77,10 @@ export default {
   },
   methods: {
     gotoNew(id) {
-      this.$router.push('/basic/template/detail?id='+id);
-      this.addModal=true;
+      this.$router.push('/basic/template/detail');
     },
     edit(id) {
       this.$router.push('/basic/template/detail?id='+id);
-      this.addModal=false;
     },
     async deleteItem(id){
       let {data}= await this.$api.basic.template.deleteTemplate({ids:id})

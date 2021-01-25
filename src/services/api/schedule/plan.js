@@ -30,7 +30,7 @@ const plan={
     },
     //发布选课查看学生(已调）
     scheduleDistribute(params){
-        return axios.get(`${baseUrl}/getDistribute.json`,{params});
+        return axios.get(`${baseUrl2}/getClasses.json`,{params});
     },
     //发布选课(已调）
     schedulesaveQua(params){

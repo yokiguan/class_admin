@@ -56,7 +56,7 @@
         </a-form-model-item>
         <a-form-model-item label="类型" ref="type" prop="type">
           <a-radio-group v-model="form.type">
-            <a-radio value="专用教学场地">专用教学场地</a-radio>
+            <a-radio value="专业教学场地">专业教学场地</a-radio>
             <a-radio value="公共教学场地">公共教学场地</a-radio>
             <a-radio value="行政班教室">行政班教室</a-radio>
           </a-radio-group>
@@ -65,7 +65,7 @@
           <a-input v-model="form.capacity" placeholder="请输入你想要新增的场地容量"></a-input>
         </a-form-model-item>
         <a-form-item label="状态" ref="status" prop="status">
-          <a-switch v-model="form.status"/>
+          <a-switch v-model="form.status" default-checked @change="onChange"/>
         </a-form-item>
       </a-form-model>
     </a-modal>
@@ -207,19 +207,23 @@
       // console.log(this.buildings);
     },
     methods: {
-       showModal() {
+      showModal() {
          this.changeTitle='新增教室'
          this.show = true;
       },
+      onChange(checked) {
+        console.log(`a-switch to ${checked}`);
+      },
       async handleOk() {
         if(this.changeTitle=="新增教室"){
+          console.log(this.form.status);
           let formData = {
             ...this.form,
             name:this.form.classroomName,
             buildingId:this.form.buildingId,
             floor:this.form.floor,
             capacity: Number(this.form.capacity),
-            type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1 :2,
+            type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1:2,
             status: this.form.status ? 1 : 0,
             subId: 1
           };
@@ -230,6 +234,7 @@
           let { data } = await this.$api.basic.classroom.fetchList();
           this.dataSource=data.rows;
           this.show = false;
+          this.$refs.ruleForm.resetFields();
         }else{
           let formData = {
             roomId:this.dataSource[this.editText].roomId,
@@ -244,7 +249,6 @@
           let addData = { ...formData};
           let {data:saveData} = await this.$api.basic.classroom.saveClassRoom(addData);
           let { data:classroomData } = await this.$api.basic.classroom.fetchList();
-
           this.dataSource=classroomData.rows;
           this.show = false;
         }
@@ -275,8 +279,16 @@
         this.form.buildingId=this.dataSource[this.editText].buildingId;
         this.form.floor=this.dataSource[this.editText].floor;
         this.form.capacity=this.dataSource[this.editText].capacity;
-        this.form.type=this.dataSource[this.editText].type==0?'专业教学场地':1?'公共教学场地':'行政班教室';
-        this.form.status=this.dataSource[this.editText].status;
+        console.log(this.dataSource[this.editText].type)
+        if(this.dataSource[this.editText].type==0){
+          this.form.type="专业教学场地";
+        }else if(this.dataSource[this.editText].type==1){
+          this.form.type="公共教学场地";
+        }else{
+          this.form.type="行政班教室";
+        }
+        // this.form.type=this.dataSource[this.editText].type===0?'':2?'行政班教室':'';
+        // this.form.status=this.dataSource[this.editText].status;
       },
       async deleteItem(row) {
         console.log(row.roomId)

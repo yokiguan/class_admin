@@ -342,46 +342,50 @@
         loading:false
       };
     },
-    async created() {
-      let queryString=(window.location.hash || " ").split('?')[1]
-      let id=(queryString || " ").split('=')[1]
-      if(id) {
-        let {data} = await this.$api.basic.template.fetchTemplate({id});
-        console.log(data.result);
-        let activities = [];
-        let timeDatas = [];
-        let list = [...this.activity];
-        list.forEach(item => {
-          for (let i = 1; i <= data.result[item.value]; i++) {
-            activities.push({
-              activity: item.name + i,
-              value: item.value + i
-            });
-            timeDatas.push({
-              activity: item.name + i,
-              value: item.value + i,
-              time: [moment(undefined), moment(undefined)]
-            });
-          }
-        });
-        this.dataSource = activities;
-        this.timeData = timeDatas;
-        this.form.templateName=data.result.templateName;
-        this.form.workday=data.result.workday;
-        this.form.restday=data.result.restday;
-        this.form.afternoon=data.result.afternoon;
-        this.form.evening=data.result.evening;
-        this.form.morning=data.result.morning;
-        this.form.morningread=data.result.morningread;
-        this.form.noon=data.result.noon;
-      }
+    created() {
+      this.lookInfo();
+      console.log(this.$router.history.current.query.id);
     },
     methods: {
+      //获取当前信息
+      async lookInfo(){
+        let queryString=(window.location.hash || " ").split('?')[1]
+        let id=(queryString || " ").split('=')[1]
+        if(id) {
+          let {data} = await this.$api.basic.template.fetchTemplate({id});
+          console.log(data.result);
+          let activities = [];
+          let timeDatas = [];
+          let list = [...this.activity];
+          list.forEach(item => {
+            for (let i = 1; i <= data.result[item.value]; i++) {
+              activities.push({
+                activity: item.name + i,
+                value: item.value + i
+              });
+              timeDatas.push({
+                activity: item.name + i,
+                value: item.value + i,
+                time: [moment(undefined), moment(undefined)]
+              });
+            }
+          });
+          this.dataSource = activities;
+          this.timeData = timeDatas;
+          this.form.templateName=data.result.templateName;
+          this.form.workday=data.result.workday;
+          this.form.restday=data.result.restday;
+          this.form.afternoon=data.result.afternoon;
+          this.form.evening=data.result.evening;
+          this.form.morning=data.result.morning;
+          this.form.morningread=data.result.morningread;
+          this.form.noon=data.result.noon;
+        }
+      },
       onchange(selectedRowKeys, selectedRows) {
         this.selectedRowKeys = selectedRowKeys
         this.selectedRows = selectedRows
       },
-
       changeTime(record) {
         console.log(this.timeData,record);
       },
@@ -412,11 +416,19 @@
         });
       },
       async saveInfo(){
-        let query={...this.form,timeSetting:this.timeQuery};
-        let {data}=await this.$api.basic.template.saveTemplate(query);
-        console.log(data.result);
-        this.$router.push("/basic/template/admin");
-        this.$refs.ruleForm.resetFields();
+        if(this.$router.history.current.query.id==undefined){
+          let query={...this.form,timeSetting:this.timeQuery};
+          let {data}=await this.$api.basic.template.saveTemplate(query);
+          console.log(data.result);
+          this.$router.push("/basic/template/admin");
+          this.$refs.ruleForm.resetFields();
+        }else{
+          let query={id:this.$router.history.current.query.id,...this.form,timeSetting:this.timeQuery};
+          let {data}=await this.$api.basic.template.saveTemplate(query);
+          console.log(data.result);
+          this.$router.push("/basic/template/admin");
+        }
+
       },
       clearInfo() {
         this.$refs.ruleForm.resetFields();

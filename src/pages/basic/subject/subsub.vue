@@ -15,10 +15,9 @@
                         title="确认删除?"
                         cancelText="取消"
                         okText="确定"
-                        @confirm="() => deleteItem(record.subChildId)"
-          >
-          <a href="javascript:;">删除</a>
-        </a-popconfirm>
+                        @confirm="() => deleteItem(record.subChildId)">
+          <a>删除</a>
+          </a-popconfirm>
     </span>
       </a-table>
     </div>
@@ -31,9 +30,9 @@
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
-      <a-form-model :model="form"
-              :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}"
-              style="margin-left: 70px">
+      <a-form-model :model="form" ref="ruleForm"
+                    :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}"
+                    style="margin-left: 70px">
         <a-form-model-item label="子科目名称：" prop="name" ref="name">
           <a-input placeholder="请输入" v-model="form.name"
                    style="width: 275px"></a-input>
@@ -43,7 +42,7 @@
                          placeholder="请选择年级"
                          style="width: 275px"
                          :checkedKeys="checkedKeys"
-                        :tree-data="treeData"
+                         :tree-data="treeData"
                          tree-checkable
                          :show-checked-strategy="SHOW_PARENT">
           </a-tree-select>
@@ -90,7 +89,7 @@
             grade=grade+"+"+text[j].gradeName;
           }
         }
-      return  grade
+        return  grade
       }
     },
     {
@@ -105,56 +104,56 @@
       scopedSlots:{customRender:"operation"}
     }
   ]
-export default {
-  name: 'subsubject',
-  data () {
-    return {
-      columns: columns,
-      treeData:[],
-      SHOW_PARENT,
-      dataSource: [],
-      checkedKeys:[],
-      addClassVisit:false,
-      loading:false,
-      changeTitle:'新增子课程',
-      editText:-1,
-      form:{
-        name:"",
-        gradeIds:[],
-        type:''
-      },
-      rules:{
-        name:[
-          {
-            required:true,
-            message:"请输入课程名称！",
-            trigger:"blur"
-          }
-        ],
-        gradeIds:[
-          {
-            required:true,
-            message:"请输入年级！",
-            trigger:"blur"
-          }
-        ],
-       type:[
-          {
-            required:true,
-            message:"请输入课程类型！",
-            trigger:"change"
-          }
-        ],
+  export default {
+    name: 'subsubject',
+    data () {
+      return {
+        columns: columns,
+        treeData:[],
+        SHOW_PARENT,
+        dataSource: [],
+        checkedKeys:[],
+        addClassVisit:false,
+        loading:false,
+        changeTitle:'新增子课程',
+        editText:-1,
+        form:{
+          name:"",
+          gradeIds:[],
+          type:''
+        },
+        rules:{
+          name:[
+            {
+              required:true,
+              message:"请输入课程名称！",
+              trigger:"blur"
+            }
+          ],
+          gradeIds:[
+            {
+              required:true,
+              message:"请输入年级！",
+              trigger:"blur"
+            }
+          ],
+          type:[
+            {
+              required:true,
+              message:"请输入课程类型！",
+              trigger:"change"
+            }
+          ],
+        }
       }
-    }
-  },
-  created() {
-        this.subCourseInfo();
     },
-  watch:{
-  },
-  methods: {
-    //获取子课程信息
+    created() {
+      this.subCourseInfo();
+    },
+    watch:{
+    },
+    methods: {
+      //获取子课程信息
       async subCourseInfo(){
         let queryString=(window.location.hash || " ").split('?')[1]
         let id=(queryString || " ").split('=')[1]
@@ -187,29 +186,29 @@ export default {
           }
           this.treeData.push(adminData);
         }
+        console.log("this.treeData",this.treeData)
       },
       addNew () {
         this.addClassVisit=true;
         this.changeTitle='新增子课程';
         this.grade();
       },
-      edit(editId){
+      async edit(editId){
+        await this.grade();
         this.form.gradeIds = []
         this.changeTitle='编辑子课程';
         this.checkedKeys=[];
-        // let selectData = this.dataSource.filter(item => item.id === editId)
-        // console.log(selectData);
-        // selectData[0].childSubjectGrade.forEach((item)=>{
-        //   this.checkedKeys.push(item.gradeIds)
-        // })
+        console.log('selectData',this.treeData,this.dataSource);
+        let selectData = this.dataSource.filter(item => item.subChildId === editId)
+        console.log('selectData',selectData);
+        selectData[0].childSubjectGrade.forEach((item)=>{
+          this.form.gradeIds.push(item.gradeId)
+        })
         this.addClassVisit=true;
         this.editText=this.dataSource.findIndex(item=>item.subChildId==editId);
         this.form.name=this.dataSource[this.editText].name;
         console.log(this.dataSource[this.editText].childSubjectGrade[0].gradeName)
-        this.form.gradeIds=this.dataSource[this.editText].childSubjectGrade[0].gradeName
-        // console.log(this.dataSource[this.editText].childSubjectGrade.gradeName)
         this.form.type=this.dataSource[this.editText].type==1?'行政班课':'走班课'
-        this.grade();
         console.log(this.dataSource[this.editText].subChildId)
       },
       async handleOk() {
@@ -225,6 +224,7 @@ export default {
           console.log(data);
           this.addClassVisit = false;
           this.subCourseInfo();
+          this.$refs.ruleForm.resetFields();
         }else{
           let formData={
             subChildId:this.dataSource[this.editText].subChildId,
@@ -250,7 +250,7 @@ export default {
       handleCancel() {
         this.addClassVisit = false
       },
-    //删除子课程
+      //删除子课程
       async deleteItem(id) {
         let {data}=await this.$api.basic.subject.deleteSubject({ids:[id]});
         console.log(data)
@@ -260,8 +260,8 @@ export default {
         }else{
           message.info('删除失败');
         }
-    },
-    //返回主课程
+      },
+      //返回主课程
       backMainCourse(){
         this.$router.go(-1)
       },
