@@ -8,8 +8,8 @@
               :rowKey="'roomId'"
               :columns="columns"
               :dataSource="dataSource"
-              :selectedRows="selectedRows"
-              @change="onchange">
+              :pagination="pagination"
+              @change="onTablechange">
         <template slot="classroom" slot-scope="buildingEntity">
            <span v-for="(c,index) in buildingEntity" :key="index">
               {{c.name}}
@@ -65,7 +65,7 @@
           <a-input v-model="form.capacity" placeholder="请输入你想要新增的场地容量"></a-input>
         </a-form-model-item>
         <a-form-item label="状态" ref="status" prop="status">
-          <a-switch v-model="form.status" default-checked @change="onChange"/>
+          <a-switch v-model="form.status" default-checked @change="onChangeCheck"/>
         </a-form-item>
       </a-form-model>
     </a-modal>
@@ -124,7 +124,7 @@
     {
       title: "状态",
       dataIndex: "status",
-      customRender: text => (text == 1 ? "可用" : "已占用")
+      customRender: (text)=>text == 1 ? "可用" : "已占用"
     },
     {
       title: "操作",
@@ -132,20 +132,27 @@
       scopedSlots: { customRender: "operation" }
     }
   ];
-
   export default {
     name: "classroom",
     data() {
       return {
         show: false,
         loading:false,
+        pagination:{
+          total:0,
+          pageSize:20,
+          showSizeChanger:true,
+          onShowSizeChange:(current,pageSize)=> {
+            this.pageSize=pageSize;
+          }, //改变每页数量时更新显示
+          showTotal:total=>`共有${total}条数据`,
+          // onChange:(page,pageSize)=>this.changePage(page,pageSize),              //点击页码事件
+        },
         placeName: "",
         columns: columns,
         buildings: [{buildingId:"",name:""}],
         floors: [],
         dataSource: [],
-        selectedRowKeys: [],
-        selectedRows: [],
         editText:-1,
         changeTitle:'新增教室',
         formItemLayout: {
@@ -195,27 +202,40 @@
         }
       };
     },
-    async created() {
-      //查看教学楼
-      let {data} = await this.$api.basic.classroom.fetchList();
-      this.dataSource=data.rows;
-      console.log(this.dataSource)
-      // this.dataSource.buildingEntity
-      //获取教室和教学楼相关信息
-      let {data:buildings}=await this.$api.basic.building.fetchList();
-      this.buildings =buildings.rows
-      // console.log(this.buildings);
+    created() {
+      this.buildingInfo();
+      this.classroomAndBuilding();
     },
     methods: {
+      async buildingInfo(){
+        //查看教学楼
+        let {data} = await this.$api.basic.classroom.fetchList();
+        this.dataSource=data.rows;
+        console.log(this.dataSource);
+        this.pagination.total=data.total;
+        console.log(this.pagination.total)
+      },
+      async classroomAndBuilding(){
+        //获取教室和教学楼相关信息
+        let {data:buildings}=await this.$api.basic.building.fetchList();
+        this.buildings =buildings.rows
+      },
+      onShowSizeChange(current,pageSize){
+        console.log(current,pageSize);
+      },
       showModal() {
          this.changeTitle='新增教室'
          this.show = true;
       },
-      onChange(checked) {
+      onChangeCheck(checked) {
         console.log(`a-switch to ${checked}`);
       },
+      // onChange(page,pageSize){
+      //   console.log(page,pageSize);
+      // },
       async handleOk() {
-        if(this.changeTitle=="新增教室"){
+        if(this.changeTitle=="新增教室")
+        {
           console.log(this.form.status);
           let formData = {
             ...this.form,
@@ -224,15 +244,14 @@
             floor:this.form.floor,
             capacity: Number(this.form.capacity),
             type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1:2,
-            status: this.form.status ? 1 : 0,
+            status: this.form.status=='true'? 1:0,
             subId: 1
           };
           console.log(formData)
           let addData = { ...formData};
           let res = await this.$api.basic.classroom.saveClassRoom(addData);
           console.log(res);
-          let { data } = await this.$api.basic.classroom.fetchList();
-          this.dataSource=data.rows;
+          this.buildingInfo();
           this.show = false;
           this.$refs.ruleForm.resetFields();
         }else{
@@ -256,9 +275,11 @@
       handleCancel() {
         this.show = false;
       },
-      onchange(selectedRowKeys, selectedRows) {
-        this.selectedRowKeys = selectedRowKeys;
-        this.selectedRows = selectedRows;
+      onTablechange(pagination) {
+        this.pagination.current=pagination.current;
+        this.pagination.pageSize=pagination.pageSize;
+        console.log(this.pagination.current);
+        console.log(this.pagination.pageSize);
       },
       async changeBuilding() {
         let {data}=await this.$api.basic.building.fetchBuilding({buildingId:this.form.buildingId});
@@ -287,16 +308,18 @@
         }else{
           this.form.type="行政班教室";
         }
-        // this.form.type=this.dataSource[this.editText].type===0?'':2?'行政班教室':'';
-        // this.form.status=this.dataSource[this.editText].status;
+        console.log(this.dataSource[this.editText].status);
+        // if(this.dataSource[this.editText].status==false){
+        //   this.form.status=
+        // }
+        this.form.status=this.dataSource[this.editText].status==0?false:true;
       },
       async deleteItem(row) {
-        console.log(row.roomId)
-        let {data} = await this.$api.basic.classroom.deleteBuilding({ids: [row.roomId]});
+        console.log(row)
+        let {data} = await this.$api.basic.classroom.deleteBuilding({ids: [row]});
         console.log(data);
         if(data&&data.success){
-          let {data} = await this.$api.basic.classroom.fetchList();
-          this.dataSource = data.rows;
+          this.buildingInfo();
           message.info('删除成功')
         } else{
           message.info('删除失败')

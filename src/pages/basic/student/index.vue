@@ -92,7 +92,9 @@
           total:0,    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
           pageSize:20,    //默认每页显示的数据总数
           showSizeChanger:true,
-          onShowSizeChange:(current,pageSize)=>this.pageSize=pageSize,
+          onShowSizeChange:(current,pageSize)=>{
+            this.pageSize=pageSize
+          },
           showTotal:total=>`共有${total}条数据`,
         },
         form:{
@@ -128,12 +130,11 @@
         this.pagination.pageSize=pagination.pageSize;
         console.log(this.pagination.current);
         console.log(this.pagination.pageSize);
-        // this.onSearch();
         if(this.form.adminId!=undefined) {
           if (this.form.gradeId != undefined) {
             if (this.form.classId != undefined) {
               this.handleClassChange();
-            } else {
+            } else{
               this.handleGradeChange();
             }
           } else {
@@ -151,7 +152,7 @@
             this.gradeData=this.adminData[i].trees,
             console.log(this.gradeData)
             //查询某一级部的全学生
-            let {data:adminAllStudent}=await this.$api.basic.student.fetchList({current:this.pagination.current,rowCount:this.pagination.pageSize,id: this.adminData[i].id});
+            let {data:adminAllStudent}=await this.$api.basic.student.fetchList({current:this.pagination.current,rowCount:this.pagination.pageSize,id:this.adminData[i].id});
             console.log(adminAllStudent);
             this.dataSource=adminAllStudent.rows;
             this.pagination.total=adminAllStudent.total;

@@ -31,19 +31,12 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-row class="buttons-sub">
-                <a-col :span="3">
-                    <a-button type="danger" style="color:white;width: 100px;height: 40px;">禁选</a-button></a-col>
-                <a-col :span="3">
-                    <a-button style="background-color:grey;width: 100px;height: 40px;color:white">普通</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button type="primary" style="color:white;width: 100px;height:40px;">优先</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button style="background-color:#0099cc;width: 100px;height: 40px;color:white">走班课</a-button>
-                </a-col>
+                <a-col :span="3"><a-button type="danger" style="color:white;width: 100px;height: 40px;">禁选</a-button></a-col>
+                <a-col :span="3"><a-button style="background-color:grey;width: 100px;height: 40px;color:white">普通</a-button></a-col>
+                <a-col :span="3"><a-button type="primary" style="color:white;width: 100px;height:40px;">优先</a-button></a-col>
+                <a-col :span="3"><a-button style="background-color:#0099cc;width: 100px;height: 40px;color:white">走班课</a-button></a-col>
             </a-row>
-            <a-table id="Table"
+            <a-table
                     :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
@@ -70,6 +63,7 @@
         }
         return obj;
     };
+    const columnRow=[];
     const columns = [
         {
             align: "center",
@@ -91,43 +85,64 @@
         {
             title: '星期一',
             dataIndex: 'one',
-            key:'one',
             customRender:renderContext,
+            customCell:(record,rowIndex)=>{
+                let column=1;
+                return{
+                    on:{
+                        click:(event)=>{
+                            console.log(record);
+                            console.log(rowIndex);
+                            console.log(column);
+                            console.log(this)
+                            // this.getColumnRow(rowIndex,column)
+                        },
+                    },
+                }
+
+            }
         },
         {
             title: '星期二',
             dataIndex: 'two',
-            key:'two',
             customRender:renderContext,
+            customCell:(record,rowIndex)=>{
+                let column=2;
+                return{
+                    on:{
+                        click:(event)=>{
+                            console.log(record);
+                            console.log(rowIndex);
+                            console.log(column);
+                            // this.getColumnRow(rowIndex,column)
+                        },
+                    },
+                }
+            }
         },
         {
             title: '星期三',
             dataIndex: 'three',
-            key:'three',
             customRender:renderContext,
         },
         {
             title: '星期四',
             dataIndex: 'four',
-            key: 'four',
             customRender:renderContext,
         },
         {
             title: '星期五',
             dataIndex: 'five',
-            key: 'five',
             customRender:renderContext,
         },
         {
             title: '星期六',
             dataIndex: 'six',
-            key:'six',
             customRender:renderContext,
         },
         {
             title: '星期日',
             dataIndex: 'seven',
-            key:'seven',
             customRender:renderContext,
         },
     ];
@@ -167,7 +182,6 @@
             key: '晚自习1',
         },
     ];
-    // eslint-disable-next-line no-unused-vars
     const column4 = [
         {
             title: '课节',
@@ -187,7 +201,6 @@
             scopedSlots: { customRender: 'action' }
         },
     ];
-    // eslint-disable-next-line no-unused-vars
     const tableData4= [
         {
             times: '周一上午第一节',
@@ -202,11 +215,93 @@
             return {
                 column4,
                 tableData4,
-                columns,
                 tableData,
                 visible: false,
                 loading: false,
                 planData:"",
+                defaultRow: -1,
+                defaultColumn: -1,
+                columns: [
+                    {
+                        align: "center",
+                        title: " ",
+                        dataIndex: 'key',
+                        customRender: (text, row, index) => {
+                            if (index === 3 || index === 6) {
+                                return {
+                                    children: text,
+                                    attrs: {
+                                        colSpan: 8,
+                                    },
+                                };
+                            } else {
+                                return text;
+                            }
+                        },
+                    },
+                    {
+                        title: '星期一',
+                        dataIndex: 'one',
+                        customRender:renderContext,
+                        customCell:(record,rowIndex)=>{
+                            let column=1;
+                            return{
+                                on:{
+                                    click:(event)=>{
+                                        console.log(record);
+                                        console.log(rowIndex);
+                                        console.log(column);
+                                        this.getColumnRow(rowIndex,column)
+                                    },
+                                },
+                            }
+
+                        }
+                    },
+                    {
+                        title: '星期二',
+                        dataIndex: 'two',
+                        customRender:renderContext,
+                        customCell:(record,rowIndex)=>{
+                            let column=2;
+                            return{
+                                on:{
+                                    click:(event)=>{
+                                        console.log(record);
+                                        console.log(rowIndex);
+                                        console.log(column);
+                                        // this.getColumnRow(rowIndex,column)
+                                    },
+                                },
+                            }
+                        }
+                    },
+                    {
+                        title: '星期三',
+                        dataIndex: 'three',
+                        customRender:renderContext,
+                    },
+                    {
+                        title: '星期四',
+                        dataIndex: 'four',
+                        customRender:renderContext,
+                    },
+                    {
+                        title: '星期五',
+                        dataIndex: 'five',
+                        customRender:renderContext,
+                    },
+                    {
+                        title: '星期六',
+                        dataIndex: 'six',
+                        customRender:renderContext,
+                    },
+                    {
+                        title: '星期日',
+                        dataIndex: 'seven',
+                        customRender:renderContext,
+                    },
+                ],
             };
         },
         async created() {
@@ -220,6 +315,13 @@
             }
         },
         methods: {
+            getColumnRow(row,column){
+                this.defaultRow = row;
+                this.defaultColumn = column;
+                console.log(this.defaultColumn,this.defaultRow);
+                // this.tableData[row].rowList[column]
+                // this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck = 0 // 选中
+            },
             maxTime: function () {
                 this.visible = true;
             },

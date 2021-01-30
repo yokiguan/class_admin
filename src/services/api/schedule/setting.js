@@ -17,8 +17,7 @@ const setting={
      },*/
     //选课设置查看（单个）
     settingGet(params){
-        return axios.get(`${baseUrl}/getSettingData.json`,{params}, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl}/getSettingData.json`,{params},);
     }
     //选课设置删除(待讨论)
 

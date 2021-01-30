@@ -14,7 +14,7 @@
                             cancelText="取消"
                             okText="确定"
                             @confirm="() => deleteItem(record.subChildId)">
-                < a href=" ">删除</ a>
+                <a>删除</a>
               </a-popconfirm>
           </span>
         </a-table>
@@ -49,6 +49,7 @@
         {
             title: "课程编号",
             dataIndex: "subChildId",
+            align:"center",
             customRender: function(t, r, index) {
                 return parseInt(index) + 1
             }
@@ -56,10 +57,12 @@
         {
             title: "课程名称",
             dataIndex: "name",
+            align:"center",
         },
         {
             title: "操作",
             dataIndex: "text,value",
+            align:"center",
             scopedSlots: { customRender: "operation" },
         },
     ];
@@ -104,11 +107,6 @@
             },
             async addNew() {
                 this.showSubject=true;
-                // this.checkedKeys=[];
-                // let selectData=this.dataSource.filter(item=>item.id===this.dataSource.subChildId);
-                // selectData[0].names.forEach((item)=>{
-                //     this.checkedKeys.push(item.gradeSubChildIds)
-                // })
                 //获取课程信息
                 this.treeData = []
                 let {data:{result,success}}=await this.$api.basic.subject.fetchSubjectList();
@@ -143,11 +141,14 @@
                 let subChildIds = []
                 this.form.addSub.forEach((item,index) =>{
                     let parentNode = this.treeData.filter(child => child.key === item)
+                    console.log(parentNode);
                     if(parentNode.length > 0 && Object.prototype.hasOwnProperty.call(parentNode[0],'children')){
                         parentNode[0].children.forEach(chr=>{
+                            console.log(chr.key);
                             subChildIds.push(chr.key)
-                        })
+                        });
                     }else{
+                        console.log(item);
                         subChildIds.push(item)
                     }
                 })

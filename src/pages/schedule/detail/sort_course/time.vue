@@ -26,31 +26,33 @@
             <a-row class="buttons">
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教室设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-row class="buttons-sub">
-                <a-col :span="3"><a-button type="danger" style="color:white;
-                          width: 100px;
-                         height: 30px;">禁选</a-button></a-col>
-                <a-col :span="3"><a-button style="background-color:grey;
-                      width: 100px;
-                        height: 30px;color:white">普通</a-button></a-col>
-                <a-col :span="3"><a-button type="primary" style="color:white;
-                              width: 100px;
-                              height: 30px;">优先</a-button></a-col>
-                <a-col :span="12">
-                </a-col>
+                <a-col :span="3"><a-button type="danger" style="color:white;width: 100%;height: 30px;" @click="diasbleBtn">禁选</a-button></a-col>
+                <a-col :span="3"><a-button style="background-color:grey;width: 100px;height: 30px;color:white" @click="normalBtn">普通</a-button></a-col>
+                <a-col :span="3"><a-button type="primary" style="color:white;width: 100px;height: 30px;" @click="priorityBtn">优先</a-button></a-col>
+                <a-col :span="12"></a-col>
                 <a-col :span="3"><a-button style="height:40px;background-color:#0099ff;color:white" @click="maxTime">最大课时数设置</a-button>
                 </a-col>
             </a-row>
-            <a-table
-                    :columns="columns"
-                    :data-source="tableData"
-                    :pagination="false"
-                    :bordered="true">
-            </a-table>
+            <div class="class-table">
+                <div class="table-header"><!-- 表头 -->
+                    <div class="table-header_one"></div><!-- 左上角 -->
+                    <div class="table-header_other" v-for="(item, index) in tableHeader">{{item}}</div>
+                </div>
+                <div class="table-body">
+                    <div class="row-box" v-for="(item, rowIndex) in tableData" :key="rowIndex">
+                        <div class="table-body_one">{{item.activity}}</div><!-- 第一列 -->
+<!--                        :style="{ 'background-color': setColor(child) }"-->
+                        <div class="table-body_other" v-for="(child, columnIndex) in item.rowList"
+                             :key="columnIndex + rowIndex + 1" :style="{ 'background-color': setColor(child) }"
+                             @click="getColumnRow(rowIndex,columnIndex)"></div>
+                    </div><!-- 11个数据  -->
+                </div>
+            </div>
             <button style="background-color: blue;
                         color: white;
                         height: 40px;
@@ -58,202 +60,103 @@
                         border-radius: 5px;
                         margin-top: 50px;
                         width: 100px" @click="Next">下一步</button>
-            <create-modal
-                    width="900px"
-                    :close="false"
-                    :visible="visible"
-                    :loading="loading"
-                    @modalClosed="closed"
-                    @modalSubmit="handleSubmit">
-                <div slot="content">
-                    <a-form @submit="handleSubmit" ref="createForm">
-                        <a-form-item>
-                            <p style="height:80px; margin-right: -10px; line-height: 70px;
-                  background-color: #0099ff;padding-left: 5px;padding-top: 10px;margin-left: -18px;
-                  margin-top: -15px;color: white;font-size: 23px;">设置每个老师使用某个课时的最大数量</p>
-                        </a-form-item>
-                        <a-form-item>
-                            <a-table :key="'key'"
-                                    id="modalTable"
-                                    :columns="column4"
-                                     :data-source="tableData4"
-                                     :pagination="false"
-                                     :bordered="true">
-                                <a-select slot="buildingType"
-                                          slot-scope="type"
-                                          :default-value="type"
-                                          style="width: 240px">
-                                    <a-select-option value="0">1</a-select-option>
-                                    <a-select-option value="0">2</a-select-option>
+<!--    最大课时数设置-->
+            <a-modal
+                    title="设置每个老师使用某个课时的最大数量"
+                    :closable="false"
+                    :visible="visible">
+                <template slot="footer">
+                    <a-button key="Save" type="primary" :loading="loading" @click="handleOkMain">保存</a-button>
+                    <a-button key="back" @click="handleCancelMain">取消</a-button>
+                </template>
+                <a-card>
+                    <a-table :rowKey="'lesson'"
+                            :columns="column4"
+                             :data-source="tableData4"
+                             :pagination="false"
+                             :bordered="true">
+                        <a-form slot="useMax" slot-scopd="text,record,index">
+                            <a-form-item>
+                                <a-select   v-model="maxTimesModel" style="width: 100px">
+                                   {{text}}
                                 </a-select>
-                                <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">{{text}}</span>
-                            </a-table>
-                        </a-form-item>
-                    </a-form>
-                    <div slot="addName"  style="float: left;font-size: 1.0rem;color: blue;margin-left: 10px;margin-top: -10px" @click="addNames">
-                        <a-icon type="plus" />
-                        <span>添加一项</span>
-                    </div>
+                            </a-form-item>
+                        </a-form>
+                        <span slot="action" style="color:blue" @click="onDelete">删除</span>
+                    </a-table>
+                </a-card>
+                <div slot="addName"  style="float: left;font-size: 1.0rem;color: blue;margin-left: 10px;margin-top: -10px" @click="addNames">
+                    <a-icon type="plus" />
+                    <span>添加一项</span>
                 </div>
-            </create-modal>
+            </a-modal>
 <!--            添加一项-->
             <a-modal :visible='addNameVisit'
                      width="600px"
-                     :closable="false"
-                     on-ok="handleOk">
+                     :closable="false">
+                <template slot="footer">
+                    <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                    <a-button key="back" @click="handleCancel">取消</a-button>
+                </template>
                 <a-checkbox-group
                         v-model="value"
                         name="checkboxgroup"
                         :options="options"
                         @change="onChange"
                         style="margin-left: 50px;margin-bottom: 100px;margin-top: 30px"/>
-                <template slot="footer">
-                    <a-button key="Save" style="float: left;margin-left: 150px; background-color: #0099ff;color: white;width: 100px;height: 40px" :loading="loading" @click="handleOk">确定
-                    </a-button>
-                    <a-button key="back" style="margin-right: 150px;background-color: #0099ff;color: white;width: 100px;height: 40px"  @click="handleCancel">取消
-                    </a-button>
-                </template>
             </a-modal>
         </div>
     </div>
 </template>
 <script>
-    import CreateModal from "../../../../components/modal/CreateModal";
-    const renderContext=(value,row,index)=>{
-        const obj={
-            children: value,
-            attrs:{},
-        };
-        if(index===3 || index === 6){
-            obj.attrs.colSpan=0;
+    import moment from "moment";
+    const activity = [
+        {
+            name: "早读",
+            options: [0, 1, 2],
+            value: "morningread"
+        },
+        {
+            name: "上午",
+            options: [0, 1, 2, 3, 4],
+            value: "morning"
+        },
+        {
+            name: "中午",
+            options: [0, 1, 2],
+            value: "noon"
+        },
+        {
+            name: "下午",
+            options: [0, 1, 2, 3, 4],
+            value: "afternoon"
+        },
+        {
+            name: "晚自习",
+            options: [0, 1, 2, 3, 4],
+            value: "evening"
         }
-        return obj;
-    };
-    const columns = [
-        {
-            align: "center",
-            title: " ",
-            dataIndex: 'key',
-            customRender: (text, row, index) => {
-                if (index === 3 || index === 6) {
-                    return {
-                        children: text,
-                        attrs: {
-                            colSpan: 8,
-                        },
-                    };
-                } else {
-                    return text;
-                }
-            },
-        },
-        {
-            title: '星期一',
-            dataIndex: 'one',
-            key:'one',
-            customRender:renderContext,
-        },
-        {
-            title: '星期二',
-            dataIndex: 'two',
-            key:'two',
-            customRender:renderContext,
-        },
-        {
-            title: '星期三',
-            dataIndex: 'three',
-            key:'three',
-            customRender:renderContext,
-        },
-        {
-            title: '星期四',
-            dataIndex: 'four',
-            key: 'four',
-            customRender:renderContext,
-        },
-        {
-            title: '星期五',
-            dataIndex: 'five',
-            key: 'five',
-            customRender:renderContext,
-        },
-        {
-            title: '星期六',
-            dataIndex: 'six',
-            key:'six',
-            customRender:renderContext,
-        },
-        {
-            title: '星期日',
-            dataIndex: 'seven',
-            key:'seven',
-            customRender:renderContext,
-        },
-    ];
-    const tableData=[
-        {
-            key: '早读1',
-        },
-        {
-            key: '上午1',
-        },
-        {
-            key: '上午2',
-        },
-        {
-            key: '课间操10：00-10:30',
-        },
-        {
-            key: '上午3',
-        },
-        {
-            key: '上午4',
-        },
-        {
-            key: '午休12：30-1:30',
-        },
-        {
-            key: '下午1',
-        },
-        {
-            key: '下午2',
-        },
-        {
-            key: '下午3',
-        },
-        {
-            key: '下午4',
-        },
-        {
-            key: '晚自习1',
-        },
     ];
     const column4 = [
         {
             title: '课节',
-            dataIndex: 'times',
-            key: 'times',
-            scopedSlots: { customRender: 'addName' }
+            dataIndex: 'lesson',
+            align:'center',
         },
         {
             title: '最大使用数',
-            dataIndex: 'number',
-            key: 'number',
-            scopedSlots: { customRender: 'buildingType' }
+            dataIndex: 'useMax',
+            align:'center',
+            scopedSlots: { customRender: 'useMax' },
+            // customRender:(text)=>{
+            //     console.log(text);
+            // }
         },
         {
             title: '操作',
             dataIndex: 'opt',
             key: 'opt',
             scopedSlots: { customRender: 'action' }
-        },
-    ];
-    const tableData4= [
-        {
-            key:'0',
-            times: '周一上午第一节',
-            number: '1',
-            opt: '删除',
         },
     ];
     const options = [
@@ -267,20 +170,32 @@
         { label: '下午第4节', value: 'afterFour' },
     ];
     export default {
-        components: {CreateModal},
         data() {
             return {
                 column4,
                 count:1,
-                tableData4,
-                columns,
-                tableData,
+                tableData4:[],
+                defaultRow: -1,
+                defaultColumn: -1,
+                cellCheck:[],
+                //需要传到后端的数据
+                disableData:[],
+                priorityData:[],
+                tableData:[],
+                tableHeader: ['星期一','星期二','星期三','星期四','星期五','星期六','星期天'],
                 planData:"",
                 options,
                 visible: false,
                 loading: false,
                 addNameVisit:false,
                 planId:"",
+                activity,
+                timeData:[],
+                modalId:"",
+                value:"",
+                form:{
+
+                },
             };
         },
         async created() {
@@ -293,40 +208,148 @@
                 this.planData = result.name
             }
             //课节设置查看
-            let {data}=await this.$api.schedule.arrangeClass.getLesson({planId})
-            console.log(data)
+            let {data:{result,success}}=await this.$api.schedule.arrangeClass.getLesson({planId})
+            console.log(result);
+            this.modalId=result.currId;
+            this.tableData4=result.lessonMax;
+            // console.log(this.tableData4);
+            this.modalInfo();
+            // this.form.maxTimeData=this.tableData4.useMax;
+            // console.log( this.form.maxTimeData);
         },
         methods: {
-            maxTime: function () {
-                this.visible = true;
-            },
-            change: function () {
-                this.visible = true;
-            },
-            closed: function () {
-                this.visible = false
-                this.loading = false
-            },
-            handleSubmit: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
-                setTimeout(() => {
-                    that.dataSource.push(
-                        {
-                            avatar:
-                                "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-                            content: "最大课时数设置",
+            //获取课表模板相关信息
+            async modalInfo() {
+                let {data}=await this.$api.basic.template.fetchTemplate({id:this.modalId})
+                console.log(data.result);
+                this.currId=this.modalId;
+                // console.log(this.currId);
+                let activities = [];
+                let timeDatas = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    for (let i = 1; i <= data.result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                        timeDatas.push({
+                            activity: item.name + i,
+                            value: item.value + i,
+                            time: [moment(undefined), moment(undefined)]
+                        });
+                    }
+                });
+                this.tableData = activities;
+                //设置单元格颜色未设置为-1
+                for(let i in this.tableData) {
+                    this.tableData[i].rowList = []
+                    for(let index = 0; index < 7;index++){
+                        let pushData = {
+                            data: '',
+                            defaultCheck: -1
                         }
-                    ),
-                        that.visible = false
-                    that.loading = false
-                }, 2000)
+                        this.tableData[i].rowList.push(pushData)
+                    }
+                }
+                // console.log(this.tableData)
+                this.timeData = timeDatas;
             },
-            changeSituation: function(key, index){
+            //数据刷新
+            setStore (data) {
+                let newData = JSON.parse(JSON.stringify(data))
+                this.tableData = JSON.parse(JSON.stringify(newData))
+            },
+            //获取表格的行和列
+            getColumnRow(row,column){
+                //某一单元格被选中
+                this.tableData[row].rowList[column].defaultCheck = 0
+                this.defaultRow = row;
+                this.defaultColumn = column;
+                this.setStore(this.tableData);
+                this.cellCheck.push([this.defaultRow,this.defaultColumn])
+                // console.log(this.cellCheck);
+            },
+            //设置禁选按钮方法
+            diasbleBtn(){
+                let cellRow=0;
+                let cellColumn=0;
+                for(let i=0;i<this.cellCheck.length;i++){
+                    cellRow=this.cellCheck[i][0];
+                    cellColumn=this.cellCheck[i][1];
+                    console.log(this.cellCheck[i][0])
+                    console.log(this.cellCheck[i][1])
+                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
+                        // 修改颜色为红色
+                        this.tableData[cellRow].rowList[cellColumn].defaultCheck = 1
+                    }
+                    this.setStore(this.tableData);
+                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 1){
+                        this.disableData.push([cellRow,cellColumn])
+                        console.log(this.disableData);
+                    }
+                }
+
+            },
+            //设置普通按钮方法
+            normalBtn(){
+                if(this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck === 0){
+                    // 修改颜色为绿色
+                    this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck = -1
+                }
+                this.setStore(this.tableData)
+            },
+            //设置优先按钮方法
+            priorityBtn(){
+                let cellRow=0;
+                let cellColumn=0;
+                for(let i=0;i<this.cellCheck.length;i++){
+                    cellRow=this.cellCheck[i][0];
+                    cellColumn=this.cellCheck[i][1];
+                    console.log(this.cellCheck[i][0])
+                    console.log(this.cellCheck[i][1])
+                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
+                        // 修改颜色为绿色
+                        this.tableData[cellRow].rowList[cellColumn].defaultCheck = 3
+                    }
+                    this.setStore(this.tableData)
+                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 3){
+                        this.priorityData.push([cellRow,cellColumn])
+                        console.log(this.priorityData);
+                    }
+
+                }
+            },
+            //颜色设置
+            setColor(child){
+                let cellCheck = child.defaultCheck;
+                // console.log(cellCheck)
+                let color = '#fff'
+                switch (cellCheck) {
+                    case 0:
+                        color = '#ccc'
+                        break
+                    case 1:
+                        color = 'red'
+                        break
+                    case 2:
+                        color = '#fff'
+                        break
+                    case 3:
+                        color = '#13c2c2'
+                        break
+                    default:
+                        color = '#fff'
+                }
+                return color
+            },
+            change() {
+                this.visible = true;
+            },
+            changeSituation(key, index){
                 console.log(key, index)
             },
-            delSituation: function(key, index){
+            delSituation(key, index){
                 console.log(key, index)
                 this.tableData[key].situation.pop(index)
             },
@@ -349,24 +372,6 @@
                 this.tableData4= [...tableData4, newData];
                 this.count = count + 1;
             },
-            handleCancel() {
-                this.addNameVisit=false;
-            },
-            timesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
-            },
-            oncesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
-            },
-            placeSetting(){
-                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
-            },
-            courseSetting(){
-                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
-            },
-            startArray(){
-                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
-            },
             onChange(checkedValues) {
                 console.log('checked = ', checkedValues);
                 console.log('value = ', this.value);
@@ -376,17 +381,59 @@
                 dataSource.splice(event.target.getAttribute('dataIndex'),1);
                 this. tableData4 = dataSource
             },
+            //保存最大课时数
+            handleOkMain(){
+                this.visible=false;
+            },
+            //最大课时数
+            maxTime(){
+              this.visible=true;
+            },
+            //取消设置最大课程树
+            handleCancelMain(){
+              this.visible=false;
+            },
+            //取消添加一项
+            handleCancel() {
+                this.addNameVisit=false;
+            },
+            //课时设置
+            timesSetting(){
+                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
+            },
+            //课节设置
+            oncesSetting(){
+                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
+            },
+            //教室设置
+            placeSetting(){
+                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
+            },
+            //课程设置
+            courseSetting(){
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
+            },
+            //开始排课
+            startArray(){
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
+            },
+            //下一步
             Next(){
                 this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`);
+                this.saveInfo();
             },
+            //保存
+            async saveInfo(){
+                // let {data}=await this.$api.schedule.arrangeClass.saveLesson();
+                // console.log(data);
+            },
+            //返回
             back(){
                 this.$router.go(-1)
             },
-            value(){}
         }
     };
 </script>
-
 <style lang="less" scoped>
     .result{
         width: 100%;
@@ -433,35 +480,64 @@
         padding-top:5px;
         background-color: #d9d9d9;
     }
-    /deep/ #kebiaoTable {
-        .ant-table-tbody > tr:first-child > td,
-        .ant-table-tbody > tr:last-child > td{
-            background: #f00;
-        }
-        .ant-table-tbody > tr:first-child > td:first-child,
-        .ant-table-tbody > tr:last-child > td:first-child {
-             background: none;
-         }
-        .ant-table-tbody > tr:nth-child(2) > td,
-        .ant-table-tbody > tr:nth-child(3) > td {
-            background: #1abc9c;
-        }
-        .ant-table-tbody > tr:nth-child(2) > td:first-child,
-        .ant-table-tbody > tr:nth-child(3) > td:first-child {
-            background: none;
-        }
-        .ant-table-thead >tr >th{
-            background-color: #f4f4f4;
-        }
-        .ant-table-tbody > tr:nth-child(4) > td,
-        .ant-table-tbody > tr:nth-child(7) > td {
-            background-color: #f4f4f4;
-        }
+    .class-table{
+        width: 93%;
+        height: auto;
+        border: 1px solid;
+        border-color: #f0f0f0;
+        margin-left: 50px;
     }
-    /deep/ #moadalTable {
-        .ant-table-thead>tr >th{
-            background-color: #f4f4f4;
-        }
+    .table-header{
+        height: 53.33px;
+        display: flex;
+        border-bottom: 1px solid;
+        border-color: #f0f0f0;
+            }
+    .table-header_one{
+        flex: 12.5%;
+        align:center;
+        padding-top: 15px;
+        border-right: 1px solid;
+        border-color: #f0f0f0;
     }
-
+    .table-header_other{
+        flex: 12.5%;
+        align:center;
+        border-right: 1px solid;
+        border-color: #f0f0f0;
+        padding-top: 15px;
+        font-weight: bold;
+    }
+    .table-body{
+        display: flex;
+        flex-direction: column;
+    }
+    .row-box {
+        display: flex;
+    }
+    .row-box div {
+        flex: 1;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .row-box:last-child {
+        border-bottom: none;
+    }
+    .table-body_one{
+        /*width: 13.5%;*/
+        height: 54px;
+        border-right: 1px solid;
+        border-color: #f0f0f0;
+        padding-top: 15px;
+        flex-direction: column;
+    }
+    .table-body_other{
+        /*width: 13.5%;*/
+        height: 54px;
+        border-right: 1px solid;
+        border-color: #f0f0f0;
+        /*background-color: red;*/
+    }
+    .table-body_other:last-child{
+        border-right: none;
+    }
 </style>

@@ -85,15 +85,11 @@
                         </div>
                     </a-table>
                 </div>
-                <!-- <a-form-item slot="regular" has-feedback>
-                    <a-select
-                            v-decorator="['rule',{ rules: [{ required: true, message: '请选择规则!' }] },]"
-                            placeholder="覆盖2科"
-                            @change="handleSelectChange" style="width: 150px">
-                                 <a-select-option value="male">male</a-select-option>
-                                 <a-select-option value="female">female</a-select-option>
+                <a-form-item slot="regular">
+                    <a-select placeholder="覆盖2科" style="width: 150px">
+                        <a-select-option value="male">male</a-select-option>
                     </a-select>
-                </a-form-item> -->
+                </a-form-item>
                 <a slot='operate' @click="deleteTypical">删除</a>
             </a-table>
             <div style="margin-top: 30px">
@@ -226,7 +222,7 @@
                 dataSource: [],
                 loading:false,
                 addVisit: false,
-                value: ['张凯元'],
+                value: [''],
                 treeData,
                 SHOW_PARENT,
                 startValue: null,
@@ -263,15 +259,16 @@
                 planId:""
             };
         },
-        beforeCreate() {
-            this.form = this.$form.createForm(this, { name: 'time_related_controls' });
-        },
+        // beforeCreate() {
+        //     this.form = this.$form.createForm(this, { name: 'time_related_controls' });
+        // },
         async created(){
             this.planId = window.location.href.split('?')[1].split('=')[1]
             // 选课设置查看
             let {data:settingData} = await this.$api.schedule.setting.settingGet({planId:this.planId})
             this.dataSource =settingData.result[0].setInfo
         },
+        //监测选课时间
         watch: {
             startValue(val) {
                 console.log('startValue', val);
@@ -281,6 +278,7 @@
             },
         },
         methods: {
+            //开始选课时间
             disabledStartDate(startValue) {
                 const endValue = this.endValue;
                 if (!startValue || !endValue) {
@@ -288,6 +286,7 @@
                 }
                 return startValue.valueOf() > endValue.valueOf();
             },
+            //选课截止时间
             disabledEndDate(endValue) {
                 const startValue = this.startValue;
                 if (!endValue || !startValue) {
@@ -309,14 +308,16 @@
                     // note: `Hi, ${value === 'male' ? 'man' : 'lady'}!`,
                 });
             },
+            //添加教师
             addTeacher(){
                 this.addVisit=true;
-
             },
+            //删除类型
             deleteTypical(key){
                 const dataSource = [...this.dataSource];
                 this.dataSource= dataSource.filter(item => item.key !== key);
             },
+            //保存
             handleOk() {
                 this.loading = true;
                 setTimeout(() => {
@@ -339,7 +340,6 @@
                     timeLimit: this.startValue + ' - '+this.endValue,
                     tips:'',
                 })
-
                 alert(data.success?'修改成功':'修改失败')
             },
             Clear(){

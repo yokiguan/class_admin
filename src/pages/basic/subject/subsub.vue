@@ -207,7 +207,7 @@
         this.addClassVisit=true;
         this.editText=this.dataSource.findIndex(item=>item.subChildId==editId);
         this.form.name=this.dataSource[this.editText].name;
-        console.log(this.dataSource[this.editText].childSubjectGrade[0].gradeName)
+        // console.log(this.dataSource[this.editText].childSubjectGrade[0].gradeName)
         this.form.type=this.dataSource[this.editText].type==1?'行政班课':'走班课'
         console.log(this.dataSource[this.editText].subChildId)
       },

@@ -26,7 +26,7 @@ const plan={
     },
     //排课计划查看（单个）（已调）
     schedulegetInfo(params){
-        return axios.get(`${baseUrl}/getDataInfo.json`,{params});
+        return axios.get(`${baseUrl}/getDatasInfo.json`,{params});
     },
     //发布选课查看学生(已调）
     scheduleDistribute(params){

@@ -24,15 +24,13 @@
             <a-row class="buttons">
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教室设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
-            <a-row class="form"
-                style="margin-left: -150px;
-                        margin-top:60px">
+            <a-row class="form" style="margin-left: -150px;margin-top:60px">
                 <a-form-model :modal="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 8}" >
-                    <a-form-model-item label="选择课表模板">
+                    <a-form-model-item label="选择课表模板" ref="modalId" prop="modalId">
                         <a-select @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modalId">
                             <a-select-option v-for="(modalName,index) in modalInfo" :key="index" :value="modalName.id">
                                 {{modalName.templateName}}
@@ -62,39 +60,48 @@
 </template>
 <script>
     import moment from "moment";
+    import {message} from "ant-design-vue";
     import plan from "../../../../services/api/schedule/plan";
     const columns = [
         {
             title: "",
-            dataIndex: "activity"
+            dataIndex: "activity",
+            align:'center',
         },
         {
             title: "星期一",
-            dataIndex: "monday"
+            dataIndex: "monday",
+            align:'center',
         },
         {
             title: "星期二",
-            dataIndex: "tuesday"
+            dataIndex: "tuesday",
+            align:'center',
         },
         {
             title: "星期三",
-            dataIndex: "wednesday"
+            dataIndex: "wednesday",
+            align:'center',
         },
         {
             title: "星期四",
-            dataIndex: "thursday"
+            dataIndex: "thursday",
+            align:'center',
         },
         {
             title: "星期五",
-            dataIndex: "friday"
+            dataIndex: "friday",
+            align:'center',
         },
         {
             title: "星期六",
-            dataIndex: "saturday"
+            dataIndex: "saturday",
+            align:'center',
         },
         {
             title: "星期日",
-            dataIndex: "sunday"
+            dataIndex: "sunday",
+            align:'center',
         }
     ];
     const activity = [
@@ -185,28 +192,40 @@
                 this.dataSource = activities;
                 this.timeData = timeDatas;
             },
+            //课时设置
             timesSetting(){
                 this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
+            //课节设置
             oncesSetting(){
                 this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
+            //教室设置
             placeSetting(){
                 this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
+            //课程设置
             courseSetting(){
                 this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
+            //开始排课
             startArray(){
                 this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
+            //返回
             back(){
                 this.$router.go(-1)
             },
+            //保存并跳转至下一步
             async Next(planId,currId){
-                console.log(this.planId);
-                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`);
-                let {data}=await this.$api.schedule.arrangeClass.saveCoursetime({planId:this.planId,currId:this.currId})
+                console.log(this.form.modalId);
+                if(this.form.modalId==" "){
+                    message.info("请选择课表模板！");
+                }else{
+                    this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`);
+                    //保存课表模板
+                    let {data}=await this.$api.schedule.arrangeClass.saveCoursetime({planId:this.planId,currId:this.currId})
+                }
             }
         }
     };
@@ -253,20 +272,5 @@
         height: 30px;
         padding-top:5px;
         background-color: #d9d9d9;
-    }
-    /*/deep/ Table {*/
-    /*    .ant-table-tbody > tr:first-child > td,*/
-    /*    .ant-table-tbody > tr:last-child > td {*/
-    /*        background: #f00;*/
-    /*    }*/
-    /*}*/
-    /deep/ Table{
-        .ant-table-thead >tr >th{
-            background-color: #f4f4f4;
-        }
-        .ant-table-tbody > tr:nth-child(4) > td,
-        .ant-table-tbody > tr:nth-child(7) > td {
-            background-color: #f4f4f4;
-        }
     }
 </style>

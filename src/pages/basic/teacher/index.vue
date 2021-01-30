@@ -50,7 +50,7 @@
       </template>
       <a-form-model :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" style="margin-left: 70px">
         <a-form-model-item label="老师姓名">
-          <a-input style="width: 300px" disabled="disabled" v-model="form.teacherName"/>
+          <a-input style="width: 300px" disabled="disabled" v-model="form.teacherName1"/>
         </a-form-model-item>
         <a-form-model-item label="联系电话">
           <a-input style="width: 300px" disabled="disabled" v-model="form.tel"/>
@@ -221,7 +221,7 @@
             this.gradeData=this.adminData[i].adminGrades,
             console.log(this.gradeData)
             // // //根据年级选择教师
-            let {data}=await this.$api.basic.teacher.fetchTeacherList({adminId: this.adminData[i].adminId});
+            let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.pagination.pageSize,current:this.pagination.current,adminId: this.adminData[i].adminId});
             console.log(data.rows);
             // let newObj = []
           //   for(let i in data.rows){
@@ -270,9 +270,10 @@
       async edit(editId){
         this.treeData=[];
         this.editVisit=true;
+        this.form.addSub=[];
         this.editText=this.dataSource.findIndex(item=>item.teacherId==editId);
           console.log(this.editText);
-        this.form.teacherName=this.dataSource[this.editText].teacherName;
+        this.form.teacherName1=this.dataSource[this.editText].teacherName;
           this.form.tel=this.dataSource[this.editText].tel;
           console.log(this.dataSource[this.editText].teacherRoleDtos);
           if(this.dataSource[this.editText].teacherRoleDtos.length==0){
@@ -282,10 +283,11 @@
           }
           //获取所属课程信息
         this.checkedKeys = []
-        let selectData = this.dataSource.filter(item => item.id === editId)
+        let selectData = this.dataSource.filter(item => item.teacherId=== editId)
         selectData[0].subjectTeacherDtos.forEach((item)=>{
-          this.checkedKeys.push(item.subChildId)
+          this.form.addSub.push(item.subChildId)
         })
+        //获取级部、年级、课程树
         let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
         console.log(data.result);
         for(let i in data.result){

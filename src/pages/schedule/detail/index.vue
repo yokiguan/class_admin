@@ -27,13 +27,13 @@
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
-      <a-form-model v-bind="formItemLayout" :model="form" ref="createForm" :rules="rules">
+      <a-form-model v-bind="formItemLayout" :model="form" :rules="rules">
         <a-form-model-item label="计划名称" prop="name" ref="name">
           <a-input placeholder="请输入计划名称" v-model="form.name"/>
         </a-form-model-item>
         <a-form-model-item label="所属学期" prop="term" ref="term">
-          <a-select placeholder="请选择学期" v-model="form.term" @change="changeTerm">
-            <a-select-option v-for="(terms,index) in this.tearmData" :key="index" :value="terms.termName">
+          <a-select placeholder="请选择学期" v-model="form.term">
+            <a-select-option v-for="(terms,index) in this.tearmData" :key="index" :value="terms.id">
               {{terms.termName}}
             </a-select-option>
           </a-select>
@@ -82,6 +82,7 @@
 </template>
 <script>
   import {message} from "ant-design-vue";
+  // import pick from "lodash.pick"
   const operationList = [
     {
       icon: "edit",
@@ -162,6 +163,10 @@
           },
         },
         form:{
+          name:"",
+          term:"",
+          gradeId:"",
+          type:"",
         },
         rules:{
           name:[
@@ -175,13 +180,20 @@
             {
               required:true,
               message:"请选择学期！",
-              trigger:"change",
+              trigger:"blur",
             }
           ],
           gradeId:[
             {
               required:true,
               message:"请选择年级！",
+              trigger:"blur",
+            }
+          ],
+          type:[
+            {
+              required:true,
+              message:"请选择功能！",
               trigger:"change",
             }
           ],
@@ -219,7 +231,6 @@
         }else if(item.text==='行政班排课任务'){
           this.$router.push(`/schedule/detail/task_admin/index?planId=${this.planId}`)
         }  },
-      changeTerm(){},
       //指定排课计划信息查看
       async lookInfo(){
         this.planId = window.location.href.split('?')[1].split('=')[1];
@@ -230,9 +241,16 @@
       },
       //修改信息
       editInfo(){
+        // //重置表单数据
+        // this.form.resetField();
+        // this.model=Object.assign({},this.result);
+        // this.$nextTick(()=>{
+        //   //设置初始值
+        //   this.form.setFieldsValue(pick(this.model,['name']))
+        // })
         this.form.name=this.result.name;
         this.form.term=this.result.term;
-        this.form.gradeId=this.result.gradeId;
+        this.form.gradeId=this.result.gradeName;
         console.log(this.result.type);
         this.form.type=this.result.type==0?['走班排课']:this.result.type==1?['行政班课']:['走班排课','行政班课'];
       },

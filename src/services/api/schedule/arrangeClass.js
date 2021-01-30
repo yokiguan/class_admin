@@ -8,14 +8,13 @@ const baseUrl2 = base.root + '/a/classroomSetting'
 const baseUrl3 = base.root + '/a/scheduleTeacherClass'
 const baseUrl4 = base.root + '/a/courseRule'
 const arrangeClass={
-    // 选课排课 课时设置保存
+    // 选课排课 课时设置保存(已调）
     saveCoursetime(params){
         return axios.post(`${baseUrl1}/saveData.json`,params);
     },
     //课节设置保存
     saveLesson(params){
-        return axios.post(`${baseUrl1}/saveSelectLessonData.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.post(`${baseUrl1}/saveSelectLessonData.json`,params);
     },
     // 课程设置 列表信息查看(接口有问题）
     getList(params){
@@ -50,7 +49,7 @@ const arrangeClass={
             'Content-Type': 'multipart/form-data'
         });
     },
-    //课节设置 查看
+    //课节设置 查看(已调）
     getLesson(params) {
         return axios.get(`${baseUrl1}/getSelectLessonDataInfo.json`, {params});
     }

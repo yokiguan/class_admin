@@ -138,6 +138,22 @@
       },
       //保存编辑信息
       async handleOk(){
+        console.log(this.checkedKeys);
+        let subChildIds = []
+        this.checkedKeys.forEach((item,index) =>{
+          let parentNode = this.treeData.filter(child => child.key === item)
+          console.log(parentNode);
+          if(parentNode.length > 0 && Object.prototype.hasOwnProperty.call(parentNode[0],'children')){
+            parentNode[0].children.forEach(chr=>{
+              console.log(chr.key);
+              subChildIds.push(chr.key)
+            });
+          }else{
+            console.log(item);
+            subChildIds.push(item)
+          }
+        })
+        this.checkedKeys= subChildIds
         this.editVisit=false;
         let {data}=await this.$api.basic.rule.saveRuleItem({ id:this.dataSource[this.editText].id,subChildId:this.checkedKeys.join(',')})
         if(data.success){

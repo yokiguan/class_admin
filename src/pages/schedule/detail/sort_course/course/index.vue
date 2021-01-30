@@ -52,8 +52,11 @@
                             :data-source="tableData"
                             :pagination="false"
                             :bordered="true">
-                        <a-input slot="add_times" :value="className"></a-input>
-                        <a-input slot="add_datas"></a-input>
+<!--                        <a-input slot="add_times" :value="className"></a-input>-->
+<!--                        <a-input slot="add_datas"></a-input>-->
+                        <div slot-scope="scope">
+                            <a-input :value="scope.row.add_times"></a-input>
+                        </div>
                         <a-button slot="adds_times" style="background-color: #00ccff;
                         color:white;" @click="add_time">
                             添加时间段
