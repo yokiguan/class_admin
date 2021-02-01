@@ -29,17 +29,13 @@
                             style="font-size: 1.3em;"/>
                 </div>
                 <div class="right">
-                    <ClassRegular/>
-                    <LocationRegular/>
-                    <CurriculumRegular/>
-<!--                    <ClassRegular v-if="showcomClass"/>-->
-<!--                    <LocationRegular v-if="showcomLocation" @form-modal-change="changeEvent"/>-->
-<!--                    <CurriculumRegular v-if="showcomCurriculum" :templateId ="templateId"/>-->
+                    <ClassRegular v-if="showcomClass" @form-modal-change="changeEvent"/>
+                    <LocationRegular v-if="showcomLocation" :templateId ="templateId"/>
+                    <CurriculumRegular v-if="showcomCurriculum" />
                 </div>
             </div>
         </div>
     </EasyScrollbar>
-
 </template>
 <script>
     import ClassRegular from './class'
@@ -55,10 +51,15 @@
                     barColor:'block'
                 },
                 disabled: false,
-                // showcomClass:false,
-                // showcomCurriculum: false,
-                // showcomLocation:false,
+                showcomClass:false,
+                showcomCurriculum: false,
+                showcomLocation:false,
                 selectBuildingKeys:[],
+                checkedBuildingKeys:[],
+                replaceFields:{
+                    children:'child',
+                    title:'name',
+                }
             };
         },
         created() {
@@ -72,28 +73,39 @@
         methods: {
             //获取数据
             async getData(){
-                let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
-                console.log(data.result);
-                for(let i in data.result){
+                let {data:{result,success}}=await this.$api.basic.teacher.AdminGradeSubTec();
+                console.log(result);
+                for(let i=0;i<result.length;i++){
                     //第一层(级部）
                     let adminTree={};
-                    adminTree.title=data.result[i].adminName;
-                    adminTree.key=data.result[i].adminId;
-                    if(data.result[i].adminGrades.length){
+                    adminTree.title=result[i].adminName;
+                    adminTree.key=result[i].adminId;
+                    if(result[i].adminGrades.length){
                         //第二层(年级）
                         adminTree.children=[];
-                        for(let j=0;j<data.result[i].adminGrades.length;j++){
-                            let gradeItem=data.result[i].adminGrades[j];
+                        for(let j=0;j<result[i].adminGrades.length;j++){
+                            let gradeItem=result[i].adminGrades[j];
                             let childData={}
                             childData.key=gradeItem.gradeId;
                             childData.title=gradeItem.gradeName;
-                            if(gradeItem.subjectEntities.length){
+                            if(gradeItem.subSubjectDtos.length){
                                 //第三层(主课程)
                                 childData.children=[];
-                                for(let k in gradeItem.subjectEntities){
+                                for(let k in gradeItem.subSubjectDtos){
+                                    let mainCourseItem=gradeItem.subSubjectDtos[k];
                                     let mainCourse={};
-                                    mainCourse.key=gradeItem.subjectEntities[k].subChildId;
-                                    mainCourse.title=gradeItem.subjectEntities[k].name;
+                                    mainCourse.key=mainCourseItem.subId;
+                                    mainCourse.title=mainCourseItem.subName;
+                                    if(mainCourseItem.teacherDtos){
+                                        //第四层（教师）
+                                        mainCourse.children=[];
+                                        for (let l in mainCourseItem.teacherDtos){
+                                            let teacher={};
+                                            teacher.key=mainCourseItem+mainCourseItem.teacherDtos[l].teacherId;
+                                            teacher.title=mainCourseItem.teacherDtos[l].teacherName;
+                                            mainCourse.children.push(teacher)
+                                        }
+                                    }
                                     childData.children.push(mainCourse)
                                 }
                             }
@@ -101,7 +113,7 @@
                         }
                     }
                     this.treeData.push(adminTree);
-                    console.log(data.result[i]);
+                    console.log(this.treeData);
                 }
             },
             selectBuilding(selectedKeys, info) {
@@ -116,9 +128,9 @@
                 this.showcomClass=true;
             },
             changeEvent (modal) {
-                // console.log('modal',modal)
-                // this.templateId = modal
-                // modal ? this.showcomLocation = true : showcomLocation = false
+                console.log('modal',modal)
+                this.templateId = modal
+                modal ? this.showcomLocation = true : showcomLocation = false
             }
         },
     };

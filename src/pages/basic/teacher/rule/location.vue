@@ -6,25 +6,21 @@
             </a-col>
         </a-row>
         <a-row>
-            <a-form-model :form="form" :label-col="{span:2}" :wrapper-col="{span:12}" @submit="addClassHandleSubmint">
+            <a-form-model :modal="form" :label-col="{ span: 2 }" :wrapper-col="{ span:12}" >
                 <a-form-model-item label="选择课表模板">
-                    <a-select v-decorator="['选择课表模板',{ rules: [{ required: true, message: '请选择课表模板!' }] },]"
-                              placeholder="高一组课表模板">
-                        <a-select-option value="one">高一组课表模板</a-select-option>
-                        <a-select-option value="two">高二组课表模板</a-select-option>
-                        <a-select-option value="three">高三组课表模板</a-select-option>
+                    <a-select @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modal">
+                        <a-select-option v-for="(modalName,index) in modalInfo" :key="index" :value="modalName.id">
+                            {{modalName.templateName}}
+                        </a-select-option>
                     </a-select>
                 </a-form-model-item>
             </a-form-model>
         </a-row>
         <a-row>
-            <a-table :rowKey="'key'"
-                    :columns="columnsPlace"
+            <a-table :rowKey="'ruleId'" :columns="columnsPlace"
+                     :bordered="true" :pagination="false"
                      :data-source="placeData"
-                     :bordered="true"
-                     :pagination="false"
                      style="width: 45%;margin-left: 50px;margin-top: 20px">
-                <a-checkbox slot="checkBox" @change="change"></a-checkbox>
                 <span slot="action">查看</span>
             </a-table>
         </a-row>
@@ -33,68 +29,62 @@
 <script>
     const columnsPlace=[
         {
-            title:'',
-            dataIndex:'blank',
-            scopedSlots:{customRender:'checkBox'},
-            align:'center',
-            width:'8%'
-        },
-        {
             title:'序号',
-            dataIndex:'serialNum',
+            dataIndex:'ruleId',
             align:'center',
-            width:'13%'
         },
         {
             title:'规则名称',
-            dataIndex:'regularName',
+            dataIndex:'name',
             align:'center',
-            width:'40%'
         },
         {
-            title:'包含老师数量',
-            dataIndex:'num',
+            title:'包含教室数量',
+            dataIndex:'number',
             align:'center',
-            width:'24%'
         },
         {
             title:'操作',
             dataIndex:'opts',
             align:'center',
-            width:'15%',
             scopedSlots: { customRender: 'action' },
         },
-    ]
-    const placeData=[
-        {
-            serialNum:'1',
-            regularName:'英语老师时间规则',
-            num:'2',
-        },
-        {
-            serialNum:'2',
-            regularName:'数学老师时间规则',
-            num:'1',
-        },
-        {
-            serialNum:'3',
-            regularName:'体育老师时间规则',
-            num:'1',
-        },
-        {
-        }
     ]
     export default {
         data(){
             return{
                 columnsPlace,
-                placeData,
-                form:{},
+                placeData:[],
+                modelName:[],
+                modalInfo:[],
+                modalName:"",
+                modalIds:"",
+                form:{
+                    modal:" ",
+                },
+                templateId:''
             }
         },
+        async created(){
+            //获取课表模板信息
+            let {data}=await this.$api.basic.template.fetchList()
+            this.modalInfo=data.rows;
+            console.log(this.modalInfo);
+        },
         methods:{
-            addClassHandleSubmint(){},
             change(){},
+            async handleSelectChange(){
+                console.log(this.form.modal)
+                //获取场地信息
+                let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:this.form.modal})
+                console.log(placeData);
+                this.placeData=placeData.rows;
+            },
+        },
+        watch:{
+            "form.modal" () {
+                this.$emit("form-modal-change", this.form.modal)
+            }
         }
     }
 </script>

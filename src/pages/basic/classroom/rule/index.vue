@@ -71,7 +71,7 @@
         },
         watch:{
             checkedBuildingKeys(val){
-                console.log('onCheck',val);
+                // console.log('onCheck',val);
             }
         },
         methods: {
@@ -84,6 +84,7 @@
                     let numberTree = {}
                     numberTree.title = data.result[i].building_name
                     numberTree.key = data.result[i].building_Id
+                    // console.log(data.result[i].floor_list)
                     if (data.result[i].floor_list.length) {
                         //    第二层
                         numberTree.children = []
@@ -92,31 +93,31 @@
                             let childData = {}
                             childData.key = data.result[i].building_Id + item.floor
                             childData.title = '第' + item.floor + '层'
+                            // console.log(item.classroom_list);
                             if(item.classroom_list.length) {
                                 childData.children = []
+                                //第三层
                                 for (let k in item.classroom_list) {
                                     let dataThree = {}
-                                    dataThree.key = item.classroom_list[k].room_id
-                                    dataThree.title = item.classroom_list[k].classroom_name
+                                    dataThree.key = item.classroom_list[k].room_id;
+                                    dataThree.title = item.classroom_list[k].classroom_name;
+                                    childData.children.push(dataThree)
                                 }
-                                childData.children.push(dataThree)
                             }
                             numberTree.children.push(childData)
                         }
                     }
                     this.buildingsData.push(numberTree)
-                    console.log(data.result[i])
+                    // console.log(data.result[i])
                 }
-                console.log(this.buildingsData)
+                // console.log(this.buildingsData)
             },
             onCheck(checkedKeys){
                 this.selectBuildingKeys=checkedKeys;
-                // this.$router.push('/basic/classroom/rule/location');
                 this.showcomLocation=true;
             },
             selectBuilding(selectBuildingsKeys,info){
                 this.selectBuildingKeys=selectBuildingsKeys;
-                // this.$router.push('/basic/classroom/rule/location');
                 this.showcomLocation=true;
             },
             changeEvent (modal) {
@@ -127,7 +128,6 @@
         },
     };
 </script>
-
 <style lang="less" scoped>
     .result{
         width: 100%;

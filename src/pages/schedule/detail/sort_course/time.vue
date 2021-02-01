@@ -70,25 +70,39 @@
                     <a-button key="back" @click="handleCancelMain">取消</a-button>
                 </template>
                 <a-card>
-                    <a-table :rowKey="'lesson'"
-                            :columns="column4"
+                    <a-table
+                             :rowKey="'id'"
+                             :columns="column4"
                              :data-source="tableData4"
                              :pagination="false"
                              :bordered="true">
-                        <a-form slot="useMax" slot-scopd="text,record,index">
-                            <a-form-item>
-                                <a-select   v-model="maxTimesModel" style="width: 100px">
-                                   {{text}}
-                                </a-select>
-                            </a-form-item>
-                        </a-form>
-                        <span slot="action" style="color:blue" @click="onDelete">删除</span>
+                        <template slot="useMax" slot-scope="text,record,index">
+                            <a-select  style="width: 100px" v-model="value" @change="handleSelectChange(record.id)">
+<!--                                <a-select-option :value="text">-->
+<!--                                    {{text}}-->
+<!--                                </a-select-option>-->
+                                <a-select-option value="1">1</a-select-option>
+                                <a-select-option value="2">2</a-select-option>
+                                <a-select-option value="3">3</a-select-option>
+                                <a-select-option value="4">4</a-select-option>
+                                <a-select-option value="5">5</a-select-option>
+                            </a-select>
+                        </template>
+                        <template slot="action" slot-scope="text, record">
+                            <a-popconfirm
+                                    v-if="tableData4.length"
+                                    title="确认删除?"
+                                    @confirm="() => onDelete(record.id)">
+                                <a href="javascript:;">删除</a>
+                            </a-popconfirm>
+                        </template>
                     </a-table>
+                    <div style="float: left;font-size: 1.0rem;color: blue;margin-left: 10px;margin-top: 10px" @click="addNames">
+                        <a-icon type="plus" />
+                        <span>添加一项</span>
+                    </div>
                 </a-card>
-                <div slot="addName"  style="float: left;font-size: 1.0rem;color: blue;margin-left: 10px;margin-top: -10px" @click="addNames">
-                    <a-icon type="plus" />
-                    <span>添加一项</span>
-                </div>
+
             </a-modal>
 <!--            添加一项-->
             <a-modal :visible='addNameVisit'
@@ -99,10 +113,9 @@
                     <a-button key="back" @click="handleCancel">取消</a-button>
                 </template>
                 <a-checkbox-group
-                        v-model="value"
+                        v-model="checkValue"
                         name="checkboxgroup"
                         :options="options"
-                        @change="onChange"
                         style="margin-left: 50px;margin-bottom: 100px;margin-top: 30px"/>
             </a-modal>
         </div>
@@ -139,6 +152,14 @@
     ];
     const column4 = [
         {
+            title: '编号',
+            dataIndex:'id',
+            align:'center',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
+        },
+        {
             title: '课节',
             dataIndex: 'lesson',
             align:'center',
@@ -148,9 +169,6 @@
             dataIndex: 'useMax',
             align:'center',
             scopedSlots: { customRender: 'useMax' },
-            // customRender:(text)=>{
-            //     console.log(text);
-            // }
         },
         {
             title: '操作',
@@ -160,14 +178,14 @@
         },
     ];
     const options = [
-        { label: '上午第1节', value: 'morningOne' },
-        { label: '上午第2节', value: 'morningTwo' },
-        { label: '上午第3节', value: 'morningThree' },
-        { label: '上午第4节', value: 'morningFour' },
-        { label: '下午第1节', value: 'afterOne' },
-        { label: '下午第2节', value: 'afterTwo' },
-        { label: '下午第3节', value: 'afterThree' },
-        { label: '下午第4节', value: 'afterFour' },
+        { label: '上午第1节', value: '上午第1节' },
+        { label: '上午第2节', value: '上午第2节' },
+        { label: '上午第3节', value: '上午第3节' },
+        { label: '上午第4节', value: '上午第4节' },
+        { label: '下午第1节', value: '下午第1节' },
+        { label: '下午第2节', value: '下午第2节' },
+        { label: '下午第3节', value: '下午第3节' },
+        { label: '下午第4节', value: '下午第4节' },
     ];
     export default {
         data() {
@@ -181,6 +199,9 @@
                 //需要传到后端的数据
                 disableData:[],
                 priorityData:[],
+                settingLessonInfo:{},
+                disable:[],
+                priority:[],
                 tableData:[],
                 tableHeader: ['星期一','星期二','星期三','星期四','星期五','星期六','星期天'],
                 planData:"",
@@ -192,10 +213,15 @@
                 activity,
                 timeData:[],
                 modalId:"",
-                value:"",
-                form:{
-
-                },
+                checkValue:[],
+                deleteText:-1,
+                count:0,
+                lessonMax:[],
+                checkedValue:-1,
+                chooseRow:-1,
+                editId:-1,
+                chooseValue:-1,
+                value:"1",
             };
         },
         async created() {
@@ -212,10 +238,18 @@
             console.log(result);
             this.modalId=result.currId;
             this.tableData4=result.lessonMax;
-            // console.log(this.tableData4);
+            this.tableData4.forEach((item,i)=>{
+                item.id=i
+            })
+
+
+
+            this.count=this.tableData4.length
+            console.log(this.count);
+            console.log(this.tableData4.length);
+            this.settingLessonInfo=result.settingLessonInfo;
+            // console.log(this.settingLessonInfo.disable);
             this.modalInfo();
-            // this.form.maxTimeData=this.tableData4.useMax;
-            // console.log( this.form.maxTimeData);
         },
         methods: {
             //获取课表模板相关信息
@@ -252,8 +286,9 @@
                         this.tableData[i].rowList.push(pushData)
                     }
                 }
-                // console.log(this.tableData)
+                console.log(this.tableData)
                 this.timeData = timeDatas;
+                this.settingInfo();
             },
             //数据刷新
             setStore (data) {
@@ -274,6 +309,7 @@
             diasbleBtn(){
                 let cellRow=0;
                 let cellColumn=0;
+                //设置多选
                 for(let i=0;i<this.cellCheck.length;i++){
                     cellRow=this.cellCheck[i][0];
                     cellColumn=this.cellCheck[i][1];
@@ -284,6 +320,7 @@
                         this.tableData[cellRow].rowList[cellColumn].defaultCheck = 1
                     }
                     this.setStore(this.tableData);
+                    //如果禁选，则存入disableData
                     if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 1){
                         this.disableData.push([cellRow,cellColumn])
                         console.log(this.disableData);
@@ -303,11 +340,12 @@
             priorityBtn(){
                 let cellRow=0;
                 let cellColumn=0;
+                console.log(this.cellCheck);
                 for(let i=0;i<this.cellCheck.length;i++){
                     cellRow=this.cellCheck[i][0];
                     cellColumn=this.cellCheck[i][1];
-                    console.log(this.cellCheck[i][0])
-                    console.log(this.cellCheck[i][1])
+                    // console.log(this.cellCheck[i][0])
+                    // console.log(this.cellCheck[i][1])
                     if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
                         // 修改颜色为绿色
                         this.tableData[cellRow].rowList[cellColumn].defaultCheck = 3
@@ -343,47 +381,85 @@
                 }
                 return color
             },
+            //settingInfo显示
+            async settingInfo(){
+                console.log(this.tableData)
+                //字符串转化为数组
+                // this.priority=JSON.parse(this.settingLessonInfo.priority);
+                // this.disable=JSON.parse(this.settingLessonInfo.disable);
+                // console.log(this.priority);
+                // console.log(this.priority.length);
+                // console.log(this.disable);
+                // console.log(this.disable.length);
+                //后端获取数据的显示
+                for (let i in this.disable){
+                    let getRRow=0;
+                    let getRColumn=0;
+                    getRRow=this.disable[i][0];
+                    getRColumn=this.disable[i][1];
+                    // console.log(getRRow);
+                    // console.log(getRRow);
+                    this.tableData[getRColumn].rowList[getRRow].defaultCheck = 1
+                }
+                for (let j in this.priority){
+                    let getGRow=0;
+                    let getGColumn=0;
+                    getGRow=this.priority[j][0];
+                    getGColumn=this.priority[j][1];
+                    // console.log(getGRow);
+                    // console.log(getGColumn);
+                    this.tableData[getGColumn].rowList[getGRow].defaultCheck = 3
+                }
+            },
             change() {
                 this.visible = true;
-            },
-            changeSituation(key, index){
-                console.log(key, index)
-            },
-            delSituation(key, index){
-                console.log(key, index)
-                this.tableData[key].situation.pop(index)
-            },
-            addNames(){
-                this.addNameVisit=true
-            },
-            handleOk(){
-                this.loading=true
-                setTimeout(()=>{
-                    this.loading=false
-                    this.addNameVisit=false
-                })
-                const { count, tableData4} = this;
-                const newData = {
-                    key: count,
-                    times: '周一上午第一节',
-                    number: '1',
-                    opt: '删除',
-                };
-                this.tableData4= [...tableData4, newData];
-                this.count = count + 1;
-            },
-            onChange(checkedValues) {
-                console.log('checked = ', checkedValues);
-                console.log('value = ', this.value);
-            },
-            onDelete(){
-                const dataSource = [...this. tableData4];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this. tableData4 = dataSource
             },
             //保存最大课时数
             handleOkMain(){
                 this.visible=false;
+                for(let i= 0; i <this.tableData4.length;i++){
+                    let pushData = {
+                        lesson:this.tableData4[i].lesson,
+                        useMax: this.tableData4[i].chooseValue,
+                    }
+                    this.lessonMax.push(pushData)
+            }
+            console.log(this.lessonMax)
+            },
+            handleSelectChange(changeId,value){
+                console.log(value);
+                this.chooseValue=value;
+                console.log( this.chooseValue);
+                const dataSource=[...this.tableData4];
+                this.editId=dataSource.findIndex(item=>item.id===changeId);
+                console.log(this.editId);
+                // // this.chooseRow=
+                // if(this.editId){
+                //     this.editId[row]=value;
+                //     this.dataSource=dataSource;
+                // }
+
+            },
+            //添加最大课时保存
+            handleOk(){
+                this.loading=false
+                this.addNameVisit=false
+                this.count=this.tableData4.length;
+                this.tableData4.unshift({
+                    id:this.count,
+                    lesson:this.checkValue
+                });
+            },
+            //删除最大课时设置
+            onDelete(deleId){
+                this.deleteText=this.tableData4.findIndex(item=>item.id===deleId);
+                console.log(this.deleteText);
+                this.tableData4.splice(this.deleteText,1);
+                console.log(this.tableData4);
+            },
+            //添加一项
+            addNames(){
+                this.addNameVisit=true;
             },
             //最大课时数
             maxTime(){
@@ -424,8 +500,14 @@
             },
             //保存
             async saveInfo(){
-                // let {data}=await this.$api.schedule.arrangeClass.saveLesson();
-                // console.log(data);
+                let addData={
+                    planId:this.planId,
+                    currId:this.currId,
+                    settingLessonInfo:{disable:this.disableData.join(""),priority:this.priorityData.join("")},
+                    lessonMax:this.lessonMax,
+                }
+                let {data}=await this.$api.schedule.arrangeClass.saveLesson(addData);
+                console.log(data);
             },
             //返回
             back(){

@@ -68,7 +68,6 @@
                          style="width: 275px"
                          :checkedKeys="checkedKeys"
                          :tree-data="treeData"
-                         checkStrictly="true"
                          tree-checkable
                          :show-checked-strategy="SHOW_PARENT">
           </a-tree-select>
@@ -268,8 +267,6 @@
       },
       //获取课程信息
       async edit(editId){
-        this.treeData=[];
-        this.editVisit=true;
         this.form.addSub=[];
         this.editText=this.dataSource.findIndex(item=>item.teacherId==editId);
           console.log(this.editText);
@@ -278,14 +275,21 @@
           console.log(this.dataSource[this.editText].teacherRoleDtos);
           if(this.dataSource[this.editText].teacherRoleDtos.length==0){
             this.form.type='否';
-          }else{
+          }
+          else{
             this.form.type='是'
           }
-          //获取所属课程信息
-        this.checkedKeys = []
+          this.getCourseInfo(editId);
+      },
+      //获取所属课程信息
+      async getCourseInfo(editId){
+        //获取所属课程信息
+        this.treeData=[];
+        this.editVisit=true;
+        this.checkedKeys = [];
         let selectData = this.dataSource.filter(item => item.teacherId=== editId)
         selectData[0].subjectTeacherDtos.forEach((item)=>{
-          this.form.addSub.push(item.subChildId)
+          this.checkedKeys.push(item.subChildId)
         })
         //获取级部、年级、课程树
         let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
@@ -308,7 +312,7 @@
                 childData.children=[];
                 for(let k in gradeItem.subjectEntities){
                   let mainCourse={};
-                  mainCourse.key=gradeItem.subjectEntities[k].subChildId;
+                  mainCourse.key=gradeItem.gradeId+gradeItem.subjectEntities[k].subChildId;
                   mainCourse.title=gradeItem.subjectEntities[k].name;
                   childData.children.push(mainCourse)
                 }

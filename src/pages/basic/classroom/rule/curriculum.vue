@@ -215,17 +215,23 @@
                 }
                 return color
             },
-            async saveData(){
+            //打开弹框
+            saveData(){
                 this.saveVisit=true;
+
+            },
+            async handleOk(){
                 //保存场地规则
-                // let addData={
-                //     currId:
-                //     name:
-                //
-                // }
+                let addData={
+                    currId:this.currId,
+                    name:this.form.ruleName,
+                    // number:
+                    // ruleInfo:
+                    // classroomIds:
+
+                }
                 let {data}=await this.$api.basic.classroom.saveRule(addData);
             },
-            handleOk(){},
             handleCancel(){
                 this.saveVisit=false;
             },

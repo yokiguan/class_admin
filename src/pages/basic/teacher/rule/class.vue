@@ -9,28 +9,67 @@
             <h3>赵卫民老师：</h3>
         </a-row>
        <a-row>
-           <a-form-model :form="form" :label-col="{span:4}" :wrapper-col="{span:7}" @submit="addClassHandleSubmint">
+           <a-form-model :form="form" :label-col="{span:4}" :wrapper-col="{span:5}" >
                <a-form-model-item label="选择授课年级/班级">
-                   <a-select  @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modal">
-                       <a-select-option value="one">高一组课表模板</a-select-option>
-                   </a-select>
+                   <a-tree-select v-model="form.modal"
+                                  placeholder="请选择年级"
+                                  style="width: 275px"
+                                  :checkedKeys="checkedKeys"
+                                  :tree-data="treeData"
+                                  tree-checkable
+                                  :show-checked-strategy="SHOW_PARENT">
+                   </a-tree-select>
                </a-form-model-item>
            </a-form-model>
        </a-row>
     </a-card>
 </template>
 <script>
+    import { TreeSelect } from 'ant-design-vue';
+    const SHOW_PARENT = TreeSelect.SHOW_PARENT;
     export default {
         data(){
             return{
+                treeData:[],
+                SHOW_PARENT,
+                checkedKeys:[],
                 form:{},
             }
         },
+        created(){
+            this.grade();
+        },
         watch:{
-
+            "form.modal"(){
+                this.$emit("form-modal-change",this.form.modal);
+            }
         },
         methods:{
-            addClassHandleSubmint(){},
+            //获取年级班级信息
+            async grade(){
+                this.treeData = []
+                let {data:{result,success}}=await this.$api.basic.grade.fetchList();
+                console.log(result);
+                for(let i in result){
+                    //第一层（级部）
+                    let adminData={};
+                    adminData.title=result[i].adminName;
+                    adminData.key=adminData.value=result[i].adminId;
+                    if(result[i].adminGrades.length){
+                        //第二层（年级）
+                        adminData.children=[];
+                        for(let j=0;j<result[i].adminGrades.length;j++){
+                            let item=result[i].adminGrades[j];
+                            let gradeData={};
+                            gradeData.key=gradeData.value=item.gradeId;
+                            gradeData.title=item.gradeName;
+                            adminData.children.push(gradeData);
+                        }
+                    }
+                    this.treeData.push(adminData);
+                }
+                console.log("this.treeData",this.treeData)
+            },
         },
     }
 </script>
