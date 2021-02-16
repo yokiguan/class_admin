@@ -22,14 +22,13 @@
                     <a-tree
                             :tree-data="treeData"
                             checkable
-                            v-model="checkedBuildingKeys"
-                            :selected-keys="selectBuildingKeys"
-                            @select="selectBuilding"
+                            v-model="checkedKeys"
+                            :checkedKeys="checkedKeys"
                             @check="onCheck"
                             style="font-size: 1.3em;"/>
                 </div>
                 <div class="right">
-                    <ClassRegular v-if="showcomClass" @form-modal-change="changeEvent"/>
+                    <ClassRegular v-if="showcomClass" :teacherName="name" @form-modal-change="changeEvent"/>
                     <LocationRegular v-if="showcomLocation" :templateId ="templateId"/>
                     <CurriculumRegular v-if="showcomCurriculum" />
                 </div>
@@ -54,20 +53,17 @@
                 showcomClass:false,
                 showcomCurriculum: false,
                 showcomLocation:false,
-                selectBuildingKeys:[],
                 checkedBuildingKeys:[],
-                replaceFields:{
-                    children:'child',
-                    title:'name',
-                }
+                checkedKeys:[],
+                name:"",
             };
         },
         created() {
             this.getData();
         },
         watch:{
-            checkedBuildingKeys(val){
-                console.log('onCheck',val);
+            checkedKeys(val){
+                console.log('watchDataOfKeys',val);
             }
         },
         methods: {
@@ -101,7 +97,7 @@
                                         mainCourse.children=[];
                                         for (let l in mainCourseItem.teacherDtos){
                                             let teacher={};
-                                            teacher.key=mainCourseItem+mainCourseItem.teacherDtos[l].teacherId;
+                                            teacher.key=result[i].adminId+gradeItem.gradeId+mainCourseItem.subId+mainCourseItem.teacherDtos[l].teacherId;
                                             teacher.title=mainCourseItem.teacherDtos[l].teacherName;
                                             mainCourse.children.push(teacher)
                                         }
@@ -116,15 +112,10 @@
                     console.log(this.treeData);
                 }
             },
-            selectBuilding(selectedKeys, info) {
-                console.log('selected', selectedKeys, info);
-            },
-            onCheck(checkedKeys){
-                this.selectBuildingKeys=checkedKeys;
-                this.showcomClass=true;
-            },
-            selectBuilding(selectBuildingsKeys,info){
-                this.selectBuildingKeys=selectBuildingsKeys;
+            onCheck(e){
+                console.log(this.checkedKeys);
+                console.log('onCheck',e);
+
                 this.showcomClass=true;
             },
             changeEvent (modal) {

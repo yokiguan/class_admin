@@ -5,21 +5,22 @@
                 <span style="float: left;padding: 10px;">场地规则</span>
             </a-col>
         </a-row>
-        <a-row>
-            <a-form-model :modal="form" :label-col="{ span: 2 }" :wrapper-col="{ span:12}" >
-                <a-form-model-item label="选择课表模板">
-                    <a-select @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modal">
-                        <a-select-option v-for="(modalName,index) in modalInfo" :key="index" :value="modalName.id">
-                            {{modalName.templateName}}
-                        </a-select-option>
-                    </a-select>
-                </a-form-model-item>
-            </a-form-model>
-        </a-row>
+        <a-form-model :modal="form" :label-col="{ span: 2 }" :wrapper-col="{ span:12}" >
+            <a-form-model-item label="选择课表模板">
+                <a-select @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modal">
+                    <a-select-option v-for="(modalName,index) in modalInfo" :key="index" :value="modalName.id">
+                        {{modalName.templateName}}
+                    </a-select-option>
+                </a-select>
+            </a-form-model-item>
+        </a-form-model>
+        <a-button type="danger" style="width: 150px;margin-left: 600px;margin-top: -800px" @click="deleteRule">删除规则</a-button>
         <a-row>
             <a-table :rowKey="'ruleId'" :columns="columnsPlace"
                      :bordered="true" :pagination="false"
                      :data-source="placeData"
+                     :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+                     :selectedRows="selectedRows"
                      style="width: 45%;margin-left: 50px;margin-top: 20px">
                 <span slot="action">查看</span>
             </a-table>
@@ -59,6 +60,8 @@
                 modalInfo:[],
                 modalName:"",
                 modalIds:"",
+                selectedRowKeys: [], // Check here to configure the default column
+                selectedRows:[],
                 form:{
                     modal:" ",
                 },
@@ -67,18 +70,30 @@
         },
         async created(){
             //获取课表模板信息
+
             let {data}=await this.$api.basic.template.fetchList()
             this.modalInfo=data.rows;
             console.log(this.modalInfo);
         },
         methods:{
-            change(){},
+            //选择课表模板
             async handleSelectChange(){
                 console.log(this.form.modal)
-                //获取场地信息
-                let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:this.form.modal})
+                //获取场地信息{currId:this.form.modal}
+                let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:2})
                 console.log(placeData);
                 this.placeData=placeData.rows;
+            },
+            //复选框
+            onSelectChange( selectedRowKeys,selectedRows) {
+                this.selectedRowKeys = selectedRowKeys;
+                this.selectedRows=selectedRows
+                console.log(this.selectedRowKeys);
+                console.log(this.selectedRows);
+            },
+            //删除场地规则
+            async deleteRule(){
+
             },
         },
         watch:{

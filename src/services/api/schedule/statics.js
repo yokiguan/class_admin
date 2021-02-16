@@ -7,32 +7,32 @@ const baseUrl1=base.root+'/a/scheduleResult'
 const baseUrl2=base.root+'/a/scheduleStatics'
 const baseUrl3=base.root+'/a/schedulePlan'
 const statics={
-    // 课程组合统计查看
+    // 课程组合统计查看（已调）
     getSubjectCombination(params){
         return axios.get(`${baseUrl1}/subjectCombination.json`,{params});
     },
-    //统计选课人数以及课程被选情况
+    //统计选课人数以及课程被选情况（已调）
     getStudentSelectNum(params){
         return axios.get(`${baseUrl2}/getStudentSelectSubNumberStatistic.json`,{params});
     },
-    //修改选课时间
+    //修改选课时间（已调）
     alterTime(params){
         return axios.post(`${baseUrl3}/saveData.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
-    //选课结果详情查看
+    //选课结果详情查看（已调）
     getResult(params){
         return axios.get(`${baseUrl2}/getSubContainsStu.json`,{params});
     },
-    //选课结果详情删除
+    //选课结果详情删除（已调）
     delResult(params){
         return axios.post(`${baseUrl1}/deleteData.json`,params);
     },
-    //修改选课结果-添加按钮-查询出的学生
+    //修改选课结果-添加按钮-查询出的学生（已调）
     alterResultButtonFind(params){
         return axios.get(`${baseUrl2}/getArrangeStuInfo.json`,{params});
     },
-    //修改选课结果-添加按钮-添加结果
+    //修改选课结果-添加按钮-添加结果（已调）
     alterResultButtonResult(params){
         return axios.post(`${baseUrl1}/saveDataList.json`,params);
     }

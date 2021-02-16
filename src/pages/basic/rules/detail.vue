@@ -81,7 +81,6 @@
         editVisit:false,
         checkedKeys: [],
         treeData:[],
-        form:[],
         editText:-1,
       };
     },

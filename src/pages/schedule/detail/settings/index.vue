@@ -1,4 +1,3 @@
-
 <template>
     <div>
         <div class="result">
@@ -38,20 +37,21 @@
                             valueFormat="YYYY-MM-DD HH:mm:ss"/>
                 </a-form-model-item>
             </a-form-model>
-            <a-table :key="'no'" :columns="columns" :dataSource="dataSource" :pagination='false'>
+            <a-table :rowKey="'id'" :columns="columns" :dataSource="dataSource" :pagination='false'>
                 <div slot="subChildIds" slot-scope="text, record,index_1">
                     <a-table
-                            :key="'key'"
+                            :rowKey="'text.subChildId'"
                             :dataSource="text"
                             :columns="columnsSubjects"
                             :showHeader="false"
                             :pagination="false"
-                            bordered
-                    >
+                            bordered>
                         <div slot="isable" slot-scope="text,record,index_2">
+
                             <a-select  style="width: 100px" v-model="dataSource[index_1].subChildIds[index_2].isable">
                                 <a-select-option :value="0"> 必选 </a-select-option>
                                 <a-select-option :value="1"> 可选 </a-select-option>
+
                             </a-select>
                         </div>
                         <div slot="teahcherIds" slot-scope="text,record,index_2">
@@ -61,33 +61,29 @@
                                         :key="domain.key"
                                         :rules="{ required: true,message: '请输入人数',trigger: 'blur',}">
                                     <a-input
-                                       style="float: left;color: black;width: 50px;border:none;background-color:#fff"
-                                        :value="domain.teacherName"
-                                        v-model="dataSource[index_1].subChildIds[index_2].teahcherIds[index].teacherName"
-                                        disabled
-                                      >
+                                            style="float: left;color: black;width: 50px;border:none;background-color:#fff"
+                                            :value="domain.teacherName"
+                                            v-model="dataSource[index_1].subChildIds[index_2].teahcherIds[index].teacherName"
+                                            disabled>
                                     </a-input>
-                                    <a-input
-                                        placeholder="请输入人数"
-                                        style="width: 60%; margin-right: 8px"
-                                       v-model="dataSource[index_1].subChildIds[index_2].teahcherIds[index].capacity"
-                                        :value="domain.capacity"/>
-                                    <a
-                                            class="dynamic-delete-button"
-                                            type="minus-circle-o"
+                                    <a-input placeholder="请输入人数" style="width: 60%; margin-right: 8px"
+                                            v-model="dataSource[index_1].subChildIds[index_2].teahcherIds[index].capacity"
+                                            :value="domain.capacity"/>
+                                    <a class="dynamic-delete-button" type="minus-circle-o"
                                             @click="removeDomain(domain.teacherId)"
                                             style="color: blue;float: right">删除</a>
                                 </a-form-model-item>
                                 <a-form-model-item>
-                                    <a-button class="add-btn" @click="addTeacher"><a-icon type="plus" />新增老师</a-button>
+                                    <a-button class="add-btn" @click="addTeacher(dataSource.subChildIds.subChildId)"><a-icon type="plus" />新增老师</a-button>
                                 </a-form-model-item>
                             </a-form-model>
                         </div>
                     </a-table>
                 </div>
                 <a-form-item slot="regular">
-                    <a-select placeholder="覆盖2科" style="width: 150px">
-                        <a-select-option value="male">male</a-select-option>
+                    <a-select placeholder="请选择覆盖科目" @change="handleSelectChange" style="width: 150px">
+                                 <a-select-option value="male">male</a-select-option>
+                                 <a-select-option value="female">female</a-select-option>
                     </a-select>
                 </a-form-item>
                 <a slot='operate' @click="deleteTypical">删除</a>
@@ -129,6 +125,14 @@
     import { TreeSelect } from 'ant-design-vue';
     const SHOW_PARENT = TreeSelect.SHOW_PARENT;
     const columns = [
+        {
+            title: "编号",
+            dataIndex: "id",
+            align:'center',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
+        },
         {
             title: "类型",
             dataIndex: "name",
@@ -231,6 +235,8 @@
                 dynamicValidateForm: {
                     teacherIds:[{teacherName:'',capacity:''}]
                 },
+                select_type:"",
+                converSubject:"",
                 form: {
                 },
                 rules: {
@@ -256,17 +262,13 @@
                         },
                     ],
                 },
-                planId:""
+                planId:"",
+                gradeId:"",
+                editText:-1,
             };
         },
-        // beforeCreate() {
-        //     this.form = this.$form.createForm(this, { name: 'time_related_controls' });
-        // },
         async created(){
-            this.planId = window.location.href.split('?')[1].split('=')[1]
-            // 选课设置查看
-            let {data:settingData} = await this.$api.schedule.setting.settingGet({planId:this.planId})
-            this.dataSource =settingData.result[0].setInfo
+            this. lookInfo();
         },
         //监测选课时间
         watch: {
@@ -278,6 +280,25 @@
             },
         },
         methods: {
+            //指定排课计划信息查看
+            async lookInfo(){
+                this.planId = window.location.href.split('?')[1].split('=')[1];
+                let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
+                console.log(result);
+                this.gradeId=result.gradeId;
+                this.chooseClassSettingInfo();
+            },
+            async chooseClassSettingInfo(){
+                // 选课设置查看
+                let {data:{result,success}} = await this.$api.schedule.setting.settingGet({planId:this.planId,gradeId:this.gradeId});
+                console.log(result);
+                // console.log(settingData.result);
+                this.dataSource =result;
+                this.dataSource.forEach((item,i)=>{
+                    item.id=i
+                })
+                console.log(this.dataSource);
+            },
             //开始选课时间
             disabledStartDate(startValue) {
                 const endValue = this.endValue;
@@ -304,13 +325,18 @@
             },
             handleSelectChange(value) {
                 console.log(value);
-                this.form.setFieldsValue({
-                    // note: `Hi, ${value === 'male' ? 'man' : 'lady'}!`,
-                });
+            },
+            //查看教师
+            async lookTeacherInfo(id){
+                this.editText=this.dataSource.subChildIds.findIndex(item=>item.subChildId==id);
+                console.log(this.editText);
+                // let {data}=await this.$api.schedule.setting.lookTeacher({gradeId:this.gradeId,subChildId:})
             },
             //添加教师
-            addTeacher(){
+            addTeacher(id){
                 this.addVisit=true;
+                this.lookTeacherInfo(id);
+
             },
             //删除类型
             deleteTypical(key){

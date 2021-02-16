@@ -22,15 +22,14 @@
                     <a-tree
                             :tree-data="buildingsData"
                             checkable
-                            v-model="checkedBuildingKeys"
-                            :selected-keys="selectBuildingKeys"
-                            @select="selectBuilding"
+                            v-model="checkedKeys"
+                            :checkedKeys="checkedKeys"
                             @check="onCheck"
                             style="font-size: 1.3em;"/>
                 </div>
                 <div class="right">
                     <LocationRegular v-if="showcomLocation" @form-modal-change="changeEvent"></LocationRegular>
-                    <CurriculumRegular v-if="showcomCurriculum" :templateId ="templateId"></CurriculumRegular>
+                    <CurriculumRegular :classRoomId="classRoomIds" v-if="showcomCurriculum" :templateId ="templateId"></CurriculumRegular>
                 </div>
             </div>
         </div>
@@ -38,46 +37,38 @@
 
 </template>
 <script>
-    import ClassRegular from './class'
     import LocationRegular from './location'
     import CurriculumRegular from "./curriculum"
     export default {
         name:'teacherRule',
-        // components: {ClassRegular,LocationRegular,CurriculumRegular},
-        components: {ClassRegular,LocationRegular,CurriculumRegular},
+        components: {LocationRegular,CurriculumRegular},
         data() {
             return {
                 showcomCurriculum: false,
-                // treeData,
                 buildingsData:[],
+                checkedKeys:[],
                 showcomLocation:false,
                 showcomCirriculum:false,
                 myBarOption:{
                     barColor:'block'
                 },
-                checkedBuildingKeys:[],
-                selectBuildingKeys:[],
-                disabled: false,
-                replaceFields: {
-                    children: 'child',
-                    title: 'name',
-                },
-                templateId:''
+                templateId:'',
+                adminClass:"",
+                classRoomIds:[],
             };
         },
         created(){
             this.getData();
-
         },
         watch:{
-            checkedBuildingKeys(val){
-                // console.log('onCheck',val);
-            }
+          checkedKeys(val){
+              console.log('watchDataOfKeys',val);
+          }
         },
         methods: {
+            //查看信息树
             async getData () {
                 let {data} = await this.$api.basic.classroom.fetchRoomList();
-                // this.buildingsData = data.result
                 console.log(data.result)
                 for(let i in data.result) {
                     // 第一层
@@ -112,13 +103,29 @@
                 }
                 // console.log(this.buildingsData)
             },
-            onCheck(checkedKeys){
-                this.selectBuildingKeys=checkedKeys;
-                this.showcomLocation=true;
-            },
-            selectBuilding(selectBuildingsKeys,info){
-                this.selectBuildingKeys=selectBuildingsKeys;
-                this.showcomLocation=true;
+            //监控选择的数
+            onCheck(e){
+              console.log(this.checkedKeys);
+              console.log('onCheck',e);
+              this.showcomLocation=true;
+              let classroomId=[];
+              this.checkedKeys.forEach((item,index)=>{
+                  console.log(item);
+                  console.log(index);
+                  let parentNode=this.buildingsData.filter(child=>child.key===item)
+                  console.log(parentNode);
+                  if(parentNode.length>0&& Object.prototype.hasOwnProperty.call(parentNode[0],'children')){
+                      parentNode[0].children.forEach(chr=>{
+                          console.log(chr.key);
+                          classroomId.push(chr.key);
+                      });
+                  }else{
+                      console.log(item);
+                      classroomId.push(item)
+                  }
+              })
+              this.checkedKeys=classroomId;
+              console.log(this.checkedKeys);
             },
             changeEvent (modal) {
                 console.log('modal',modal)

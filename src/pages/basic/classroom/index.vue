@@ -11,9 +11,7 @@
               :pagination="pagination"
               @change="onTablechange">
         <template slot="classroom" slot-scope="buildingEntity">
-           <span v-for="(c,index) in buildingEntity" :key="index">
-              {{c.name}}
-        </span>
+           <span v-for="(c,index) in buildingEntity" :key="index">{{c.name}}</span>
         </template>
         <template slot="operation" slot-scope="text, record">
            <span @click="edit(record.roomId)" style="color:blue">编辑</span>|
@@ -140,13 +138,17 @@
         loading:false,
         pagination:{
           total:0,
-          pageSize:20,
+          pageSize:20,     //每页中显示20条数据
           showSizeChanger:true,
           onShowSizeChange:(current,pageSize)=> {
             this.pageSize=pageSize;
           }, //改变每页数量时更新显示
           showTotal:total=>`共有${total}条数据`,
-          // onChange:(page,pageSize)=>this.changePage(page,pageSize),              //点击页码事件
+        },
+        //查询参数
+        queryParam:{
+          page:1,//第几页
+          size:20,   //每页中显示的数据条数
         },
         placeName: "",
         columns: columns,
@@ -207,22 +209,30 @@
       this.classroomAndBuilding();
     },
     methods: {
+      //表格监听
+      onTablechange(pagination) {
+        this.pagination.current=pagination.current;
+        this.pagination.pageSize=pagination.pageSize;
+        this.queryParam.page=pagination.current;
+        this.queryParam.size=pagination.pageSize;
+        console.log(this.pagination.current);
+        console.log(this.pagination.pageSize);
+        this.buildingInfo();
+      },
       async buildingInfo(){
-        //查看教学楼
-        let {data} = await this.$api.basic.classroom.fetchList();
+        let {data}=await this.$api.basic.classroom.fetchList({rowCount: this.queryParam.size,current:this.queryParam.page});
         this.dataSource=data.rows;
         console.log(this.dataSource);
-        this.pagination.total=data.total;
-        console.log(this.pagination.total)
+        const pagination={...this.pagination};
+        pagination.total=data.total;
+        this.pagination=pagination;
       },
       async classroomAndBuilding(){
         //获取教室和教学楼相关信息
         let {data:buildings}=await this.$api.basic.building.fetchList();
         this.buildings =buildings.rows
       },
-      onShowSizeChange(current,pageSize){
-        console.log(current,pageSize);
-      },
+      //新增教室弹框出现
       showModal() {
          this.changeTitle='新增教室'
          this.show = true;
@@ -230,9 +240,7 @@
       onChangeCheck(checked) {
         console.log(`a-switch to ${checked}`);
       },
-      // onChange(page,pageSize){
-      //   console.log(page,pageSize);
-      // },
+      //保存弹窗
       async handleOk() {
         if(this.changeTitle=="新增教室")
         {
@@ -272,15 +280,11 @@
           this.show = false;
         }
       },
+      //关闭弹窗
       handleCancel() {
         this.show = false;
       },
-      onTablechange(pagination) {
-        this.pagination.current=pagination.current;
-        this.pagination.pageSize=pagination.pageSize;
-        console.log(this.pagination.current);
-        console.log(this.pagination.pageSize);
-      },
+      //选择所在教学楼
       async changeBuilding() {
         let {data}=await this.$api.basic.building.fetchBuilding({buildingId:this.form.buildingId});
         this.form.floor = ''
@@ -289,9 +293,11 @@
         }
         return this.floors;
       },
+      //跳转至规则设置
       gotoNew(id) {
         this.$router.push("/basic/classroom/rule?id=" + id);
       },
+      //编辑教室弹框
       edit(id){
         this.changeTitle='编辑教室';
         this.show = true;
@@ -314,6 +320,7 @@
         // }
         this.form.status=this.dataSource[this.editText].status==0?false:true;
       },
+      //删除
       async deleteItem(row) {
         console.log(row)
         let {data} = await this.$api.basic.classroom.deleteBuilding({ids: [row]});

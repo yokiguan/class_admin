@@ -5,10 +5,11 @@ import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'; // 导入http中创建的axios实例
 const baseUrl=base.root+'/a/classroom'
 const ruleUrl=baseUrl+'Rule'
+const baseRoomUrl=base.root+'a/classroomRule'
 const classroom = {
     // 查询全部教室的简要信息(已调）
     fetchList(params){
-        return axios.get(`${baseUrl}/getDataListWithBuilding.json`,params);
+        return axios.get(`${baseUrl}/getDataListWithBuilding.json`,{params});
     },
     // 查询指定教室信息，用于教室规则等的教室选择，编辑模板前，先查询模板信息，利用模板id(已调）
     fetchBuilding(params){
@@ -22,18 +23,18 @@ const classroom = {
     deleteBuilding(params){
         return axios.post(`${baseUrl}/deleteData.json`,params);
     },
-    // 场地规则列表查看(已调）
+    // 场地规则列表查看
     fetchRuleList(params){
      return axios.get(`${ruleUrl}/getDataListByCurrId.json`,{params});
     },
-    // 场地规则项查看(已调）
+    // 场地规则项查看
     fetchRule(params){
         return axios.get(`${ruleUrl}/getDataListByCurrId.json`,params)
     },
 
     // 场地规则删除
     deleteRule(params){
-        return axios.post(`${ruleUrl}/deleteDataJoint.json`,params)
+        return axios.post(`${baseRoomUrl}/deleteDataJoint.json`,{params});
     },
 
     // 场地规则新增编辑

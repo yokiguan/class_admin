@@ -72,6 +72,7 @@
         }
     ];
     export default {
+        props:["classRoomId"],
         data(){
             return{
                 tableData:[],
@@ -175,12 +176,10 @@
                     if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
                         // 修改颜色为红色
                         this.tableData[cellRow].rowList[cellColumn].defaultCheck = 1
+                        this.disableData.push([cellRow,cellColumn])
                     }
                     this.setStore(this.tableData);
-                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 1){
-                        this.disableData.push([cellRow,cellColumn])
-                        console.log(this.disableData);
-                    }
+                    console.log(this.disableData);
                 }
 
             },
@@ -226,7 +225,7 @@
                     currId:this.currId,
                     name:this.form.ruleName,
                     // number:
-                    // ruleInfo:
+                    ruleInfo:this.disableData,
                     // classroomIds:
 
                 }

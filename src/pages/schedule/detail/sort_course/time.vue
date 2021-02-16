@@ -77,7 +77,7 @@
                              :pagination="false"
                              :bordered="true">
                         <template slot="useMax" slot-scope="text,record,index">
-                            <a-select  style="width: 100px" v-model="value" @change="handleSelectChange(record.id)">
+                            <a-select  style="width: 100px" :default-value="text" @change="handleSelectChange">
 <!--                                <a-select-option :value="text">-->
 <!--                                    {{text}}-->
 <!--                                </a-select-option>-->
@@ -241,9 +241,6 @@
             this.tableData4.forEach((item,i)=>{
                 item.id=i
             })
-
-
-
             this.count=this.tableData4.length
             console.log(this.count);
             console.log(this.tableData4.length);
@@ -318,13 +315,15 @@
                     if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
                         // 修改颜色为红色
                         this.tableData[cellRow].rowList[cellColumn].defaultCheck = 1
+                        this.disableData.push([cellRow,cellColumn]);
                     }
                     this.setStore(this.tableData);
                     //如果禁选，则存入disableData
-                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 1){
-                        this.disableData.push([cellRow,cellColumn])
-                        console.log(this.disableData);
-                    }
+                    // if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 1){
+                    //     this.disableData.push([cellRow,cellColumn])
+                    //     console.log(this.disableData);
+                    // }
+                    console.log(this.disableData);
                 }
 
             },
@@ -349,12 +348,10 @@
                     if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
                         // 修改颜色为绿色
                         this.tableData[cellRow].rowList[cellColumn].defaultCheck = 3
+                        this.priorityData.push([cellRow,cellColumn])
                     }
                     this.setStore(this.tableData)
-                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 3){
-                        this.priorityData.push([cellRow,cellColumn])
-                        console.log(this.priorityData);
-                    }
+                    console.log(this.priorityData);
 
                 }
             },
@@ -385,8 +382,8 @@
             async settingInfo(){
                 console.log(this.tableData)
                 //字符串转化为数组
-                // this.priority=JSON.parse(this.settingLessonInfo.priority);
-                // this.disable=JSON.parse(this.settingLessonInfo.disable);
+                this.priority=JSON.parse(this.settingLessonInfo.priority);
+                this.disable=JSON.parse(this.settingLessonInfo.disable);
                 // console.log(this.priority);
                 // console.log(this.priority.length);
                 // console.log(this.disable);
@@ -417,16 +414,16 @@
             //保存最大课时数
             handleOkMain(){
                 this.visible=false;
-                for(let i= 0; i <this.tableData4.length;i++){
-                    let pushData = {
-                        lesson:this.tableData4[i].lesson,
-                        useMax: this.tableData4[i].chooseValue,
-                    }
-                    this.lessonMax.push(pushData)
-            }
-            console.log(this.lessonMax)
+                // for(let i= 0; i <this.tableData4.length;i++){
+                //     let pushData = {
+                //         lesson:this.tableData4[i].lesson,
+                //         useMax: this.tableData4[i].chooseValue,
+                //     }
+                //     this.lessonMax.push(pushData)
+            // }
+            // console.log(this.lessonMax)
             },
-            handleSelectChange(changeId,value){
+            handleSelectChange(value){
                 console.log(value);
                 this.chooseValue=value;
                 console.log( this.chooseValue);

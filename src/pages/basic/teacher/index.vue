@@ -171,6 +171,11 @@
           },
           showTotal:total=>`共有${total}条数据`,            //分页中显示的数据总数
         },
+        //查询参数
+        queryParam:{
+          page:1,//第几页
+          size:20,   //每页中显示的数据条数
+        },
         editText:-1,
         form:{
         },
@@ -186,21 +191,15 @@
       this.allTeacher();
     },
     methods: {
-      //获取所有教师信息
-      async allTeacher(){
-        //获取所有教师信息
-        let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({current:1,rowCount:20});
-        console.log(allTeacherData);
-        this.dataSource=allTeacherData.rows;
-        console.log(this.dataSource)
-        this.pagination.total=allTeacherData.total;
-      },
       //表格监听
       async handleTableChange(pagination){
         this.pagination.current=pagination.current;
         this.pagination.pageSize=pagination.pageSize;
+        this.queryParam.page=pagination.current;
+        this.queryParam.size=pagination.pageSize;
         console.log(this.pagination.current)
         console.log( this.pagination.pageSize);
+        this.allTeacher();
         if(this.form.adminId!=undefined){
           if(this.form.gradeId!=undefined){
             this.handleGradeChange();
@@ -211,16 +210,26 @@
           this.onSearch();
         }
       },
+      //获取所有教师信息
+      async allTeacher(){
+        //获取所有教师信息
+        let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page});
+        console.log(allTeacherData);
+        this.dataSource=allTeacherData.rows;
+        console.log(this.dataSource)
+        const pagination={...this.pagination};
+        pagination.total=allTeacherData.total;
+        this.pagination=pagination;
+      },
       //级部监听
        async handleAdminChange(){
-        console.log(this.form.adminId)
         for (let i=0;i<this.adminData.length;i++){
           if(i==this.form.adminId){
             // //获取年级
             this.gradeData=this.adminData[i].adminGrades,
             console.log(this.gradeData)
             // // //根据年级选择教师
-            let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.pagination.pageSize,current:this.pagination.current,adminId: this.adminData[i].adminId});
+            let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,adminId: this.adminData[i].adminId});
             console.log(data.rows);
             // let newObj = []
           //   for(let i in data.rows){
@@ -230,7 +239,9 @@
           //   }
           //   console.log(newObj)
           //   this.dataSource=newObj;
-            this.pagination.total=data.total;
+            const pagination={...this.pagination};
+            pagination.total=data.total;
+            this.pagination=pagination;
           }
         }
       },
@@ -241,10 +252,12 @@
           if(i==this.form.gradeId){
             console.log(this.adminData[this.form.adminId].adminId)
             //根据年级信息调用接口
-            let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.pagination.pageSize,current:this.pagination.current,adminId:this.adminData[this.form.adminId].adminId,gradeId:this.gradeData[i].gradeId});
+            let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,adminId:this.adminData[this.form.adminId].adminId,gradeId:this.gradeData[i].gradeId});
             console.log(data);
             this.dataSource=data.rows;
-            this.pagination.total=data.total;
+            const pagination={...this.pagination};
+            pagination.total=data.total;
+            this.pagination=pagination;
           }
         }
        },
@@ -253,24 +266,37 @@
         console.log(this.form.teacherName);
         if(this.form.adminId==undefined||this.form.gradeId==undefined){
           // //只根据姓名查找教师信息
-          let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({rowCount: this.pagination.pageSize,current:this.pagination.current,teacherName:this.form.teacherName});
+          let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,teacherName:this.form.teacherName});
           console.log(allTeacherData);
           this.dataSource=allTeacherData.rows;
           console.log(this.dataSource)
-          this.pagination.total=allTeacherData.total;
+          const pagination={...this.pagination};
+          pagination.total=allTeacherData.total;
+          this.pagination=pagination;
         }else {
-          let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.pagination.pageSize,current:this.pagination.current,adminId: this.adminData[this.form.adminId].adminId,gradeId: this.gradeData[this.form.gradeId].gradeId,teacherName: this.form.teacherName})
+          let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,adminId: this.adminData[this.form.adminId].adminId,gradeId: this.gradeData[this.form.gradeId].gradeId,teacherName: this.form.teacherName})
           console.log(data)
           this.dataSource=data.rows;
-          this.pagination.total=data.total;
+          const pagination={...this.pagination};
+          pagination.total=data.total;;
+          this.pagination=pagination;
         }
       },
       //获取课程信息
       async edit(editId){
+        this.getCourseInfo();
         this.form.addSub=[];
+        console.log('selectData',this.treeData,this.dataSource);
+        let selectData = this.dataSource.filter(item => item.teacherId=== editId)
+        console.log(selectData);
+        selectData[0].subjectTeacherDtos.forEach((item)=>{
+          this.form.addSub.push(item.subName);
+        })
+        // selectData[0].
+        this.editVisit=true;
         this.editText=this.dataSource.findIndex(item=>item.teacherId==editId);
           console.log(this.editText);
-        this.form.teacherName1=this.dataSource[this.editText].teacherName;
+          this.form.teacherName1=this.dataSource[this.editText].teacherName;
           this.form.tel=this.dataSource[this.editText].tel;
           console.log(this.dataSource[this.editText].teacherRoleDtos);
           if(this.dataSource[this.editText].teacherRoleDtos.length==0){
@@ -279,41 +305,34 @@
           else{
             this.form.type='是'
           }
-          this.getCourseInfo(editId);
       },
       //获取所属课程信息
       async getCourseInfo(editId){
-        //获取所属课程信息
-        this.treeData=[];
-        this.editVisit=true;
-        this.checkedKeys = [];
-        let selectData = this.dataSource.filter(item => item.teacherId=== editId)
-        selectData[0].subjectTeacherDtos.forEach((item)=>{
-          this.checkedKeys.push(item.subChildId)
-        })
         //获取级部、年级、课程树
-        let {data}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
-        console.log(data.result);
-        for(let i in data.result){
+        let {data:{result,success}}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
+        console.log(result);
+        for(let i in result){
           //第一层(级部）
           let adminTree={};
-          adminTree.title=data.result[i].adminName;
-          adminTree.key=data.result[i].adminId;
-          if(data.result[i].adminGrades.length){
+          adminTree.title=result[i].adminName;
+          adminTree.key=adminTree.value=result[i].adminId;
+          // console.log(result[i].adminGrades)
+          if(result[i].adminGrades.length){
             //第二层(年级）
             adminTree.children=[];
-            for(let j=0;j<data.result[i].adminGrades.length;j++){
-              let gradeItem=data.result[i].adminGrades[j];
+            for(let j=0;j<result[i].adminGrades.length;j++){
+              let gradeItem=result[i].adminGrades[j];
               let childData={}
               childData.key=gradeItem.gradeId;
-              childData.title=gradeItem.gradeName;
+              childData.title=childData.value=gradeItem.gradeName;
+              // console.log(gradeItem.subjectEntities);
               if(gradeItem.subjectEntities.length){
                 //第三层(主课程)
                 childData.children=[];
                 for(let k in gradeItem.subjectEntities){
                   let mainCourse={};
-                  mainCourse.key=gradeItem.gradeId+gradeItem.subjectEntities[k].subChildId;
-                  mainCourse.title=gradeItem.subjectEntities[k].name;
+                  mainCourse.key=result[i].adminId+gradeItem.gradeId+gradeItem.subjectEntities[k].subChildId;
+                  mainCourse.title=mainCourse.value=gradeItem.subjectEntities[k].name;
                   childData.children.push(mainCourse)
                 }
               }
@@ -321,7 +340,7 @@
             }
           }
           this.treeData.push(adminTree);
-          console.log(data.result[i]);
+          // console.log(data.result[i]);
         }
       },
       //规则设置
@@ -329,8 +348,17 @@
         this.$router.push("/basic/teacher/rule?id=" + id);
       },
       //编辑信息的保存
-      handleOk(){
+      async handleOk(){
         this.editVisit=false;
+        let addData={
+          teacherId:this.dataSource[this.editText].teacherId,
+          gradeSubjectDtoList:[{
+            // gradeId:
+            // subIds:[this.form.addSub],
+          }]
+        }
+        let {data:saveData}=await this.$api.basic.teacher.saveTeacherInfo();
+        console.log(data);
       },
       //编辑信息的取消
       handleCancel(){
