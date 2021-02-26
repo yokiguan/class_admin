@@ -21,8 +21,10 @@
                      :data-source="placeData"
                      :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
                      :selectedRows="selectedRows"
-                     style="width: 45%;margin-left: 50px;margin-top: 20px">
-                <span slot="action">查看</span>
+                     style="width: 50%;margin-left: 50px;margin-top: 20px">
+               <span slot="action" slot-scope="text,record">
+                    <a  @click="lookInfo(record.ruleId)">查看</a>
+               </span>
             </a-table>
         </a-row>
     </a-card>
@@ -70,7 +72,6 @@
         },
         async created(){
             //获取课表模板信息
-
             let {data}=await this.$api.basic.template.fetchList()
             this.modalInfo=data.rows;
             console.log(this.modalInfo);
@@ -78,9 +79,12 @@
         methods:{
             //选择课表模板
             async handleSelectChange(){
-                console.log(this.form.modal)
-                //获取场地信息{currId:this.form.modal}
-                let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:2})
+                console.log(this.form.modal);
+                this.placeInfo();
+            },
+            async placeInfo(){
+                //获取场地信息
+                let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:this.form.modal})
                 console.log(placeData);
                 this.placeData=placeData.rows;
             },
@@ -91,9 +95,22 @@
                 console.log(this.selectedRowKeys);
                 console.log(this.selectedRows);
             },
+            //场地规则查看
+            async lookInfo(id){
+                let {data}=await this.$api.basic.classroom.fetchRule({id:id});
+                console.log(data);
+
+            },
             //删除场地规则
             async deleteRule(){
-
+                let {data}=await this.$api.basic.classroom.deleteRule({ids:this.selectedRowKeys});
+                console.log(data);
+                if(data&&data.success){
+                    this.placeInfo();
+                    message.info('删除成功');
+                }else{
+                    message.info('删除失败');
+                }
             },
         },
         watch:{
@@ -111,6 +128,6 @@
         border-radius: 10px;
         text-align: center;
         width: 100%;
-        height: 440px;
+        min-height: 440px;
     }
 </style>

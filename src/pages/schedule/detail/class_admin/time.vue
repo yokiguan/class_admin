@@ -26,17 +26,16 @@
             <a-row class="buttons">
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教室设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-row class="buttons-sub">
                 <a-col :span="3"><a-button type="danger" style="color:white;width: 100%;height: 30px;" @click="diasbleBtn">禁选</a-button></a-col>
                 <a-col :span="3"><a-button style="background-color:grey;width: 100px;height: 30px;color:white" @click="normalBtn">普通</a-button></a-col>
                 <a-col :span="3"><a-button type="primary" style="color:white;width: 100px;height: 30px;" @click="priorityBtn">优先</a-button></a-col>
-                <a-col :span="12"></a-col>
-                <a-col :span="3"><a-button style="height:40px;background-color:#0099ff;color:white" @click="maxTime">最大课时数设置</a-button>
-                </a-col>
+                <a-col :span="3"><a-button style="background-color:#0099cc;width: 100px;height: 30px;color:white" @click="classBtn">走班课</a-button></a-col>
             </a-row>
             <div class="class-table">
                 <div class="table-header"><!-- 表头 -->
@@ -46,78 +45,16 @@
                 <div class="table-body">
                     <div class="row-box" v-for="(item, rowIndex) in tableData" :key="rowIndex">
                         <div class="table-body_one">{{item.activity}}</div><!-- 第一列 -->
-<!--                        :style="{ 'background-color': setColor(child) }"-->
+                        <!--                        :style="{ 'background-color': setColor(child) }"-->
                         <div class="table-body_other" v-for="(child, columnIndex) in item.rowList"
                              :key="columnIndex + rowIndex + 1" :style="{ 'background-color': setColor(child) }"
                              @click="getColumnRow(rowIndex,columnIndex)"></div>
                     </div><!-- 11个数据  -->
                 </div>
             </div>
-            <button style="background-color: blue;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        margin-top: 50px;
-                        width: 100px" @click="Next">下一步</button>
-<!--    最大课时数设置-->
-            <a-modal
-                    title="设置每个老师使用某个课时的最大数量"
-                    :closable="false"
-                    :visible="visible">
-                <template slot="footer">
-                    <a-button key="Save" type="primary" :loading="loading" @click="handleOkMain">保存</a-button>
-                    <a-button key="back" @click="handleCancelMain">取消</a-button>
-                </template>
-                <a-card>
-                    <a-table
-                             :rowKey="'id'"
-                             :columns="column4"
-                             :data-source="tableData4"
-                             :pagination="false"
-                             :bordered="true">
-                        <template slot="useMax" slot-scope="text,record,index">
-                            <a-select  style="width: 100px" :default-value="text" @change="handleSelectChange($event,index)">
-                                <!--                                <a-select-option :value="text">-->
-                                <!--                                    {{text}}-->
-                                <!--                                </a-select-option>-->
-                                <a-select-option value="1">1</a-select-option>
-                                <a-select-option value="2">2</a-select-option>
-                                <a-select-option value="3">3</a-select-option>
-                                <a-select-option value="4">4</a-select-option>
-                                <a-select-option value="5">5</a-select-option>
-                            </a-select>
-                        </template>
-                        <template slot="action" slot-scope="text, record">
-                            <a-popconfirm
-                                    v-if="tableData4.length"
-                                    title="确认删除?"
-                                    @confirm="() => onDelete(record.id)">
-                                <a href="javascript:;">删除</a>
-                            </a-popconfirm>
-                        </template>
-                    </a-table>
-                    <div style="float: left;font-size: 1.0rem;color: blue;margin-left: 10px;margin-top: 10px" @click="addNames">
-                        <a-icon type="plus" />
-                        <span>添加一项</span>
-                    </div>
-                </a-card>
-
-            </a-modal>
-<!--            添加一项-->
-            <a-modal :visible='addNameVisit'
-                     width="600px"
-                     :closable="false">
-                <template slot="footer">
-                    <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
-                    <a-button key="back" @click="handleCancel">取消</a-button>
-                </template>
-                <a-checkbox-group
-                        v-model="checkValue"
-                        name="checkboxgroup"
-                        :options="options"
-                        style="margin-left: 50px;margin-bottom: 100px;margin-top: 30px"/>
-            </a-modal>
+            <button style="background-color: blue;color: white;height: 40px;border: none;border-radius: 5px;margin-top: 50px;width: 100px" @click="Next">
+                下一步
+            </button>
         </div>
     </div>
 </template>
@@ -150,49 +87,10 @@
             value: "evening"
         }
     ];
-    const column4 = [
-        {
-            title: '编号',
-            dataIndex:'id',
-            align:'center',
-            customRender: function(t, r, index) {
-                return parseInt(index) + 1
-            }
-        },
-        {
-            title: '课节',
-            dataIndex: 'lesson',
-            align:'center',
-        },
-        {
-            title: '最大使用数',
-            dataIndex: 'useMax',
-            align:'center',
-            scopedSlots: { customRender: 'useMax' },
-        },
-        {
-            title: '操作',
-            dataIndex: 'opt',
-            key: 'opt',
-            scopedSlots: { customRender: 'action' }
-        },
-    ];
-    const options = [
-        { label: '上午第1节', value: '上午第1节' },
-        { label: '上午第2节', value: '上午第2节' },
-        { label: '上午第3节', value: '上午第3节' },
-        { label: '上午第4节', value: '上午第4节' },
-        { label: '下午第1节', value: '下午第1节' },
-        { label: '下午第2节', value: '下午第2节' },
-        { label: '下午第3节', value: '下午第3节' },
-        { label: '下午第4节', value: '下午第4节' },
-    ];
     export default {
         data() {
             return {
-                column4,
                 count:1,
-                tableData4:[],
                 defaultRow: -1,
                 defaultColumn: -1,
                 cellCheck:[],
@@ -202,28 +100,17 @@
                 settingLessonInfo:{},
                 disable:[],
                 priority:[],
+                classData:[],
                 tableData:[],
                 tableHeader: ['星期一','星期二','星期三','星期四','星期五','星期六','星期天'],
                 planData:"",
-                options,
                 visible: false,
                 loading: false,
-                addNameVisit:false,
                 planId:"",
                 activity,
                 timeData:[],
                 modalId:"",
-                checkValue:[],
-                deleteText:-1,
                 count:0,
-                lessonMax:[],
-                checkedValue:-1,
-                chooseRow:-1,
-                editId:-1,
-                chooseValue:-1,
-                useMax:"",
-                form:{
-                },
             };
         },
         async created() {
@@ -250,7 +137,6 @@
                 item.id=i
             })
             // console.log(this.tableData4);
-            this.count=this.tableData4.length
             this.settingLessonInfo=result.settingLessonInfo;
             // console.log(this.settingLessonInfo.disable);
             this.modalInfo();
@@ -336,9 +222,18 @@
             },
             //设置普通按钮方法
             normalBtn(){
-                if(this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck === 0){
-                    // 修改颜色为绿色
-                    this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck = -1
+                let cellRow=0;
+                let cellColumn=0;
+                //设置多选
+                for(let i=0;i<this.cellCheck.length;i++){
+                    cellRow=this.cellCheck[i][0];
+                    cellColumn=this.cellCheck[i][1];
+                    console.log(this.cellCheck[i][0])
+                    console.log(this.cellCheck[i][1])
+                    if(this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck === 0) {
+                        // 修改颜色为绿色
+                        this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck = -1
+                    }
                 }
                 this.setStore(this.tableData)
             },
@@ -361,6 +256,25 @@
                     console.log(this.priorityData);
                 }
             },
+            //设置走班课按钮
+            classBtn(){
+                let cellRow=0;
+                let cellColumn=0;
+                console.log(this.cellCheck);
+                for(let i=0;i<this.cellCheck.length;i++) {
+                    cellRow = this.cellCheck[i][0];
+                    cellColumn = this.cellCheck[i][1];
+                    // console.log(this.cellCheck[i][0])
+                    // console.log(this.cellCheck[i][1])
+                    if (this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0) {
+                        // 修改颜色为蓝色
+                        this.tableData[cellRow].rowList[cellColumn].defaultCheck = 4
+                        this.classData.push([cellRow, cellColumn])
+                    }
+                    this.setStore(this.tableData)
+                    console.log(this.classData);
+                }
+            },
             //颜色设置
             setColor(child){
                 let cellCheck = child.defaultCheck;
@@ -378,6 +292,9 @@
                         break
                     case 3:
                         color = '#13c2c2'
+                        break
+                    case 4:
+                        color='#0099cc'
                         break
                     default:
                         color = '#fff'
@@ -418,81 +335,25 @@
                 this.priorityData.push([getGColumn,getGRow]);
                 console.log(this.priorityData);
             },
-            change() {
-                this.visible = true;
-            },
-            //保存最大课时数
-            handleOkMain(){
-                this.visible=false;
-                // console.log(this.tableData4);
-                for(let i=0;i<this.tableData4.length;i++){
-                    this.lessonMax[i]={
-                        lesson:this.tableData4[i].lesson.toString(),
-                        useMax:this.tableData4[i].useMax,
-                    }
-                }
-                console.log(this.lessonMax);
-            },
-            handleSelectChange($event,index){
-                console.log(this.tableData4);
-                console.log(index);
-                console.log($event);
-                this.tableData4[index].useMax=$event;
-                // console.log(this.tableData4[index].lesson);
-                // console.log(this.tableData4[index].useMax);
-                // this.lessonMax[index]={
-                //     lesson:this.tableData4[index].lesson,
-                //     useMax:this.tableData4[index].useMax,
-                // };
-            },
-            //添加最大课时保存
-            handleOk(){
-                this.loading=false
-                this.addNameVisit=false
-                this.count=this.tableData4.length;
-                this.tableData4.unshift({
-                    id:this.count,
-                    lesson:this.checkValue
-                });
-            },
-            //删除最大课时设置
-            onDelete(deleId){
-                this.deleteText=this.tableData4.findIndex(item=>item.id===deleId);
-                console.log(this.deleteText);
-                this.tableData4.splice(this.deleteText,1);
-                console.log(this.tableData4);
-            },
-            //添加一项
-            addNames(){
-                this.addNameVisit=true;
-            },
-            //最大课时数
-            maxTime(){
-              this.visible=true;
-            },
-            //取消设置最大课程树
-            handleCancelMain(){
-              this.visible=false;
-            },
-            //取消添加一项
-            handleCancel() {
-                this.addNameVisit=false;
-            },
             //课时设置
             timesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
             },
             //课节设置
             oncesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
             },
-            //教室设置
-            placeSetting(){
-                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
+            //学科设置
+            subjectSetting(){
+                this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`)
             },
-            //课程设置
-            courseSetting(){
-                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
+            //班级设置
+            classSetting(){
+                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`)
+            },
+            //规则设置
+            ruleSetting(){
+                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`)
             },
             //开始排课
             startArray(){
@@ -500,7 +361,7 @@
             },
             //下一步
             Next(){
-                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`);
+                this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`);
                 this.saveInfo();
             },
             //保存
@@ -511,8 +372,8 @@
                     settingLessonInfo:{
                         disable: JSON.stringify(this.disableData),
                         priority:JSON.stringify(this.priorityData),
+                        // class:JSON.stringify(this.classData),
                     },
-                    lessonMax: this.lessonMax,
                 }
                 let {data}=await this.$api.schedule.arrangeClass.saveLesson(addData);
                 console.log(data);
@@ -582,7 +443,7 @@
         display: flex;
         border-bottom: 1px solid;
         border-color: #f0f0f0;
-            }
+    }
     .table-header_one{
         flex: 12.5%;
         align:center;

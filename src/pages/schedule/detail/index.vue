@@ -288,7 +288,12 @@
       },
       //发布选课保存
       async handlePublic(){
-        let {data:savdPublish} =  await this.$api.schedule.plan.schedulesaveQua({planId:this.planId,stringList: this.selectedRowKeys})
+        let select=[];
+        for(let i=0;i<this.selectedRows.length;i++){
+          select[i]=this.selectedRows[i].classId;
+        }
+        console.log(select);
+        let {data:savdPublish} =  await this.$api.schedule.plan.schedulesaveQua({planId:this.planId,stringList: select})
         console.log(savdPublish)
       },
       //取消

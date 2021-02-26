@@ -7,9 +7,9 @@
                 <a-breadcrumb-item><a href="">整体查看</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
-        <div class="content">
+        <a-card class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.7em">高二2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.7em">{{this.planData}}</span></a-col>
                 <a-col>
                     <button style="background-color: #19b294;
                         color: white;
@@ -20,50 +20,41 @@
                         width: 150px" @click="back">返回</button>
                 </a-col>
             </a-row>
-        </div>
+        </a-card>
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3">
-                    <button style="background-color: #19b294;
+                <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="teacherLook">按老师查看</button>
-                </a-col>
-                <a-col :span="3">
-                    <button style="background-color: #19b294;
+                        width: 110px" @click="teacherLook">按老师查看</button></a-col>
+                <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="placeLook">按场地查看</button>
-                </a-col>
-                <a-col :span="3">
-                    <button style="background-color: #19b294;
+                        width: 110px" @click="placeLook">按场地查看</button></a-col>
+                <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="subjectLook">按科目查看</button>
-                </a-col>
-                <a-col :span="3">
-                    <button style="background-color: #19b294;
+                        width: 110px" @click="subjectLook">按科目查看</button></a-col>
+                <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="studentLook">按学生查看</button>
-                </a-col>
+                        width: 110px" @click="studentLook">按学生查看</button></a-col>
             </a-row>
-            <a-table
+            <a-table :rowKey="''"
                     :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true"
                     style="margin-top: 20px;width:1200px;height: 700px">
             </a-table>
-
         </div>
     </div>
 </template>
@@ -73,7 +64,10 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
-            width:'5%'
+            width:'5%',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
         },
         {
             title: '一',
@@ -106,53 +100,70 @@
             width:'19%'
         },
     ];
-    const tableData=[
-        {
-            key: '1',
-        },
-        {
-            key: '2',
-            one:'生物学考1班_李援朝(106)',
-            two:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-            five:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-        },
-        {
-            key: '3',
-            two:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-            three:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-        },{
-            key: '4',
-            one:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)',
-            four:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-            five:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-        },
-        {
-            key: '5',
-            two:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)',
-        },
-    ];
     export default {
         data() {
             return {
                 columns,
-                tableData,
+                tableData:[],
                 visible: false,
-                loading: false
+                loading: false,
+                planId:"",
+                planData:"",
+                allData:[],
             };
         },
+        created() {
+            this.chooseCourseInfo();
+            this.allLookInfo();
+        },
         methods: {
+            //获取单个选课计划信息
+            async chooseCourseInfo(){
+                let queryString = (window.location.hash || " ").split('?')[1]
+                let planId = (queryString || " ").split('=')[1]
+                this.planId = planId;
+                if (planId) {
+                    //获取单个选课计划的信息
+                    let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                    this.planData = result.name
+                }
+            },
+            //获取整体查看数据
+            async allLookInfo(){
+                let {data:{result,success}}=await this.$api.schedule.classTask.getData({planId:this.planId,scheduleTaskId:"1e86be510ab94a99801802d52740da40"})
+                console.log(result[0]);
+                this.allData=result[0].syllabus;
+                console.log(this.allData);
+                for(let i=0;i<this.allData.length;i++){
+                    let position=this.allData[i].position
+                    // console.log(this.allData[i].position);
+                    console.log(position);
+                    let positionArr=eval(position);
+                    // console.log(positionArr);
+                    // for(let j=0;j<positionArr.length;j++){
+                    // let rowData=
+                        console.log(positionArr[0]);
+                    // }
+                }
+
+            },
+            //按老师查看
             teacherLook(){
-                this.$router.push('/schedule/detail/curriculum/teacher')
+                this.$router.push(`/schedule/detail/curriculum/teacher?planId=${this.planId}`);
             },
+            //按教室查看
             placeLook(){
-                this.$router.push('/schedule/detail/curriculum/place')
+                this.$router.push(`/schedule/detail/curriculum/place?planId=${this.planId}`);
             },
+            //按科目查看
             subjectLook(){
-                this.$router.push('/schedule/detail/curriculum/subject')
+                this.$router.push(`/schedule/detail/curriculum/subject?planId=${this.planId}`);
             },
+            //按学生查看
             studentLook(){
-                this.$router.push('/schedule/detail/curriculum/student')
+                this.$router.push(`/schedule/detail/curriculum/student?planId=${this.planId}`);
             },
+            //返回
             back(){
                 this.$router.go(-1)
             },

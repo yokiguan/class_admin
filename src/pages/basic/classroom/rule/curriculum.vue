@@ -13,21 +13,21 @@
             <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white;margin-left: 20px">重置</a-button>
             <a-button type="danger" style="color:white;width: 100px;height: 40px;margin-left: 20px">删除</a-button>
         </a-row>
-            <div class="class-table">
-                <div class="table-header"><!-- 表头 -->
-                    <div class="table-header_one"></div><!-- 左上角 -->
-                    <div class="table-header_other" v-for="(item, index) in tableHeader">{{item}}</div>
-                </div>
-                <div class="table-body">
-                    <div class="row-box" v-for="(item, rowIndex) in tableData" :key="rowIndex">
-                        <div class="table-body_one">{{item.activity}}</div><!-- 第一列 -->
-                        <!--                        :style="{ 'background-color': setColor(child) }"-->
-                        <div class="table-body_other" v-for="(child, columnIndex) in item.rowList"
-                             :key="columnIndex + rowIndex + 1" :style="{ 'background-color': setColor(child) }"
-                             @click="getColumnRow(rowIndex,columnIndex)"></div>
-                    </div><!-- 11个数据  -->
-                </div>
+        <div class="class-table">
+            <div class="table-header"><!-- 表头 -->
+                <div class="table-header_one"></div><!-- 左上角 -->
+                <div class="table-header_other" v-for="(item, index) in tableHeader">{{item}}</div>
             </div>
+            <div class="table-body">
+                <div class="row-box" v-for="(item, rowIndex) in tableData" :key="rowIndex">
+                    <div class="table-body_one">{{item.activity}}</div><!-- 第一列 -->
+                    <!--                        :style="{ 'background-color': setColor(child) }"-->
+                    <div class="table-body_other" v-for="(child, columnIndex) in item.rowList"
+                         :key="columnIndex + rowIndex + 1" :style="{ 'background-color': setColor(child) }"
+                         @click="getColumnRow(rowIndex,columnIndex)"></div>
+                </div><!-- 11个数据  -->
+            </div>
+        </div>
         <a-modal
                 :visible='saveVisit'
                 :closable="false">
@@ -72,7 +72,6 @@
         }
     ];
     export default {
-        props:["classRoomId"],
         data(){
             return{
                 tableData:[],
@@ -101,7 +100,7 @@
                 }
             }
         },
-        props:['templateId'],
+        props:['templateId','classRoomId'],
         watch:{
             'templateId':{
                 handler(val){
@@ -180,6 +179,7 @@
                     }
                     this.setStore(this.tableData);
                     console.log(this.disableData);
+                    console.log(JSON.stringify(this.disableData));
                 }
 
             },
@@ -222,15 +222,28 @@
             async handleOk(){
                 //保存场地规则
                 let addData={
-                    currId:this.currId,
-                    name:this.form.ruleName,
-                    // number:
-                    ruleInfo:this.disableData,
-                    // classroomIds:
-
+                    classroomIds: this.classRoomId,
+                    classroomRuleEntity:{
+                        name:this.form.ruleName,
+                        currId:this.templateId,
+                        ruleInfo:JSON.stringify(this.disableData),
+                    }
                 }
                 let {data}=await this.$api.basic.classroom.saveRule(addData);
+                this.saveVisit = false;
+                if(data.result){
+                    alert("保存成功");
+                }
+                this.placeInfo();
             },
+            //场地信息更新
+            async placeInfo(){
+                fetchRuleList
+                let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:this.templateId})
+                console.log(placeData);
+                this.placeData=placeData.rows;
+            },
+            //取消
             handleCancel(){
                 this.saveVisit=false;
             },

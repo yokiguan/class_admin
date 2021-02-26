@@ -26,8 +26,9 @@
             <a-row class="buttons">
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-table :rowKey="'id'"
@@ -312,13 +313,16 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name
             }
-            //学科设置查看
-            let {data}=await this.$api.schedule.adminClass. getCourseSetting({planId:this.planId,scheduleType:"1"});
-            console.log(data)
-            this.dataSource=data.rows
-            console.log(this.dataSource)
+            this.subjectInfo();
         },
         methods: {
+            //学科设置查看
+            async subjectInfo(){
+                let {data}=await this.$api.schedule.adminClass. getCourseSetting({planId:this.planId,scheduleType:1});
+                console.log(data)
+                // this.dataSource=data.rows
+                // console.log(this.dataSource)
+            },
             //删除行数据
             async onDelete(id){
                 this.editText=this.dataSource.findIndex(item=>item.id==id);
@@ -383,17 +387,25 @@
             onSelect(selectedKeys, info) {
                 console.log('selected', selectedKeys, info);
             },
+            //课时设置
             timesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
             },
+            //课节设置
             oncesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
             },
-            placeSetting(){
-                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
+            //学科设置
+            subjectSetting(){
+                this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`)
             },
-            courseSetting(){
-                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
+            //班级设置
+            classSetting(){
+                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`);
+            },
+            //规则设置
+            ruleSetting(){
+                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`)
             },
             startArray(){
                 this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)

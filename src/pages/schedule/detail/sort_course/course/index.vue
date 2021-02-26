@@ -41,30 +41,29 @@
                 <a-row class="buttons">
                     <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                     <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                    <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
+                    <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教室设置</a-button></a-col>
                     <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
                     <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
                 </a-row>
                 <div class="table-content">
                     <a-table
-                            :rowKey="'classId'"
+                            :rowKey="'id'"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
                             :bordered="true">
-<!--                        <a-input slot="add_times" :value="className"></a-input>-->
-<!--                        <a-input slot="add_datas"></a-input>-->
-                        <div slot-scope="scope">
-                            <a-input :value="scope.row.add_times"></a-input>
-                        </div>
-                        <a-button slot="adds_times" style="background-color: #00ccff;
-                        color:white;" @click="add_time">
-                            添加时间段
-                        </a-button>
-                        <a-button slot="adds_datas" style="background-color: #00ccff;color:white;" @click="add_class">
-                            添加教室
-                        </a-button>
-                        <span slot="action" slot-scope="text" style="color:blue" @click="onDelete">删除</span>
+                        <a-input slot="add_times" ></a-input>
+                        <a-input slot="add_datas"></a-input>
+                        <a-button slot="adds_times" style="background-color: #00ccff;color:white;" @click="add_time">添加时间段</a-button>
+                        <a-button slot="adds_datas" style="background-color: #00ccff;color:white;" @click="add_class">添加教室</a-button>
+                        <template slot="action" slot-scope="text,record" style="color:blue">
+                            <a-popconfirm
+                                    v-if="tableData.length"
+                                    title="确认删除?"
+                                    @confirm="() => onDelete(record.id)">
+                                <a href="javascript:;">删除</a>
+                            </a-popconfirm>
+                        </template>
                     </a-table>
                     <button style="background-color: #00ccff;
                 border: none;color: white;
@@ -77,223 +76,96 @@
                 </div>
             </a-card>
         </div>
-        <div class="Pop-ups">
 <!--            选择时间段-->
-            <create-modal class="Pop-ups_time"
-                          :close="false"
-                          width="700px"
-                          :visible="visible"
-                          :loading="loading"
-                          @modalClosed="closed"
-                          @modalSubmit="handleSubmit1">
-                <div slot="content">
-                    <div class="model1_head">
-                        <div style="height: 52px;
-                            border-radius: 5px;
-                             margin-top: -23px;
-                             margin-left: -24px;
-                            width: 700px;background-color: #e4e4e4">
-                            <h3 style="margin: 0px 0px 50px 0px;
-                                  padding: 15px 20px;
-                                  font-size: 1.0rem;
-                                  vertical-align: top;">选择时间段</h3>
-                        </div>
-                        <a-form style="margin-top: 30px" :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
-                            <a-form-item label="类型">
-                                <a-select
-                                        v-decorator="[
-                                            'type',
-                                            { rules: [{ required: true, message: '不使用/优先使用/必须使用' }] }, ]"
-                                        placeholder="不使用/优先使用/必须使用"
-                                        @change="handleSelectChange">
-                                    <a-select-option value="1">
-                                        不使用
-                                    </a-select-option>
-                                    <a-select-option value="2">
-                                        优先使用
-                                    </a-select-option>
-                                    <a-select-option value="3">
-                                        必须使用
-                                    </a-select-option>
-                                </a-select>
-                            </a-form-item>
-                        </a-form>
-                        <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit2">
-                            <a-form-item label="选择天">
-                                <a-select
-                                        v-decorator="[
-                                            'type',
-                                            { rules: [{ required: true, message: '星期一' }] }, ]"
-                                        placeholder="星期一"
-                                        @change="handleSelectChange">
-                                    <a-select-option value="one">
-                                        星期一
-                                    </a-select-option>
-                                    <a-select-option value="two">
-                                        星期二
-                                    </a-select-option>
-                                    <a-select-option value="three">
-                                        星期三
-                                    </a-select-option>
-                                    <a-select-option value="four">
-                                        星期四
-                                    </a-select-option>
-                                    <a-select-option value="five">
-                                        星期五
-                                    </a-select-option>
-                                    <a-select-option value="six">
-                                        星期六
-                                    </a-select-option>
-                                    <a-select-option value="seven">
-                                        星期日
-                                    </a-select-option>
-                                </a-select>
-                            </a-form-item>
-                        </a-form>
-                    </div>
-                    <div class="model1_content">
-                        <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
-                            <a-form-item label="选择节">
-                                <a-checkbox-group @change="onChange">
-                                    <a-row>
-                                        <a-col :span="6">
-                                            <a-checkbox value="A">上午1</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="B">上午2</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="C">上午3</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="D">上午4</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="E">下午1</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="F">下午2</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="G">下午3</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="H">下午4</a-checkbox>
-                                        </a-col>
-                                    </a-row>
-                                </a-checkbox-group>
-                            </a-form-item>
-                        </a-form>
-                    </div>
-                </div>
-            </create-modal>
+            <a-modal :visible='chooseTimeVisit'
+                     width="600px"
+                     title="选择时间段"
+                     :closable="false">
+                <template slot="footer">
+                    <a-button key="Save" type="primary" :loading="loading" @click="handleOkTime">保存</a-button>
+                    <a-button key="back" @click="handleCancelTime">取消</a-button>
+                </template>
+                <a-form-model style="margin-top: 30px" :form="form" :rules="rules" ref="ruleForm" :label-col="{ span:4}" :wrapper-col="{ span: 18}">
+                    <a-form-model-item label="类型" ref="type" prop="type">
+                        <a-select placeholder="不使用/优先使用/必须使用" v-model="form.type">
+                            <a-select-option value="不使用">不使用</a-select-option>
+                            <a-select-option value="优先使用">优先使用</a-select-option>
+                            <a-select-option value="必须使用">必须使用</a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择天" ref="day" prop="day">
+                        <a-select placeholder="星期一" v-model="form.day">
+                            <a-select-option value="one">星期一</a-select-option>
+                            <a-select-option value="two">星期二</a-select-option>
+                            <a-select-option value="three">星期三</a-select-option>
+                            <a-select-option value="four">星期四</a-select-option>
+                            <a-select-option value="five">星期五</a-select-option>
+                            <a-select-option value="six">星期六</a-select-option>
+                            <a-select-option value="seven">星期日</a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择节">
+                        <a-checkbox-group
+                                v-model="form.checkValue"
+                                name="checkboxgroup"
+                                :options="options"
+                                style="margin-left: 20px;padding-left: 20px;padding-bottom: 10px"/>
+                    </a-form-model-item>
+                </a-form-model>
+            </a-modal>
 <!--            添加教室-->
-            <create-modal class="Pop-ups_class"
-                          width="700px"
-                          :close="false"
-                          :visible="classVisible"
-                          :loading="classloading"
-                          @modalClosed="close"
-                          @modalSubmit="handleSubmit2">
-                <div slot="content">
-                    <div class="model2_head">
-                        <div style="height: 52px;
-                            border-radius: 5px;
-                             margin-top: -23px;
-                             margin-left: -24px;
-                            width: 700px;background-color: #e4e4e4">
-                            <h3 style="margin: 0px 0px 50px 0px;
-                                  padding: 15px 20px;
-                                  font-size: 1.0rem;
-                                  vertical-align: top;">选择教室</h3>
-                        </div>
-                        <a-form style="margin-top: 30px" :form="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
-                            <a-form-item label="类型">
-                                <a-select
-                                        v-decorator="[
-                                            'type',
-                                            { rules: [{ required: true, message: '不使用/优先使用/必须使用' }] }, ]"
-                                        placeholder="不使用/优先使用/必须使用"
-                                        @change="handleSelectChange">
-                                    <a-select-option value="1">
-                                        不使用
-                                    </a-select-option>
-                                    <a-select-option value="2">
-                                        优先使用
-                                    </a-select-option>
-                                    <a-select-option value="3">
-                                        必须使用
-                                    </a-select-option>
-                                </a-select>
-                            </a-form-item>
-                        </a-form>
-                        <a-form :form="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 18}" @submit="handleSubmit2">
-                            <a-form-item label="选择教学楼">
-                                <a-select
-                                        v-decorator="[
-                                            'type',
-                                            { rules: [{ required: true, message: '逸夫楼' }] }, ]"
-                                        placeholder="逸夫楼"
-                                        @change="handleSelectChange2">
-                                </a-select>
-                            </a-form-item>
-                        </a-form>
-                    </div>
-                    <div class="model2_content">
-                        <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 20}" @submit="handleSubmit1">
-                            <a-form-item label="教室">
-                                <a-checkbox-group @change="onChange_class">
-                                    <a-row>
-                                        <a-col :span="6">
-                                            <a-checkbox value="A1">101</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="B1">102</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="C1">103</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="D1">104</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="E1">201</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="F1">202</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="G1">203</a-checkbox>
-                                        </a-col>
-                                        <a-col :span="6">
-                                            <a-checkbox value="H1">204</a-checkbox>
-                                        </a-col>
-                                    </a-row>
-                                </a-checkbox-group>
-                            </a-form-item>
-                        </a-form>
-                    </div>
-                </div>
-            </create-modal>
-        </div>
+            <a-modal :visible='addClassroomVisit'
+                     width="600px"
+                     title="选择教室"
+                     :closable="false">
+                <template slot="footer">
+                    <a-button key="Save" type="primary" :loading="loading" @click="handleOkClass">保存</a-button>
+                    <a-button key="back" @click="handleCancelClass">取消</a-button>
+                </template>
+                <a-form-model style="margin-top: 30px" :form="form" :rules="rules" ref="ruleForm" :label-col="{ span:4}" :wrapper-col="{ span: 18}">
+                    <a-form-model-item label="类型" ref="classroomType" prop="classroomType">
+                        <a-select placeholder="不使用/优先使用/必须使用" v-model="form.classroomType">
+                            <a-select-option value="不使用">不使用</a-select-option>
+                            <a-select-option value="优先使用">优先使用</a-select-option>
+                            <a-select-option value="必须使用">必须使用</a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择教学楼" ref="building" prop="building">
+                        <a-select v-model="form.building" :default-value="buildings[0].name" placeholder="请选择教学楼" @change="changeBuilding">
+                            <a-select-option v-for="(building,index) in this.buildings" :key="index" :value="building.name">
+                                {{ building.name}}
+                            </a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择教室">
+                        <a-checkbox-group
+                                v-model="form.checkValue"
+                                name="checkboxgroup"
+                                :options="classOptions"
+                                style="margin-left: 20px;padding-left: 20px;padding-bottom: 10px"/>
+                    </a-form-model-item>
+                </a-form-model>
+            </a-modal>
     </div>
 </template>
 <script>
-    import CreateModal from "../../../../../components/modal/CreateModal";
     const columns=[
         {
           title:'',
-          dataIndex:'classId',
-          align:'center'
+          dataIndex:'id',
+          align:'center',
+          customRender: function(t, r, index) {
+              return parseInt(index) + 1
+            }
         },
         {
             title: '课程名称',
             dataIndex: 'className',
-            align:'center'
+            align:'center',
         },{
             title:'老师',
             dataIndex:'userName',
-            align:'center'
+            align:'center',
         },{
             title:'每周课时',
             dataIndex:'lessonNum',
@@ -304,11 +176,6 @@
             dataIndex:'minNum',
             align:'center',
             scopedSlots: { customRender: 'add_datas' }
-        },{
-            title:' ',
-            dataIndex:'middle_blank',
-            key:'middle_blank',
-            align:'center'
         },{
             title:'时间设置',
             dataIndex:'setting_time',
@@ -328,17 +195,31 @@
             align:'center',
             scopedSlots: { customRender: 'action' }
         }]
+    const options = [
+        { label: '上午1', value: '上午1' },
+        { label: '上午2', value: '上午2' },
+        { label: '上午3', value: '上午3' },
+        { label: '上午4', value: '上午4' },
+        { label: '下午1', value: '下午1' },
+        { label: '下午2', value: '下午2' },
+        { label: '下午3', value: '下午3' },
+        { label: '下午4', value: '下午4' },
+    ];
     export default {
-        components: {CreateModal},
         data() {
             return {
                 columns,
+                options,
+                classOptions:[],
                 tableData:[],
-                visible: false,
-                classVisible:false,
-                classloading:false,
                 loading:false,
+                chooseTimeVisit: false,
+                addClassroomVisit:false,
                 planData:"",
+                deleteText:-1,
+                buildings: [{buildingId:"",name:""}],
+                form:{},
+                rules:{},
             }
         },
         async created() {
@@ -351,29 +232,54 @@
                 this.planData = result.name
             }
             //课程设置信息查看
-            let {data}=await this.$api.schedule.arrangeClass.getList()
-            console.log(data)
+            let {data}=await this.$api.schedule.arrangeClass.getList({planId:this.planId})
+            console.log(data);
             this.tableData=data.rows;
-            console.log( this.tableData);
+            console.log(this.tableData);
         },
         methods:{
-            add_time:function () {
-                this.visible=true;
+            //获取教室和教学楼相关信息
+            async classroomAndBuilding(){
+                let {data:buildings}=await this.$api.basic.building.fetchList();
+                this.buildings =buildings.rows
             },
-            add_class:function(){
-                this.classVisible=true;
+            //选择时间段
+            add_time() {
+                this.chooseTimeVisit=true;
             },
-            change: function () {
-                this.visible = true;
-                this.visibe=true;
+            //添加教室
+            add_class(){
+                this.addClassroomVisit=true;
+                this.classroomAndBuilding();
             },
-            closed: function () {
-                this.visible = false
-                this.loading = false
+            //获取节次时间
+            async modalInfo() {
+                let {data} = await this.$api.basic.template.fetchTemplate({id: this.modalId})
+                console.log(data.result);
             },
-            close: function () {
-                this.visibe = false
-                this.load = false
+            //选择教室
+            async changeBuilding(){
+                console.log(this.form.building);
+                let {data} = await this.$api.basic.classroom.fetchRoomList();
+                console.log(data.result);
+                for(let i=0;i<data.result.length;i++){
+                    if(this.form.building==data.result[i].building_name){
+                        let floorData=data.result[i].floor_list;
+                        console.log(floorData);
+                        for(let j=0;j<floorData.length;j++){
+                            let classData=floorData[j].classroom_list
+                            console.log(classData);
+                            for(let k=0;k<classData.length;k++){
+                                let pushData={
+                                    label:classData[k].classroom_name,
+                                    value:classData[k].classroom_name,
+                                }
+                                this.classOptions.push(pushData);
+                            }
+                        }
+                    }
+                }
+                console.log(this.classOptions);
             },
             onChange(checkedValues) {
                 console.log('checked = ', checkedValues);
@@ -381,55 +287,68 @@
             onChange_class(checkedValues){
                 console.log('checked = ', checkedValues);
             },
+            //保存时间段
+            handleOkTime(){
+              this.chooseTimeVisit=false;
+            },
+            //取消选择时间段
+            handleCancelTime(){
+                this.chooseTimeVisit=false;
+            },
+            //保存教室
+            handleOkClass(){
+              this.addClassroomVisit=false;
+            },
+            //取消选择教室
+            handleCancelClass(){
+                this.addClassroomVisit=false;
+            },
+            //互斥规则
             contrastRegular(){
                 this.$router.push(`/schedule/detail/sort_course/course/course/contrast_setting?planId=${this.planId}`)
             },
+            //同时上课
             sameClass(){
                 this.$router.push(`/schedule/detail/sort_course/course/course/same_class?planId=${this.planId}`)
             },
+            //禁止相邻
             banned(){
                 this.$router.push(`/schedule/detail/sort_course/course/course/banned_subject?planId=${this.planId}`)
             },
+            //课时设置
             timesSetting(){
                 this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
             },
+            //课节设置
             oncesSetting(){
                 this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
             },
+            //教室设置
             placeSetting(){
                 this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
             },
+            //课程设置
             courseSetting(){
                 this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
+            //开始排课
             startArray(){
                 this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
+            //下一步
             Next(){
               this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
-            onDelete(){
-                const dataSource = [...this.tableData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this.tableData = dataSource
+            //删除教室
+            onDelete(deleId){
+                this.deleteText=this.tableData.findIndex(item=>item.id===deleId);
+                console.log(this.deleteText);
+                this.tableData.splice(this.deleteText,1);
+                console.log(this.tableData);
             },
-            handleSubmit1(){
-                this.loading = true
-                setTimeout(() => {
-                    this.visible = false
-                    this.loading = false
-                }, 2000)
-            },
-            handleSubmit2(){
-                this.classloading = true
-                setTimeout(() => {
-                    this.classVisible = false
-                    this.classloading = false
-                }, 2000)
-            },
-            form(){},
             handleSelectChange2(){},
             handleSelectChange(){},
+            //返回
             back(){
                 this.$router.go(-1)
             },

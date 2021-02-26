@@ -286,6 +286,7 @@
       async edit(editId){
         this.getCourseInfo();
         this.form.addSub=[];
+        this.checkedKeys=[];
         console.log('selectData',this.treeData,this.dataSource);
         let selectData = this.dataSource.filter(item => item.teacherId=== editId)
         console.log(selectData);

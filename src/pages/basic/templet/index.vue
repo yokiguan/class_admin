@@ -17,8 +17,7 @@
                    title="确认删除?"
                    cancelText="取消"
                    okText="确定"
-                   @confirm="() => deleteItem(record.id)"
-           >
+                   @confirm="() => deleteItem(record.id)">
           <a href="javascript:;">删除</a>
         </a-popconfirm>
     </span></a-table>

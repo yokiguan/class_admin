@@ -8,10 +8,9 @@
             </a-breadcrumb>
         </div>
         <a-card>
-            <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules" style="overflow: hidden;margin-bottom: 30px" :label-col="{span:4}"
-                          :wrapper-col="{span:10}">
+            <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules" style="overflow: hidden;margin-bottom: 30px" :label-col="{span:4}" :wrapper-col="{span:10}">
                 <a-form-model-item label="选课类型" prop="selectType">
-                    <a-select placeholder="请选择" v-model="form.selectType">
+                    <a-select placeholder="请选择" v-model="form.selectType" @change="chooseTeacher">
                         <a-select-option value="1">按照老师选择</a-select-option>
                         <a-select-option value="0">不按照老师选择</a-select-option>
                     </a-select>
@@ -26,8 +25,7 @@
                                    valueFormat="YYYY-MM-DD HH:mm:ss"/>
                 </a-form-item>
                 <a-form-model-item label="选课结束时间">
-                    <a-date-picker
-                            v-model="endValue"
+                    <a-date-picker v-model="endValue"
                             :disabled-date="disabledEndDate"
                             show-time
                             format="YYYY-MM-DD HH:mm:ss"
@@ -39,79 +37,79 @@
             </a-form-model>
             <a-table :rowKey="'id'" :columns="columns" :dataSource="dataSource" :pagination='false'>
                 <div slot="subChildIds" slot-scope="text, record,index_1">
-                    <a-table
-                            :rowKey="'text.subChildId'"
+                    <a-table :rowKey="'text.subChildId'"
                             :dataSource="text"
-                            :columns="columnsSubjects"
+                            :columns="changeColumns"
                             :showHeader="false"
                             :pagination="false"
                             bordered>
                         <div slot="isable" slot-scope="text,record,index_2">
-
                             <a-select  style="width: 100px" v-model="dataSource[index_1].subChildIds[index_2].isable">
-                                <a-select-option :value="0"> 必选 </a-select-option>
-                                <a-select-option :value="1"> 可选 </a-select-option>
-
+                                <a-select-option :value="0"> 可选 </a-select-option>
+                                <a-select-option :value="1"> 必选 </a-select-option>
                             </a-select>
                         </div>
-                        <div slot="teahcherIds" slot-scope="text,record,index_2">
-                            <a-form-model ref="dynamicValidateForm" :model="dynamicValidateForm">
+                        <div slot="teacherIds" slot-scope="text,record,index_2">
+                            <a-form-model ref="dynamicValidateForm">
                                 <a-form-model-item
                                         v-for="(domain, index) in text"
-                                        :key="domain.key"
-                                        :rules="{ required: true,message: '请输入人数',trigger: 'blur',}">
+                                        :key="domain.key">
                                     <a-input
-                                            style="float: left;color: black;width: 50px;border:none;background-color:#fff"
+                                            style="float: left;color: black;width: 80px;border:none;background-color:#fff"
                                             :value="domain.teacherName"
-                                            v-model="dataSource[index_1].subChildIds[index_2].teahcherIds[index].teacherName"
+                                            v-model="dataSource[index_1].subChildIds[index_2].teacherIds[index].teacherName"
                                             disabled>
                                     </a-input>
                                     <a-input placeholder="请输入人数" style="width: 60%; margin-right: 8px"
-                                            v-model="dataSource[index_1].subChildIds[index_2].teahcherIds[index].capacity"
-                                            :value="domain.capacity"/>
-                                    <a class="dynamic-delete-button" type="minus-circle-o"
-                                            @click="removeDomain(domain.teacherId)"
-                                            style="color: blue;float: right">删除</a>
+                                             v-model="dataSource[index_1].subChildIds[index_2].teacherIds[index].capacity"
+                                             :value="domain.capacity"/>
+                                    <a class="dynamic-delete-button" type="minus-circle-o" @click="removeDomain(domain.teacherId,index_1,index_2)"
+                                       style="color: blue;float: right">删除</a>
                                 </a-form-model-item>
                                 <a-form-model-item>
-                                    <a-button class="add-btn" @click="addTeacher(dataSource.subChildIds.subChildId)"><a-icon type="plus" />新增老师</a-button>
+                                    <a-button class="add-btn" @click="addTeacher(dataSource,index_1,index_2)"><a-icon type="plus" />新增老师</a-button>
                                 </a-form-model-item>
                             </a-form-model>
                         </div>
                     </a-table>
                 </div>
-                <a-form-item slot="regular">
-                    <a-select placeholder="请选择覆盖科目" @change="handleSelectChange" style="width: 150px">
-                                 <a-select-option value="male">male</a-select-option>
-                                 <a-select-option value="female">female</a-select-option>
+                <template  slot="regular" slot-scope="text,record,index3">
+                    <a-select placeholder="请选择覆盖科目" style="width: 150px" @change="handleChange($event,index3)">
+                        <a-select-option value="2">2</a-select-option>
+                        <a-select-option value="3">3</a-select-option>
+                        <a-select-option value="4">4</a-select-option>
+                        <a-select-option value="5">5</a-select-option>
+                        <a-select-option value="6">6</a-select-option>
                     </a-select>
-                </a-form-item>
-                <a slot='operate' @click="deleteTypical">删除</a>
+                </template>
+<!--                <a slot='operate' @click="deleteTypical">删除</a>-->
             </a-table>
             <div style="margin-top: 30px">
-                <h3>选课说明</h3>
-                <a-textarea placeholder="请输入" :rows="8" style="width: 1200px" />
+                <a-form>
+                    <a-form-item label="选课说明：" :model="form">
+                        <a-input type="textarea" placeholder="请输入" v-model="form.explanation" style="min-height: 100px"></a-input>
+                    </a-form-item>
+                </a-form>
             </div>
             <a-row style=" margin-left:500px;margin-top:50px;margin-bottom:10px">
                 <a-col :span="5"><a-button style="width: 100px;height: 40px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>
                 <a-col :span="5"> <a-button style="width: 100px;height: 40px;background-color:blue;color: white" @click="back">返回</a-button></a-col>
                 <a-col :span="5"><a-button  style="width: 100px;height: 40px;background-color: #1abc9c;color: white;" @click="saveAll">保存</a-button></a-col>
             </a-row>
-            <a-modal
-                    :visible='addVisit'
-                    width="800px"
-                    :closable="false">
+<!--            添加老师弹框-->
+            <a-modal :visible='addVisit' width="800px" :closable="false">
                 <template slot="footer">
                     <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                     <a-button key="back" @click="handleCancel">取消</a-button>
                 </template>
-                <a-form :form="form" :label-col="{ span:6 }" :wrapper-col="{ span: 13 }" style="margin-bottom: 300px;margin-top: 50px">
+                <a-form :label-col="{ span:6 }" :wrapper-col="{ span: 13 }" style="margin-bottom: 300px;margin-top: 50px">
                     <a-form-item label="标题：">
                         <a-tree-select
                                 v-model="value"
                                 style="width: 100%"
                                 :tree-data="treeData"
                                 tree-checkable
+                                :checkedKeys="checkedKeys"
                                 :show-checked-strategy="SHOW_PARENT"
                                 placeholder="请选择"/>
                     </a-form-item>
@@ -150,12 +148,12 @@
             scopedSlots: { customRender: "regular" },
             align:'center',
         },
-        {
-            title: "操作",
-            dataIndex: "operate",
-            scopedSlots: { customRender: "operate" },
-            align:'center',
-        },
+        // {
+        //     title: "操作",
+        //     dataIndex: "operate",
+        //     scopedSlots: { customRender: "operate" },
+        //     align:'center',
+        // },
     ];
     const columnsSubjects = [
         {
@@ -169,52 +167,25 @@
             scopedSlots: { customRender: "isable" },
             align:'center',
         },
+    ];
+    const columnsSubjectsTeacher = [
         {
-            title: "老师",
-            dataIndex: "teahcherIds",
-            scopedSlots: { customRender: "teahcherIds" },
+            title: "科目",
+            dataIndex: "subChildName",
             align:'center',
         },
-    ];
-    const treeData=[
         {
-            title: '高一',
-            value: '0-0',
-            key: '0-0',
-            children: [
-                {
-                    title: '语文',
-                    value: '0-0-0',
-                    key: '0-0-0',
-                    children: [
-                        {
-                            title: '张凯元',
-                            value: '0-0-0-0',
-                            key: '0-0-0-0',
-                        },
-                        {
-                            title: '张凯方',
-                            value: '0-0-0-1',
-                            key: '0-0-0-1',
-                        },
-                    ],
-                },
-            ]},
+            title: "是否可选",
+            dataIndex: "isable",
+            scopedSlots: { customRender: "isable" },
+            align:'center',
+        },
         {
-            title: '高二',
-            value: '0-1',
-            key: '0-1',
-            children: [
-                {
-                    title: '语文',
-                    value: '0-1-0',
-                    key: '0-1-0',
-                    children: [{
-                        title: '张凯元',
-                        value: '0-1-0-0',
-                        key: '0-1-0-0',
-                    }],}
-            ]},
+            title: "老师",
+            dataIndex: "teacherIds",
+            scopedSlots: { customRender: "teacherIds" },
+            align:'center',
+        },
     ];
     export default {
         name: "QueryList",
@@ -223,11 +194,14 @@
             return {
                 columns,
                 columnsSubjects,
+                columnsSubjectsTeacher,
+                changeColumns:columnsSubjects,
                 dataSource: [],
                 loading:false,
                 addVisit: false,
                 value: [''],
-                treeData,
+                treeData:[],
+                subTimes:[],
                 SHOW_PARENT,
                 startValue: null,
                 endValue: null,
@@ -236,8 +210,8 @@
                     teacherIds:[{teacherName:'',capacity:''}]
                 },
                 select_type:"",
-                converSubject:"",
                 form: {
+                    explanation:"",
                 },
                 rules: {
                     selectType: [
@@ -265,6 +239,9 @@
                 planId:"",
                 gradeId:"",
                 editText:-1,
+                index_1:null,
+                index_2:null,
+                checkedKeys:[],
             };
         },
         async created(){
@@ -288,16 +265,17 @@
                 this.gradeId=result.gradeId;
                 this.chooseClassSettingInfo();
             },
+            // 选课设置查看
             async chooseClassSettingInfo(){
-                // 选课设置查看
                 let {data:{result,success}} = await this.$api.schedule.setting.settingGet({planId:this.planId,gradeId:this.gradeId});
                 console.log(result);
+                console.log(result[0].setInfo);
                 // console.log(settingData.result);
-                this.dataSource =result;
+                this.dataSource =result[0].setInfo;
                 this.dataSource.forEach((item,i)=>{
                     item.id=i
                 })
-                console.log(this.dataSource);
+                // console.log(this.dataSource);
             },
             //开始选课时间
             disabledStartDate(startValue) {
@@ -323,76 +301,142 @@
             handleEndOpenChange(open) {
                 this.endOpen = open;
             },
-            handleSelectChange(value) {
-                console.log(value);
-            },
             //查看教师
             async lookTeacherInfo(id){
-                this.editText=this.dataSource.subChildIds.findIndex(item=>item.subChildId==id);
-                console.log(this.editText);
-                // let {data}=await this.$api.schedule.setting.lookTeacher({gradeId:this.gradeId,subChildId:})
+                let {data:{result}}=await this.$api.schedule.setting.lookTeacher({gradeId:this.gradeId,subChildId:id})
+                this.treeData[0] = {
+                    ...this.treeData[0],
+                    key:result.gradeId,
+                    value:result.gradeId,
+                    title:result.gradeName + result.subName
+                }
+                this.treeData[0].children = []
+                result.teachers.forEach((chr)=>{
+                    let child = {
+                        key:chr.teacherId,
+                        value:chr.teacherId,
+                        title:chr.teacherName
+                    }
+                    this.treeData[0].children.push(child)
+                })
+                console.log("this.treedata",this.treeData)
+            },
+            //选择老师
+            chooseTeacher(){
+                console.log(this.changeColumns);
+                if(this.form.selectType==1){
+                    this.changeColumns=columnsSubjectsTeacher;
+                    this.chooseClassSettingInfo();
+                }
+                else {
+                    this.changeColumns=columnsSubjects;
+                    this.chooseClassSettingInfo();
+                }
             },
             //添加教师
-            addTeacher(id){
+            addTeacher(id,index_1,index_2){
+                this.index_1 = index_1
+                this.index_2 = index_2
                 this.addVisit=true;
-                this.lookTeacherInfo(id);
-
+                this.lookTeacherInfo(this.dataSource[index_1].subChildIds[index_2].subChildId);
             },
-            //删除类型
-            deleteTypical(key){
-                const dataSource = [...this.dataSource];
-                this.dataSource= dataSource.filter(item => item.key !== key);
-            },
-            //保存
+            //保存新增老师
             handleOk() {
-                this.loading = true;
-                setTimeout(() => {
-                    this.dynamicValidateForm.domains.push({
-                        value: '',
-                        key: Date.now()
-                    });
-                    this.dynamicValidateForm.name=this.value;
-                    this.addVisit=false;
-                    this.loading = false;
-                }, 2000);
+                this.dataSource[this.index_1].subChildIds[this.index_2].teacherIds = []
+                this.dataSource[this.index_1].subChildIds[this.index_2].teacherIds[0] = {}
+                let childTeachers = []
+                for(let item of this.value){
+                    if(item === this.treeData[0].key && this.value.length === 1){
+                        this.treeData[0].children.forEach(chr=>{
+                            childTeachers.push({teacherName:chr.title,teacherId:chr.key,capacity:'10'})
+                        })
+                        break
+                    }else{
+                        let teacherIds = this.treeData[0].children.filter(chr=>{
+                            return chr.key === item
+                        })
+                        teacherIds.forEach(chr=>{
+                            childTeachers.push({teacherName:chr.title,teacherId:chr.key,capacity:'10'})
+                        })
+                    }
+                }
+                this.$set(this.dataSource[this.index_1].subChildIds,this.index_2,{...this.dataSource[this.index_1].subChildIds[this.index_2],teacherIds:childTeachers})
+                this.addVisit = false
+                console.log("this.dataSource",this.dataSource)
             },
+            //关闭添加老师弹框
             handleCancel() {
                 this.addVisit=false;
             },
-            async saveAll(){
-                let {data} = await this.$api.schedule.setting.settingAdd({
-                    planId:this.planId,
-                    setInfo:this.dataSource,
-                    timeLimit: this.startValue + ' - '+this.endValue,
-                    tips:'',
-                })
-                alert(data.success?'修改成功':'修改失败')
+            // //选择覆盖科目
+            handleChange($event,index){
+                console.log(index);
+            //     console.log(index);
+                console.log($event);
+                this.dataSource[index].coverRule=$event;
+                console.log(this.dataSource[index].coverRule);
             },
+            //保存
+            async saveAll(){
+                //数组转化为字符串
+                //JSON.stringify(this.disableData)
+                let pushData=[];
+                    for(let i=0;i<this.dataSource.length;i++){
+                        pushData[i]={
+                            id:this.dataSource[i].id,
+                            name:this.dataSource[i].name,
+                            coverRule:this.dataSource[i].coverRule,
+                            subChildIds:[],
+                        }
+                    for(let j=0;j<this.dataSource[i].subChildIds.length;j++){
+                        pushData[i].subChildIds[j]={
+                            subChildName:this.dataSource[i].subChildIds[j].subChildName,
+                            subChildId:this.dataSource[i].subChildIds[j].subChildId,
+                            isable:this.dataSource[i].subChildIds[j].isable,
+                            teacherIds: [],
+                        }
+                        for(let k in this.dataSource[i].subChildIds[j].teacherIds){
+                            pushData[i].subChildIds[j].teacherIds[k]={
+                                teacherId:this.dataSource[i].subChildIds[j].teacherIds[k].teacherId,
+                                teacherName:this.dataSource[i].subChildIds[j].teacherIds[k].teacherName,
+                                capacity:this.dataSource[i].subChildIds[j].teacherIds[k].capacity,
+                            }
+                        }
+                    }
+                }
+                console.log(pushData);
+                let addData = {
+                    planId:this.planId,
+                    selectType:this.form.selectType,
+                    timeLimit: this.startValue + ' - '+this.endValue,
+                    tips:this.form.explanation,
+                    setInfo:pushData,
+                }
+            let {data} = await this.$api.schedule.setting.settingAdd(addData);
+                console.log(data);
+
+            },
+            //清空
             Clear(){
                 this.form.setFieldsValue();
             },
+            //返回
             back(){
                 this.$router.go(-1)
             },
-            removeDomain(value) {
-                for(let i = 0;i< this.dataSource.length;i++){
-                    let item = this.dataSource[i].subChildIds
-                    for(let j =0;j<item.length;j++){
-                        for(let k = 0;k<item[j].teahcherIds.length;k++){
-                          if(item[j].teahcherIds[k].teacherId === value){
-                            this.dataSource[i].subChildIds[j].teahcherIds.splice(k,1)
-                          }
-                        }
-                    }
-
-                }
-                this.saveAll()
-            },
-            addDomain() {
-                this.dynamicValidateForm.domains.push({
-                    value: '',
-                    key: Date.now(),
-                });
+            //删除
+            removeDomain(id,index1,index2) {
+               // console.log(id);
+               // console.log(index1);
+               // console.log(index2);
+               // console.log(this.dataSource)
+               // console.log(this.dataSource[index1].subChildIds);
+               // console.log(this.dataSource[index1].subChildIds[index2].teacherIds);
+               this.editText=this.dataSource[index1].subChildIds[index2].teacherIds.findIndex(item=>item.teacherId===id);
+               console.log(this.editText);
+               const dataSource = [...this.dataSource[index1].subChildIds[index2].teacherIds];
+                dataSource.splice(this.editText,1);
+                this.dataSource[index1].subChildIds[index2].teacherIds= dataSource
             },
         },
     };

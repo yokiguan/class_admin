@@ -277,8 +277,12 @@ export default new Router({
                   children: [
                     {
                       path: '/schedule/detail/class_admin/index',
-                      name: '行政班排课',
+                      name: '课时设置',
                       component: () => import('@/pages/schedule/detail/class_admin/index'),
+                    },{
+                      path: '/schedule/detail/class_admin/time',
+                      name: '课节设置',
+                      component: () => import('@/pages/schedule/detail/class_admin/time'),
                     },{
                       path: '/schedule/detail/class_admin/course',
                       name: '学科设置',

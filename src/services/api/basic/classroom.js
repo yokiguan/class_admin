@@ -23,21 +23,21 @@ const classroom = {
     deleteBuilding(params){
         return axios.post(`${baseUrl}/deleteData.json`,params);
     },
-    // 场地规则列表查看
+    // 场地规则列表查看(已调）
     fetchRuleList(params){
      return axios.get(`${ruleUrl}/getDataListByCurrId.json`,{params});
     },
     // 场地规则项查看
     fetchRule(params){
-        return axios.get(`${ruleUrl}/getDataListByCurrId.json`,params)
+        return axios.get(`${baseRoomUrl}/getDataInfoJoint.json`,{params})
     },
 
     // 场地规则删除
     deleteRule(params){
-        return axios.post(`${baseRoomUrl}/deleteDataJoint.json`,{params});
+        return axios.post(`${baseRoomUrl}/deleteDataJoint.json`,params);
     },
 
-    // 场地规则新增编辑
+    // 场地规则新增编辑(已调）
     saveRule(params){
         return axios.post(`${ruleUrl}/saveDataJoint.json`,params)
     },

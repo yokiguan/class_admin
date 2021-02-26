@@ -29,7 +29,7 @@
                 </div>
                 <div class="right">
                     <LocationRegular v-if="showcomLocation" @form-modal-change="changeEvent"></LocationRegular>
-                    <CurriculumRegular :classRoomId="classRoomIds" v-if="showcomCurriculum" :templateId ="templateId"></CurriculumRegular>
+                    <CurriculumRegular :classRoomId="selectRoomIds" v-if="showcomCurriculum" :templateId ="templateId"></CurriculumRegular>
                 </div>
             </div>
         </div>
@@ -55,15 +55,23 @@
                 templateId:'',
                 adminClass:"",
                 classRoomIds:[],
+                selectRoomIds:[],
+
             };
         },
         created(){
             this.getData();
         },
         watch:{
-          checkedKeys(val){
-              console.log('watchDataOfKeys',val);
-          }
+            checkedKeys(val){
+                console.log('watchDataOfKeys',val);
+                this.selectRoomIds = []
+                this.checkedKeys.forEach(item=>{
+                    if(this.classRoomIds.indexOf(item) >= 0){
+                        this.selectRoomIds.push(item)
+                    }
+                })
+            }
         },
         methods: {
             //查看信息树
@@ -91,6 +99,7 @@
                                 for (let k in item.classroom_list) {
                                     let dataThree = {}
                                     dataThree.key = item.classroom_list[k].room_id;
+                                    this.classRoomIds.push(item.classroom_list[k].room_id)
                                     dataThree.title = item.classroom_list[k].classroom_name;
                                     childData.children.push(dataThree)
                                 }
@@ -105,27 +114,27 @@
             },
             //监控选择的数
             onCheck(e){
-              console.log(this.checkedKeys);
-              console.log('onCheck',e);
-              this.showcomLocation=true;
-              let classroomId=[];
-              this.checkedKeys.forEach((item,index)=>{
-                  console.log(item);
-                  console.log(index);
-                  let parentNode=this.buildingsData.filter(child=>child.key===item)
-                  console.log(parentNode);
-                  if(parentNode.length>0&& Object.prototype.hasOwnProperty.call(parentNode[0],'children')){
-                      parentNode[0].children.forEach(chr=>{
-                          console.log(chr.key);
-                          classroomId.push(chr.key);
-                      });
-                  }else{
-                      console.log(item);
-                      classroomId.push(item)
-                  }
-              })
-              this.checkedKeys=classroomId;
-              console.log(this.checkedKeys);
+                console.log(this.checkedKeys);
+                console.log('onCheck',e);
+                this.showcomLocation=true;
+                let classroomId=[];
+                this.checkedKeys.forEach((item,index)=>{
+                    console.log(item);
+                    console.log(index);
+                    let parentNode=this.buildingsData.filter(child=>child.key===item)
+                    console.log(parentNode);
+                    if(parentNode.length>0&& Object.prototype.hasOwnProperty.call(parentNode[0],'children')){
+                        parentNode[0].children.forEach(chr=>{
+                            console.log(chr.key);
+                            classroomId.push(chr.key);
+                        });
+                    }else{
+                        console.log(item);
+                        classroomId.push(item)
+                    }
+                })
+                this.checkedKeys=classroomId;
+                console.log(this.checkedKeys);
             },
             changeEvent (modal) {
                 console.log('modal',modal)

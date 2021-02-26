@@ -83,7 +83,7 @@
             },
             //查看场地规则信息
             async teacherRuleInfo(){
-              let {data:teacherData}=await this.$api.basic.teacher.fetchList({currId:1});
+              let {data:teacherData}=await this.$api.basic.teacher.fetchList({currId:2});
               console.log(teacherData);
             },
             //删除规则
@@ -108,6 +108,7 @@
     }
 </script>
 <style lang="less" scoped>
+
     .location_content{
         background-color: white;
         margin-top: 10px;

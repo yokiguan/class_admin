@@ -6,7 +6,7 @@ import axios from '../../axios'      //导入从http众创建的axios实例
 const baseUrl=base.root+'/a/schedulePlan'
 const teacherUrl=base.root+'/a/basicSettingQuery'
 const setting={
-    // 选课设置新增/修改
+    // 选课设置新增/修改(已调）
     settingAdd(params){
         return axios.post(`${baseUrl}/saveSettingData.json`,params, {
             'Content-Type': 'multipart/form-data'});

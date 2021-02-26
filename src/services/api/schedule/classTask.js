@@ -10,12 +10,6 @@ const baseUrl4 = base.root + '/a/scheduleTeacherClass'
 const baseUrl5 = base.root + '/a/scheduleResult'
 const baseUrl6 = base.root + '/a/scheduleSyllabus'
 const  classTask = {
-    // 开始
-    // 排课 保存/修改
-    updateSchedule(params){
-        return axios.post(`${baseUrl1}/updateSchedule.json`,params, {
-            'Content-Type': 'multipart/form-data'});
-    },
     //走班排课任务页面
     getScheduleTask(params){
         return axios.get(`${baseUrl1}/getScheduleTask.json`,params, {
@@ -47,10 +41,9 @@ const  classTask = {
         return axios.post(`${baseUrl5}/getStudent.json`, params, {
             'Content-Type': 'multipart/form-data'});
     },
-    //整体/按老师/按教室/按课程/按学生/按班级查看
+    //整体查看
     getData(params) {
-        return axios.get(`${baseUrl6}/getDataSelect.json`, params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl6}/getDataSelect.json`, {params});
     },
     //学生调班查看
     getStudentResult(params) {
