@@ -27,20 +27,40 @@
             <a-row class="buttons">
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教师设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
-            <a-table :columns="columns"
-                     :data-source="data"
-                     :bordered="true"
-                     :pagination="false"
-                     style="width: 55%">
-                <a-icon type="edit" slot="class_day" style="color: #00ccff;font-size: 25px;font-weight: bold" @click="edit"/>
-                <a-icon type="close" slot="blank" style="font-weight: bolder;font-size: 30px;color: #0099ff"/>
-                <span slot="add" style="color:blue">+添加一项</span>
-                <span slot="action" slot-scope="text" @click="editInfo(record.key)" style="background-color:blue">{{text}}</span>
+            <a-table :rowKey="'classId'" :columns="columns" :dataSource="data" :pagination='false'>
+                <div slot="subjectTeacherList" slot-scope="text, record,index1">
+                    <a-table :rowKey="'text.subId'"
+                             :dataSource="text"
+                             :columns="columnsSubject"
+                             :pagination="false"
+                             bordered>
+                    </a-table>
+                    <template slot="class_day" slot-scope="text, record,index2">
+                        <a-icon type="edit"  style="color: #00ccff;font-size: 25px;font-weight: bold; float:right" @click="edit"/>
+                    </template>
+                    <a-icon type="close" slot="blank" style="font-weight: bolder;font-size: 30px;color: #0099ff" @click="delet" />
+                </div>
+                <template slot="action" slot-scope="text, record">
+                    <a-popconfirm
+                            v-if="data.length"
+                            title="确认删除?"
+                            @confirm="() => onDelete(record.id)">
+                        <a href="javascript:;">删除</a>
+                    </a-popconfirm>
+                </template>
             </a-table>
+<!--
+
+
+<!--&lt;!&ndash;                <span slot="add" style="color:blue">+添加一项</span>&ndash;&gt;-->
+
+<!--&lt;!&ndash;                <span slot="action" slot-scope="text" @click="editInfo(record.key)" style="background-color:blue">{{text}}</span>&ndash;&gt;-->
+<!--            </a-table>-->
             <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
@@ -54,184 +74,64 @@
     </div>
 </template>
 <script>
-    // by setting it's colSpan to be 0
-    // const renderContent = (value, row, index) => {
-    //     const obj = {
-    //         children: value,
-    //         attrs: {},
-    //     };
-    //     if (index ===3||index===6) {
-    //         obj.attrs.colSpan = 0;
-    //     }
-    //     return obj;
-    // };
     const columns = [
         {
-            title: '班级',
-            dataIndex: 'class',
+            title:'',
+            dataIndex:'classId',
             align:'center',
-            customRender: (value, row, index) => {
-                const obj = {
-                    children: value,
-                    attrs: {},
-                };
-                if (index === 0) {
-                    obj.attrs.rowSpan = 4;
-                }
-                // These two are merged into above cell
-                // if (index === 1) {
-                //     obj.attrs.rowSpan = 0;
-                // }
-                // if (index === 2) {
-                //     obj.attrs.colSpan = 0;
-                // }
-                // if (index === 3) {
-                //     obj.attrs.colSpan = 0;
-                // }
-                if(index===4){
-                    obj.attrs.rowSpan = 3;
-                }
-                // if (index === 5) {
-                //     obj.attrs.rowSpan = 0;
-                // }
-                // if (index === 6) {
-                //     obj.attrs.rowSpan = 0;
-                // }
-                return obj;
-            },
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
         },
         {
-            title: '学科名称',
-            dataIndex: 'name',
+            title: '班级',
+            dataIndex:'className',
             align:'center',
-            customRender: (text, row, index) => {
-                if (index === 3 || index === 6) {
-                    return {
-                        children: text,
-                        attrs: {
-                            colSpan:0,
-                        },
-                    };
-                } else {
-                    return text;
-                }
-            },
+        },
+        {
+            title: '',
+            dataIndex: 'subjectTeacherList',
+            align:'center',
+            scopedSlots: { customRender: 'subjectTeacherList' },
+        },
+        {
+            title: '操作',
+            dataIndex: 'action',
+            align:'center',
+            scopedSlots: { customRender: 'action' },
+        },
+    ];
+    const columnsSubject=[
+        {
+            title: '学科名称',
+            dataIndex: 'subName',
+            align:'center',
         },
         {
             title: '任课教师',
-            dataIndex: 'teacher',
+            dataIndex: 'teacherName',
             align:'center',
-            scopedSlots:{
-                customRender:(value,row,index)=>{
-                    const obj={
-                        // children:value='class_day',
-                    };
-                    if(index===3){
-                        obj.attrs.colSpan = 0;
-                    }
-                    return obj;
-                }
-
-            },
+            scopedSlots:{customRender:'class_day'}
         },
         {
             title: '  ',
             dataIndex: 'blank',
             align:'center',
-            // scopedSlots: { customRender: 'blank' },
-            scopedSlots:{
-                customRender:(value,row,index)=>{
-                    const obj={
-                         children:value='blank',
-                    };
-                    if(index===3){
-                        obj.attrs.colSpan = 0;
-                    }
-                    return obj;
-                }
-
-            },
-        },
-        {
-            title: '操作',
-            dataIndex: 'opt',
-            align:'center',
-            scopedSlots: { customRender: 'action' },
-            customRender: (value, row, index) => {
-                const obj = {
-                    children: value,
-                    attrs: {},
-                };
-                if (index === 0) {
-                    obj.attrs.rowSpan = 4;
-                }
-                // These two are merged into above cell
-                // if (index === 1) {
-                //     obj.attrs.rowSpan = 0;
-                // }
-                // if (index === 2) {
-                //     obj.attrs.colSpan = 0;
-                // }
-                // if (index === 3) {
-                //     obj.attrs.colSpan = 0;
-                // }
-                if(index===4){
-                    obj.attrs.rowSpan = 3;
-                }
-                // if (index === 5) {
-                //     obj.attrs.rowSpan = 0;
-                // }
-                // if (index === 6) {
-                //     obj.attrs.rowSpan = 0;
-                // }
-                return obj;
-            }
-        },
-    ];
-    const data = [
-        {
-            key:0,
-            class:'2020级高一1班',
-            name: '语文',
-            opt:'删除'
-        },
-        {
-            key:1,
-            name:'数学',
-        },
-        {
-            key:2,
-            name:'体育',
-        },
-        {
-            key:3,
-            name:'+添加一项'
-        },
-        {
-            key:4,
-            class:'2020级高一2班',
-            name:'升国旗',
-            opt:'删除'
-        },
-        {
-            key:5,
-            name:'班会',
-        }, {
-        key:6,
-            name:'+添加一项'
+            scopedSlots: { customRender: 'blank' },
         },
     ];
     export default {
         data() {
 
             return {
-                data,
+                data:[],
+                dataSource:[],
                 columns,
-                // tableData,
-                // columns,
+                columnsSubject,
                 visible: false,
                 loading: false,
                 planData:"",
+                gradeId:"",
             };
         },
         async created() {
@@ -242,9 +142,26 @@
                 //获取单个选课计划的信息
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name
+                // console.log(result);
+                this.gradeId=result.gradeId;
             }
+            this.classSettingInfo();
         },
         methods: {
+            //班级设置查看
+            async classSettingInfo(){
+                let {data:{result,success}}=await this.$api.schedule.adminClass.getClassSetting({gradeId:this.gradeId});
+                console.log(result);
+                this.data=result;
+                for(let i=0;i<result.length;i++){
+                    console.log(result[i].subjectTeacherList)
+                }
+
+            },
+            //
+            delet(){
+
+            },
             add_course: function () {
                 this.visible = true;
             },
@@ -267,18 +184,27 @@
             onChange(e){
                 console.log('radio checked',e.target.value)
             },
+            //课时设置
             timesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
             },
+            //课节设置
             oncesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
             },
-            placeSetting(){
-                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
+            //学科设置
+            subjectSetting(){
+                this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`)
             },
-            courseSetting(){
-                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
+            //班级设置
+            classSetting(){
+                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`)
             },
+            //规则设置
+            ruleSetting(){
+                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`)
+            },
+            //开始排课
             startArray(){
                 this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
@@ -333,7 +259,6 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-        height: 700px;
     }
     .buttons{
         margin:5px 5px 20px 5px;

@@ -12,7 +12,7 @@ const adminClass = {
     //行政班排课查看
     //行政班排课修改
 
-    // 学科设置查看
+    // 学科设置查看(已调）
     getCourseSetting(params){
         return axios.get(`${baseUrl1}/getDataList.json`,{params});
     },
@@ -27,8 +27,7 @@ const adminClass = {
     },
     //班级设置查看
     getClassSetting(params){
-        return axios.get(`${baseUrl2}/getClassSettingDataList.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl2}/getClassSettingDataList.json`,{params});
     },
     //班级设置修改/新增
     addClassSetting(params){

@@ -4,7 +4,7 @@
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">选课排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">课时设置</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>

@@ -194,22 +194,18 @@
             key:'opt',
             align:'center',
             scopedSlots: { customRender: 'action' }
-        }]
-    const options = [
-        { label: '上午1', value: '上午1' },
-        { label: '上午2', value: '上午2' },
-        { label: '上午3', value: '上午3' },
-        { label: '上午4', value: '上午4' },
-        { label: '下午1', value: '下午1' },
-        { label: '下午2', value: '下午2' },
-        { label: '下午3', value: '下午3' },
-        { label: '下午4', value: '下午4' },
+        }];
+    const activity = [
+        { name: '上午',options:[0,1,2,3,4], value: 'morning' },
+        { name: '中午',options:[0,1,2], value: 'noon' },
+        { name: '下午',options:[0,1,2,3,4], value: 'afternoon' },
     ];
     export default {
         data() {
             return {
                 columns,
-                options,
+                activity,
+                options:[],
                 classOptions:[],
                 tableData:[],
                 loading:false,
@@ -218,6 +214,7 @@
                 planData:"",
                 deleteText:-1,
                 buildings: [{buildingId:"",name:""}],
+                currId:"",
                 form:{},
                 rules:{},
             }
@@ -235,7 +232,9 @@
             let {data}=await this.$api.schedule.arrangeClass.getList({planId:this.planId})
             console.log(data);
             this.tableData=data.rows;
-            console.log(this.tableData);
+            // console.log(this.tableData);
+            this.currId=this.tableData[0].currId;
+            // console.log(this.currId);
         },
         methods:{
             //获取教室和教学楼相关信息
@@ -246,6 +245,7 @@
             //选择时间段
             add_time() {
                 this.chooseTimeVisit=true;
+                this.modalInfo();
             },
             //添加教室
             add_class(){
@@ -254,8 +254,22 @@
             },
             //获取节次时间
             async modalInfo() {
-                let {data} = await this.$api.basic.template.fetchTemplate({id: this.modalId})
-                console.log(data.result);
+                let {data} = await this.$api.basic.template.fetchTemplate({id: this.currId});
+                console.log(data);
+                let activities=[];
+                let list=[...this.activity];
+                console.log(list);
+                list.forEach(item=>{
+                    for(let i=1;i<=data.result[item.value];i++){
+                        activities.push({
+                            label: item.name+i,
+                            value:item.value+i,
+                        });
+                    }
+                });
+                this.options=activities;
+                console.log(this.options);
+                console.log(list);
             },
             //选择教室
             async changeBuilding(){
@@ -280,12 +294,6 @@
                     }
                 }
                 console.log(this.classOptions);
-            },
-            onChange(checkedValues) {
-                console.log('checked = ', checkedValues);
-            },
-            onChange_class(checkedValues){
-                console.log('checked = ', checkedValues);
             },
             //保存时间段
             handleOkTime(){
@@ -339,6 +347,11 @@
             Next(){
               this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
+            async saveCourse(){
+                let pushData={
+
+                };
+            },
             //删除教室
             onDelete(deleId){
                 this.deleteText=this.tableData.findIndex(item=>item.id===deleId);
@@ -346,8 +359,6 @@
                 this.tableData.splice(this.deleteText,1);
                 console.log(this.tableData);
             },
-            handleSelectChange2(){},
-            handleSelectChange(){},
             //返回
             back(){
                 this.$router.go(-1)
