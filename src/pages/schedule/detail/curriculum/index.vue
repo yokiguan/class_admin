@@ -3,8 +3,8 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">课表查看</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">整体查看</a></a-breadcrumb-item>
+                <a-breadcrumb-item>< a href="">课表查看</ a></a-breadcrumb-item>
+                <a-breadcrumb-item>< a href="">整体查看</ a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <a-card class="content">
@@ -49,11 +49,11 @@
                         width: 110px" @click="studentLook">按学生查看</button></a-col>
             </a-row>
             <a-table :rowKey="''"
-                    :columns="columns"
-                    :data-source="tableData"
-                    :pagination="false"
-                    :bordered="true"
-                    style="margin-top: 20px;width:1200px;height: 700px">
+                     :columns="columns"
+                     :data-source="tableData"
+                     :pagination="false"
+                     :bordered="true"
+                     style="margin-top: 20px;width:1200px;height: 700px">
             </a-table>
         </div>
     </div>
@@ -136,16 +136,36 @@
                 console.log(this.allData);
                 for(let i=0;i<this.allData.length;i++){
                     let position=this.allData[i].position
-                    // console.log(this.allData[i].position);
+                    console.log(this.allData);
                     console.log(position);
                     let positionArr=eval(position);
-                    // console.log(positionArr);
-                    // for(let j=0;j<positionArr.length;j++){
-                    // let rowData=
-                        console.log(positionArr[0]);
-                    // }
+                    console.log(positionArr);
+                    let row = positionArr[0]
+                    let col = positionArr[1]
+                    console.log("row",row,col)
+                    let colName = this.computedDataIndex(col)
+                    this.tableData[row - 1]  = this.tableData[row - 1] ? this.tableData[row - 1] : {}
+                    let {classNumId,subChildName,classStuNum} = this.allData[i]
+                    this.tableData[row - 1][`${colName}`] = classNumId + ',' + subChildName + ',' + classStuNum
                 }
-
+                this.$set(this.tableData)
+                console.log("====this.table====",this.tableData)
+            },
+            computedDataIndex(col){
+                switch(col){
+                    case 1:
+                        return 'one'
+                    case 2:
+                        return 'two'
+                    case 3:
+                        return 'three'
+                    case 4:
+                        return 'four'
+                    case 5:
+                        return 'five'
+                    default:
+                        break
+                }
             },
             //按老师查看
             teacherLook(){

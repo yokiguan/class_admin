@@ -17,43 +17,38 @@
         </div>
         <div class="table-bg">
             <a-row class="buttons">
-                <a-button style="width: 100px;height: 40px;float: left;" @click="timesSetting">课时设置</a-button>
-                <a-button style="width: 100px;height: 40px ;float: left;margin-left: 50px" @click="oncesSetting" >课节设置</a-button>
-                <a-button style="width: 100px;height: 40px;float: left;margin-left: 50px" @click="placeSetting">教师设置</a-button>
-                <a-button style="width: 100px;height: 40px;float: left;margin-left: 50px" @click="courseSetting">课程设置</a-button>
-                <a-button style="width: 100px;height: 40px;float: left;margin-left: 50px" @click="startArray">开始排课</a-button>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <div class="table">
                 <template>
                     <a-descriptions bordered>
                         <a-descriptions-item label="学科时间规则" >
-                            <a-table  :rowKey="'subjectTimekey'"
+                            <a-table  :rowKey="'ids'"
                                       :columns="column1"
                                       :data-source="studyTimeData"
                                       :pagination="false"
                                       :bordered="true">
-                                <a-form-item slot="subjects" >
-                                    <a-select v-decorator="['subject',{ rules: [{ required: true, message: 'Please select your subject!' }] },]"
-                                              placeholder="语文"
-                                              @change="handleSelectChange"
-                                              style="width:100px">
-                                        <a-select-option value="chinese">
-                                            语文
-                                        </a-select-option>
-                                        <a-select-option value="metting">
-                                            班会
-                                        </a-select-option>
-                                        <a-select-option value="country">
-                                            升国旗
-                                        </a-select-option>
+                                <a-form-item slot="subjects" slot-scope="text" >
+                                    <a-select placeholder="语文" style="width:100px" :default-value="text">
+                                        <a-select-option value="chinese">语文</a-select-option>
                                     </a-select>
                                 </a-form-item>
-                                <div slot="timeSetting1" slot-scope="time1">
+                                <div slot="timeSetting1" slot-scope="time1,record1">
                                     <span style="float: left">{{time1}}</span>
                                     <a-icon  type="edit" @click="timeRegularSetting"  style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
-                                <div slot="action">
-                                    <span  style="color:blue;float:left" @click="subjectTimeDelete">删除</span>
+                                <div slot="action" slot-scope="text,record" >
+                                    <a-popconfirm
+                                            v-if="studyTimeData.length"
+                                            title="确认删除?"
+                                            @confirm="() => subjectTimeDelete(record.id)">
+                                        <a href="javascript:;" style="color:blue;float:left">删除</a>
+                                    </a-popconfirm>
                                     <span  style="color:blue;float:right" @click="subjectTimeSave">保存</span>
                                 </div>
                             </a-table>
@@ -65,26 +60,30 @@
                     </a-descriptions>
                     <a-descriptions bordered>
                         <a-descriptions-item label="教师时间规则">
-                            <a-table :rowkey="'teacherTimeKey'"
-                                    :columns="column2"
+                            <a-table :rowkey="'id'"
+                                      :columns="column2"
                                       :data-source="teacherTimeData"
                                       :pagination="false"
                                       :bordered="true">
-                                <div slot="teachers" slot-scope="teacher">
+                                <div slot="teachers" slot-scope="teacher,record1">
                                     <span>{{teacher}}</span>
                                     <a-icon type="edit" @click="addTeacher"  style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
-                                <div slot="timeSetting1" slot-scope="time1">
-                                    <span style="float: left">{{time1}}</span>
+                                <div slot="timeSetting1" slot-scope="time2">
+                                    <span style="float: left">{{time2}}</span>
                                     <a-icon type="edit" @click="timeRegularSetting" style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
-                                <div slot="action">
-                                    <span  style="color:blue;float:left" @click="teacherTimeDelete">删除</span>
+                                <div slot="action" slot-scope="text,record">
+                                    <a-popconfirm
+                                            v-if="teacherTimeData.length"
+                                            title="确认删除?"
+                                            @confirm="() => teacherTimeDelete(record.id)">
+                                        <a href="javascript:;" style="color:blue;float:left">删除</a>
+                                    </a-popconfirm>
                                     <span  style="color:blue;float:right" @click="teacherTimeSave">保存</span>
                                 </div>
                             </a-table>
-                            <div style=" margin-top: 10px;margin-bottom: -5px; float: left; font-size: 1.0rem;color: blue;"
-                                 @click="addTeacherTimeRegular">
+                            <div style=" margin-top: 10px;margin-bottom: -5px; float: left; font-size: 1.0rem;color: blue;" @click="addTeacherTimeRegular">
                                 <a-icon type="plus" />
                                 <span> 添加规则</span>
                             </div>
@@ -111,7 +110,7 @@
                                         </a-select-option>
                                     </a-select>
                                 </a-form-item>
-                                <div slot="timeSetting1" slot-scope="time1">
+                                <div slot="timeSetting1" slot-scope="time1,record1,index1">
                                     <span style="float: left">{{time1}}</span>
                                     <a-icon type="edit" @click="timeRegularSetting" style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
@@ -333,64 +332,61 @@
         </a-modal>
 <!--        添加老师-->
         <a-modal :visible='teacherVisit'
-                 width="900px"
                  title="任课老师"
-                 :closable="false"
-                 on-ok="handleOk">
+                 width="1000px"
+                 :closable="false">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存
-                </a-button>
-                <a-button key="back" @click="handleCancel">取消
-                </a-button>
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
-            <div class="model2_content">
-                <template>
-                    <a-form @submit="handleSubmit">
-                        <a-row style="margin-top: 20px;margin-left: 50px">
-                            <a-col :span="4"><a-form-item style="width: 200px;"><a-select
-                                    v-decorator="[ { rules: [{ required: true, message: 'Please select your class' }] },]"
-                                    placeholder="高一"
-                                    @change="handleSelectChange2">
-                                <a-select-option value="one">
-                                    高一
-                                </a-select-option>
-                                <a-select-option value="two">
-                                    高二
-                                </a-select-option>
-                                <a-select-option value="three">
-                                    高三
-                                </a-select-option>
-                            </a-select></a-form-item></a-col>
-                            <a-col :span="4"><a-form-item style="width: 200px;margin-left: 80px">
-                                <a-select
-                                        v-decorator="[{ rules: [{ required: true, message: 'Please select your subject!' }] },]"
-                                        placeholder="所有科目"
-                                        @change="handleSelectChange3">
+            <a-card>
+                <a-form-model :form="form" layout="horizontal">
+                    <a-row>
+                        <a-col :md="6" :sm="24">
+                            <a-form-model-item label="年级" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
+                                <a-select :value="this.gradeName" disabled>
                                 </a-select>
-                            </a-form-item></a-col>
-                            <a-col :span="4"> <a-form-item style="width: 200px;margin-left:170px">
-                                <a-input placeholder="姓名" v-decorator="['note', { rules: [{ required: true, message: '姓名' }] }]"/>
-                            </a-form-item></a-col>
-                            <a-col><a-form-item>
-                                <a-button style="background-color: #8c8c8c;color:white;width:80px;margin-left:250px"  html-type="search">查询</a-button>
-                            </a-form-item></a-col>
-                        </a-row>
-                        <a-row>
-                            <a-table :columns="editColumn"
-                                     :data-source="editData"
-                                     :pagination="false"
-                                     :bordered="true" style="width: 600px;margin-left: 100px;margin-bottom: 100px">
-                                <a-radio slot="editCheck"></a-radio>
-                            </a-table>
-                        </a-row>
-                    </a-form>
-                </template>
-            </div>
+                            </a-form-model-item>
+                        </a-col>
+                        <a-col :md="6" :sm="24">
+                            <a-form-model-item label="科目：" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
+                                <a-select placeholder="科目" v-model="form.subject" @change="chooseSubject">
+                                    <a-select-option v-for="(subject,index) in this.subject" :key="index" :value="subject">
+                                        {{subject}}
+                                    </a-select-option>
+                                </a-select>
+                            </a-form-model-item>
+                        </a-col>
+                        <a-col :md="6" :sm="24">
+                            <a-form-model-item label="姓名：" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
+                                <a-input-search placeholder="姓名" v-model="form.teacherName" @search="onSearch"/>
+                            </a-form-model-item>
+                        </a-col>
+                    </a-row>
+                    <a-row>
+                        <a-table :columns="editColumn"
+                                 :data-source="editData"
+                                 :pagination="false"
+                                 :bordered="true" style="width: 600px;margin-left: 100px;margin-bottom: 100px">
+                            <a-radio slot="editCheck"></a-radio>
+                        </a-table>
+                    </a-row>
+                </a-form-model>
+            </a-card>
         </a-modal>
     </div>
 </template>
 <script>
     const column1=[
+        {
+        title:'',
+        dataIndex:'id',
+        align:'center',
+        width:'5%',
+        customRender: function(t, r, index) {
+            return parseInt(index) + 1
+        },
+    },
         {
             title:'学科名称',
             dataIndex:'subName',
@@ -400,58 +396,74 @@
         },
         {
             title:'时间设置',
-            key:'time1',
             dataIndex:'time1',
             scopedSlots: { customRender: 'timeSetting1' },
             align: 'center',
-            width:'76%'
+            width:'71%'
         },
         {
             title:'操作',
-            key:'opt1',
             dataIndex:'opt1',
             scopedSlots: { customRender: 'action' },
             width: '12%',
             align:'center',
         },
     ]
+    const activity=[
+        {
+            name:"上午",
+            options:[0,1,2,3,4],
+            value:"morning"
+        }, {
+            name:"下午",
+            options:[0,1,2,3,4],
+            value:"afternoon"
+        }
+    ]
     const column2=[
         {
+            title:'',
+            dataIndex:'id',
+            align:'center',
+            width:'5%',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            },
+        },
+        {
             title:'教师',
-            key:'teacher',
-            dataIndex:'teacher',
+            dataIndex:'teacherName',
             scopedSlots: { customRender: 'teachers' },
             width: '12%',
             align:'center',
         },
         {
             title:'时间设置',
-            key:'time1',
             dataIndex:'time1',
             scopedSlots: { customRender: 'timeSetting1' },
-            width: '76%',
+            width: '71%',
             align:'center',
         },
         {
             title:'操作',
-            key:'opt1',
             dataIndex:'opt1',
             scopedSlots: { customRender: 'action' },
             width: '12%',
             align:'center',
         },
     ]
-    const teacherTimeData=[
-        {
-            teacherTimeKey:'1',
-            teacher:'张凯元',
-            time1:'必须星期一下午第4节',
-        },
-    ]
     const column3=[
         {
+            title:'',
+            dataIndex:'id',
+            align:'center',
+            width:'5%',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            },
+        },
+        {
             title:'班级',
-            key:'class',
             dataIndex:'class',
             scopedSlots: { customRender: 'class' },
             width: '12%',
@@ -459,37 +471,24 @@
         },
         {
             title:'学科名称',
-            key:'subject',
             dataIndex:'subject',
             scopedSlots: { customRender: 'subjects' },
-            width: '38%',
+            width: '35%',
             align:'center',
         },
         {
             title:'时间设置',
-            key:'time1',
             dataIndex:'time1',
             scopedSlots: { customRender: 'timeSetting1' },
-            width: '38%',
+            width: '36%',
             align:'center',
         },
         {
             title:'操作',
-            key:'opt1',
             dataIndex:'opt1',
             scopedSlots: { customRender: 'action' },
             width: '12%',
             align:'center',
-        },
-    ]
-    const classTimeData=[
-        {
-            classTimeKey:'1',
-            time1:'必须星期一下午第4节',
-        },
-        {
-            classTimeKey:'2',
-            time1:'必须星期一下午第3节 必须星期一下午第4节',
         },
     ]
     const column4=[
@@ -573,79 +572,63 @@
     const editColumn=[
         {
             title:' ',
-            key:'editblank',
             dataIndex:'editblank',
             align:'center',
             scopedSlots:{customRender:'editCheck'},
             width:'8%'
         },{
             title:'序号 ',
-            key:'serialNum',
-            dataIndex:'serialNum',
+            dataIndex:'id',
             align:'center',
-            width:'15%'
+            width:'15%',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
         },{
             title:'姓名 ',
-            key:'name',
             dataIndex:'name',
             align:'center',
             width:'20%'
         },{
             title:'所教年级 ',
-            key:'senior',
             dataIndex:'senior',
             align:'center',
             width:'25%'
         },{
             title:'所教学科 ',
-            key:'subject',
             dataIndex:'subject',
             align:'center',
             width:'32%'
         },
     ]
-    const editData=[
-        {
-            serialNum:'1',
-            name:'张凯元',
-            senior:'高一',
-            subject:'语文',
-        },{
-            serialNum:'2',
-            name:'张凯方',
-            senior:'高一',
-            subject:'数学',
-        },{
-            serialNum:'3',
-            name:'张凯扁',
-            senior:'高一',
-            subject:'体育',
-        },{
-            serialNum:'4',
-            name:'刘老师',
-            senior:'高一',
-            subject:'物理',
-        },]
     export default {
         data() {
             return {
                 column1,
                 studyTimeData:[],
+                activity,
                 subjectTimeCount:3,
                 column2,
-                teacherTimeData,
+                teacherTimeData:[],
                 column3,
-                classTimeData,
+                classTimeData:[],
                 column4,
                 banData,
                 column5,
                 weekData,
                 editColumn,
-                editData,
+                editData:[],
                 timeRegularVisit: false,
                 loading:false,
                 teacherVisit:false,
                 planData:"",
+                planId:"",
+                gradeName:"",
+                subject:[],
+                teacherName:[],
+                treeData:[],
+                form:{},
+                subjectData:[],
             };
         },
         async created() {
@@ -655,26 +638,244 @@
             if (planId) {
                 //获取单个选课计划的信息
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
-                this.planData = result.name
+                this.planData = result.name;
+                console.log(result);
+                this.gradeName=result.gradeName;
             }
-            //获取学科时间规则
-            let {data:subjectTimeRuleData}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId})
-            console.log(subjectTimeRuleData);
-            this.studyTimeData=subjectTimeRuleData.result;
+            this.subjectTimeRule();
+            this.teacherTimeRule();
+            this.clsassTimeRule();
         },
         methods:{
+            //学科时间规则查看
+            async subjectTimeRule(){
+                //获取学科时间规则
+                let {data:subjectTimeRuleData}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId:"934e3a63aadc47d398da0d395ad41420"})
+                let newData=[];
+                newData=subjectTimeRuleData.result;
+                // console.log(newData);
+                let list=[...newData];
+                list.forEach(item=>{
+                    let timeDay="";
+                    for(let i=1;i<8;i++){
+                        if(item.timeDay==i){
+                            timeDay="星期"+i;
+                        }
+                        // console.log(timeDay);
+                    }
+                    let time1=[];
+                    //字符串转换为数组
+                    let timeLesson=item.timeLesson.split(',');
+                    // console.log(timeLesson);
+                    for(let i=0;i<timeLesson.length;i++){
+                        // console.log(timeLesson[i]-1);
+                        if(timeLesson[i]<5){
+                            time1=[...time1,"上午第"+timeLesson[i]+"节"];
+                        }else{
+                            let lesson=timeLesson[i]-4
+                            time1=[...time1,"下午第"+lesson+"节"];
+                        }
+                        // console.log(time1);
+                    }
+                    let pushData={
+                        id:item.id,
+                        subName:item.subName,
+                        time1:"必须"+timeDay+time1,
+                    }
+                    this.studyTimeData.push(pushData)
+                })
+                // console.log(this.studyTimeData);
+            },
+            //教师时间规则查看
+            async teacherTimeRule(){
+                //获取教室时间规则
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchTeacherTimeRule({planId:"934e3a63aadc47d398da0d395ad41420"})
+                console.log(result);
+                let newData=[];
+                newData=result;
+                // console.log(newData);
+                let list=[...newData];
+                list.forEach(item=>{
+                    let timeDay="";
+                    for(let i=1;i<8;i++){
+                        if(item.timeDay==i){
+                            timeDay="星期"+i;
+                        }
+                        // console.log(timeDay);
+                    }
+                    let time1=[];
+                    //字符串转换为数组
+                    let timeLesson=item.timeLesson.split(',');
+                    // console.log(timeLesson);
+                    for(let i=0;i<timeLesson.length;i++){
+                        // console.log(timeLesson[i]-1);
+                        if(timeLesson[i]<5){
+                            time1=[...time1,"上午第"+timeLesson[i]+"节"];
+                        }else{
+                            let lesson=timeLesson[i]-4
+                            time1=[...time1,"下午第"+lesson+"节"];
+                        }
+                        // console.log(time1);
+                    }
+                    let pushData={
+                        id:item.id,
+                        teacherName:item.teacherName,
+                        time1:"必须"+timeDay+time1,
+                    }
+                    this.teacherTimeData.push(pushData)
+                })
+                console.log(this.teacherTimeData);
+            },
+            //编辑教室弹框的数据获取
+            async getData(){
+                let {data:{result,success}}=await this.$api.basic.teacher.AdminGradeSubTec();
+                console.log(result);
+                //获取课程树
+                for(let i=0;i<result.length;i++){
+                    //第一层(级部）
+                    let adminTree={};
+                    adminTree.title=result[i].adminName;
+                    adminTree.key=result[i].adminId;
+                    if(result[i].adminGrades.length){
+                        //第二层(年级）
+                        adminTree.children=[];
+                        for(let j=0;j<result[i].adminGrades.length;j++){
+                            let gradeItem=result[i].adminGrades[j];
+                            let childData={}
+                            childData.key=gradeItem.gradeId;
+                            childData.title=gradeItem.gradeName;
+                            if(gradeItem.subSubjectDtos.length){
+                                //第三层(主课程)
+                                childData.children=[];
+                                for(let k in gradeItem.subSubjectDtos){
+                                    let mainCourseItem=gradeItem.subSubjectDtos[k];
+                                    let mainCourse={};
+                                    mainCourse.key=mainCourseItem.subId;
+                                    mainCourse.title=mainCourseItem.subName;
+                                    if(mainCourseItem.teacherDtos){
+                                        //第四层（教师）
+                                        mainCourse.children=[];
+                                        for (let l in mainCourseItem.teacherDtos){
+                                            let teacher={};
+                                            teacher.key=result[i].adminId+gradeItem.gradeId+mainCourseItem.subId+mainCourseItem.teacherDtos[l].teacherId;
+                                            teacher.title=mainCourseItem.teacherDtos[l].teacherName;
+                                            mainCourse.children.push(teacher)
+                                        }
+                                    }
+                                    childData.children.push(mainCourse)
+                                }
+                            }
+                            adminTree.children.push(childData);
+                        }
+                    }
+                    this.treeData.push(adminTree);
+                    console.log(this.treeData);
+                }
+                this.subjectInfo();
+            },
+            //课程数据获取
+            subjectInfo(){
+                for(let i=0;i<this.treeData.length;i++){
+                    //后期需要将下标0改为i
+                    let adminData=this.treeData[0].children;
+                    // console.log(adminData);
+                    for(let j=0;j<adminData.length;j++){
+                        // console.log(this.treeData[i].title+"序号"+"——————"+j,"年级"+adminData[j].title);
+                        // console.log(this.gradeName);
+                        if(this.gradeName===adminData[j].title){
+                            this.subjectData=adminData[j].children;
+                            console.log(this.subjectData);
+                            let subjectDataTitle=[];
+                            for(let z in this.subjectData){
+                                subjectDataTitle=[...subjectDataTitle,this.subjectData[z].title];
+                            }
+                            // console.log(subjectDataTitle);
+                            this.subject=subjectDataTitle;
+                            // console.log(this.subject);
+                        }
+                    }
+                }
+                // console.log(this.subject);
+            },
+            //选择课程
+            chooseSubject(){
+                console.log(this.form.subject);
+                console.log(this.subjectData);
+                let teacherNameTitle=[];
+                for(let i in this.subjectData){
+                    if(this.form.subject==this.subjectData[i].title){
+                        let teacherNameData=this.subjectData[i].children;
+                        console.log(teacherNameData);
+                        for(let j in teacherNameData){
+                            teacherNameTitle=[...teacherNameTitle,teacherNameData[j].title];
+                        }
+                    }
+                }
+                this.teacherName=teacherNameTitle;
+                // console.log(this.teacherName);
+            },
+            // 班级时间规则查看
+            async clsassTimeRule(){
+                //获取学科时间规则
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId:"934e3a63aadc47d398da0d395ad41420"})
+                console.log(result);
+                let list=[...result];
+                list.forEach(item=>{
+                    let timeDay="";
+                    for(let i=1;i<8;i++){
+                        if(item.timeDay==i){
+                            timeDay="星期"+i;
+                        }
+                        // console.log(timeDay);
+                    }
+                    let time1=[];
+                    //字符串转换为数组
+                    let timeLesson=item.timeLesson.split(',');
+                    // console.log(timeLesson);
+                    for(let i=0;i<timeLesson.length;i++){
+                        // console.log(timeLesson[i]-1);
+                        if(timeLesson[i]<5){
+                            time1=[...time1,"上午第"+timeLesson[i]+"节"];
+                        }else{
+                            let lesson=timeLesson[i]-4
+                            time1=[...time1,"下午第"+lesson+"节"];
+                        }
+                        // console.log(time1);
+                    }
+                    let pushData={
+                        id:item.id,
+                        subName:item.subName,
+                        time1:"必须"+timeDay+time1,
+                    }
+                    this.classTimeData.push(pushData)
+                })
+                console.log(this.classTimeData);
+            },
+
+            //查询
+            onSearch(){
+            },
+            //课时设置
             timesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
             },
+            //课节设置
             oncesSetting(){
-                this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
             },
-            placeSetting(){
-                this.$router.push(`/schedule/detail/sort_course/place?planId=${this.planId}`)
+            //学科设置
+            subjectSetting(){
+                this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`)
             },
-            courseSetting(){
-                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
+            //班级设置
+            classSetting(){
+                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`)
             },
+            //规则设置
+            ruleSetting(){
+                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`)
+            },
+            //开始排课
             startArray(){
                 this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
@@ -693,20 +894,25 @@
             timeRegularSetting() {
                 this.timeRegularVisit = true;
             },
+            //编辑老师
             addTeacher(){
                 this.teacherVisit=true;
+                this.getData();
+
             },
+            //添加学科时间规则
             addSubjectTimeRegular(){
                 this. studyTimeData.unshift({
-                    subjectTimekey:'3',
-                    time1:'不能星期一下午第1节 不能星期一上午第二节 不能星期一上午第3节',
+                    subName:"",
+                    time1:'',
                 })
           },
+            //添加教师时间规则
             addTeacherTimeRegular(){
                 this. teacherTimeData.unshift({
-                    teacherTimeKey:'2',
-                    teacher:'张凯元',
-                    time1:'必须星期一下午第4节',
+                    id:this.teacherTimeData.length+1,
+                    teacherName:"",
+                    time1:"",
                 })
             },
             addClassTimeRegular(){

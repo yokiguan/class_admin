@@ -36,18 +36,18 @@
                      :data-source="dataSource"
                      :pagination="false"
                      :bordered="true">
-                <template slot="typeId" slot-scope="text,record">
-                   <a-select :default-value="text" @change="handleSelectChange($event,index)" style="width: 150px">
+                <template slot="typeId" slot-scope="text">
+                   <a-select :default-value="text" style="width: 150px" disabled>
                        <a-select-option value="0">专业教学场地</a-select-option>
                        <a-select-option value="1">公共教学场地</a-select-option>
                        <a-select-option value="2">行政班教室</a-select-option>
                    </a-select>
                </template>
-                <template slot="action" slot-scope="text, record">
+                <template slot="action" slot-scope="text, record,index">
                     <a-popconfirm
                             v-if="dataSource.length"
                             title="确认删除?"
-                            @confirm="() => onDelete(record.id)">
+                            @confirm="() => onDelete(index)">
                         <a href="javascript:;">删除</a>
                     </a-popconfirm>
                 </template>
@@ -76,14 +76,14 @@
                     <a-tree  v-model="checkedKeys"
                              checkable
                              :checkedKeys="checkedKeys"
-                             :tree-data="treeData"
-                             @check="onCheck"/>
+                             :tree-data="treeData"/>
                 </template>
             </a-modal>
         </div>
     </div>
 </template>
 <script>
+    import{message} from 'ant-design-vue'
     const columns = [
         {
             title: '序号',
@@ -136,7 +136,6 @@
                 loading: false,
                 planData:"",
                 planId:"",
-                classroomId:"",
                 checkedKeys: [],
                 treeData:[],
                 deleteText:-1,
@@ -169,16 +168,10 @@
                 this.dataSource=result;
                 console.log(this.dataSource);
             },
-            //修改类型
-            handleSelectChange($event,index){
-                // console.log(this.tableData4);
-                console.log(index);
-                console.log($event);
-                // this.tableData4[index].useMax=$event;
-            },
             //添加教室
             async addClass() {
                 this.visible = true;
+                this.treeData=[];
                 //全部教室信息查询
                 let { data:classroomData}  = await this.$api.basic.classroom.fetchList();
                 console.log(classroomData.rows);
@@ -222,14 +215,28 @@
                 this.classroom = data.rows;
                 console.log(this.classroom);
             },
-            onCheck(e) {
-                console.log('onCheck', e);
-            },
             //保存新增教室
-            handleOk(){
+            async handleOk(){
+                let classId=this.checkedKeys;
+                let classIds=classId.toString();
+                let addData=[];
+                let {data:{result,success}}=await this.$api.schedule.arrangeClass.addClassRoom({ids:classIds});
+                console.log(result);
                 this.visible=false;
-                for(let i=0;i<this.classroom.length;i++){
-                }
+                let list=[...result];
+                list.forEach(item=>{
+                    addData={
+                        classRoomId:item.classRoomId,
+                        buildingName:item.buildingName,
+                        capacity:item.capacity,
+                        floor:item.floor,
+                        typeId:item.typeId,
+                        classroomName:item.classroomName,
+                    }
+                    this.dataSource.push(addData);
+                })
+                // console.log(addData);
+                console.log(this.dataSource);
             },
             //取消新增教室
             handleCancel(){
@@ -257,9 +264,8 @@
             },
             //删除教室
             onDelete(deleId){
-                this.deleteText=this.dataSource.findIndex(item=>item.classRoomId===deleId);
-                console.log(this.deleteText);
-                this.dataSource.splice(this.deleteText,1);
+                console.log(deleId);
+                this.dataSource.splice(deleId,1);
                 console.log(this.dataSource);
             },
             //返回
@@ -267,10 +273,26 @@
               this.$router.go(-1)
             },
             //保存并跳转至下一步
-            async Next(planId,classroomId,typeId){
+            Next(){
                 this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
-                let {data}=await this.$api.schedule.arrangeClass.saveCoursetime({planId:this.planId,classroomId:this.classroomId,typeId:this.typeId})
+               this.saveData();
             },
+            //保存教室设置
+            async saveData(){
+                let pushData=[];
+                for(let i in this.dataSource){
+                    pushData[i]={
+                        classroomId:this.dataSource[i].classRoomId,
+                        typeId:this.dataSource[i].typeId
+                    }
+                }
+                let addData={
+                    planId:this.planId,
+                    classRoomInfo:pushData,
+                }
+                let {data}=await this.$api.schedule.arrangeClass.saveClass(addData);
+                console.log(data);
+            }
         }
     };
 </script>

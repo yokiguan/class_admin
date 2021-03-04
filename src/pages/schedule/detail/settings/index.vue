@@ -189,7 +189,6 @@
     ];
     export default {
         name: "QueryList",
-        components: {},
         data() {
             return {
                 columns,

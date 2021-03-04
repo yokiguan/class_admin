@@ -9,7 +9,7 @@
         </div>
         <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col>
                     <button style="background-color: #19b294;
                         color: white;
@@ -21,26 +21,25 @@
                 </a-col>
             </a-row>
         </div>
-        <div class="table-bg">
-            <a-table
+        <a-card class="table-bg">
+            <a-table :rowKey="'id'"
                     :columns="columns"
                     :data-source="tableData"
-                    :pagination="false"
-                    :bordered="true"
-            style="margin-top: 20px;width:1200px;height: 700px">
-                <div slot="option" style="color: blue" >
+                    :pagination="pagination"
+                     @change="handleTableChange"
+                    :bordered="true" style="margin-top: 20px;width:1200px;height: 700px">
+                <div slot="option" style="color: blue"  slot-scope="text,record">
                     <a-row>
                        <span style="float:left "  @click="onClickLook">查看</span>
-                       <span style="margin-left:0px " >删除</span>
+                       <span style="margin-left:0px "  @click="delet(record.id)">删除</span>
                        <span style="margin-left: 50px ">继续排课</span>
-                        <span style="margin-left: 50px " @click="integrate">手动调整</span>
-                        <span @click="changeClass" style="margin-left: 50px ">学生调班</span>
-                        <span style="margin-left: 50px ">发布结果</span>
+                       <span style="margin-left: 50px " @click="integrate">手动调整</span>
+                       <span @click="changeClass" style="margin-left: 50px ">学生调班</span>
+                       <span style="margin-left: 50px ">发布结果</span>
                     </a-row>
                 </div>
             </a-table>
-
-        </div>
+        </a-card>
     </div>
 </template>
 <script>
@@ -48,84 +47,118 @@
         {
             align: "center",
             title: " ",
-            dataIndex: 'key',
-            width:'5%'
+            dataIndex: 'id',
+            width:'5%',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
         },
         {
             title: '任务名称',
-            dataIndex: 'task',
-            key:'task',
+            dataIndex: 'taskName',
             align:'center',
             width:'15%'
         },
         {
             title: '创建时间',
-            dataIndex: 'time',
-            key:'time',
+            dataIndex: 'scheduleCreated',
             align:'center',
             width:'15%'
         },
         {
             title: '状态',
-            dataIndex: 'situation',
-            key:'situation',
+            dataIndex: 'scheduleStatus',
             align:'center',
             width:'15%'
         },
         {
             title: '操作',
             dataIndex: 'opt',
-            key: 'opt',
             align:'center',
             scopedSlots: { customRender: 'option' },
             width:'50%'
-        },
-    ];
-    const tableData=[
-        {
-            key: '1',
-            task:'1234',
-            time:'2020/04/12 14：00:00',
-            situation:'已结束'
-        },
-        {
-            key: '2',
-        },
-        {
-            key: '3',
-        },{
-            key: '4',
-        },
-        {
-            key: '5',
         },
     ];
     export default {
         data() {
             return {
                 columns,
-                tableData,
+                tableData:[],
                 visible: false,
-                loading: false
+                loading: false,
+                planId:"",
+                planData:"",
+                pagination:{
+                    total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
+                    pageSize:20,    //默认每页显示的条数
+                    showSizeChanger:true,
+                    onShowSizeChange:(current,pageSize)=>{
+                        this.pageSize=pageSize;
+                    },
+                    showTotal:total=>`共有${total}条数据`,            //分页中显示的数据总数
+                },
+                queryParam:{
+                    page:1,//第几页
+                    size:20,   //每页中显示的数据条数
+                },
             };
         },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            this.lookInfo();
+        },
         methods:{
+            //走班排课查看
+            async lookInfo(){
+                 let {data}=await this.$api.schedule.classTask.getScheduleTask({planId:this.planId});
+                 console.log(data);
+                 this.tableData=data.rows;
+                 console.log(this.tableData);
+                const pagination={...this.pagination};
+                pagination.total=data.total;
+                this.pagination=pagination;
+            },
+            //监听表格
+            async handleTableChange(pagination) {
+                this.pagination.current = pagination.current;
+                this.pagination.pageSize = pagination.pageSize;
+                this.queryParam.page = pagination.current;
+                this.queryParam.size = pagination.pageSize;
+                console.log(this.pagination.current);
+                console.log(this.pagination.pageSize);
+                this.lookInfo();
+            },
+            //查看
             onClickLook(){
-                this.$router.push('/schedule/detail/task_mobile/all')
+                this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}`)
             },
+            //删除
+            async delet(id){
+                // console.log();
+                let {data}=await this.$api.schedule.classTask.deletScheduleTask({ids:[id]});
+                console.log(data);
+                this.lookInfo();
+                console.log(this.tableData);
+            },
+            //手动调整
             integrate(){
-                this.$router.push('/schedule/detail/task_mobile/integrate')
+                this.$router.push(`/schedule/detail/task_mobile/integrate?planId=${this.planId}`)
             },
+            //学生调班
             changeClass(){
-                this.$router.push('/schedule/detail/task_mobile/change_student')
+                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}`)
             },
+            //返回
             back(){
                 this.$router.go(-1)
             },
-            onChange(){},
-            showModal(){},
-            alllook(){},
-            click(){}
 
         }
     };
@@ -169,7 +202,6 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-        height: 1000px;
         width: 100%;
     }
 </style>

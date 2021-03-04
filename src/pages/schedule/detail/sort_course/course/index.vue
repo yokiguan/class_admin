@@ -46,16 +46,15 @@
                     <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
                 </a-row>
                 <div class="table-content">
-                    <a-table
-                            :rowKey="'id'"
+                    <a-table :rowKey="'id'"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
                             :bordered="true">
-                        <a-input slot="add_times" ></a-input>
-                        <a-input slot="add_datas"></a-input>
-                        <a-button slot="adds_times" style="background-color: #00ccff;color:white;" @click="add_time">添加时间段</a-button>
-                        <a-button slot="adds_datas" style="background-color: #00ccff;color:white;" @click="add_class">添加教室</a-button>
+                        <a-input slot="add_times" slot-scope="timeText,timeRecord" v-model="timeText" @blur="changTimes(timeRecord.id,timeText)"/>
+                        <a-input slot="add_datas" slot-scope="dayText,dayRecord" v-model="dayText" @blur="changDays(dayRecord.id,dayText)"/>
+                        <a-button slot="adds_times" slot-scope="timesText,timesRecord" style="background-color: #00ccff;color:white;" @click="add_time(timesRecord.id,timesText)">添加时间段</a-button>
+                        <a-button slot="adds_datas" slot-scope="daysText,daysRecord" style="background-color: #00ccff;color:white;" @click="add_class(daysRecord.id,daysText)">添加教室</a-button>
                         <template slot="action" slot-scope="text,record" style="color:blue">
                             <a-popconfirm
                                     v-if="tableData.length"
@@ -217,6 +216,10 @@
                 currId:"",
                 form:{},
                 rules:{},
+                timesValue:"",
+                timesIndex:"",
+                daysValue:"",
+                daysIndex:"",
             }
         },
         async created() {
@@ -228,24 +231,41 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name
             }
-            //课程设置信息查看
-            let {data}=await this.$api.schedule.arrangeClass.getList({planId:this.planId})
-            console.log(data);
-            this.tableData=data.rows;
-            // console.log(this.tableData);
-            this.currId=this.tableData[0].currId;
-            // console.log(this.currId);
+            this.courseLookInfo();
         },
         methods:{
+            //课程设置信息查看
+            async courseLookInfo(){
+                let {data}=await this.$api.schedule.arrangeClass.getList({planId:this.planId})
+                this.tableData=data.rows;
+                // console.log(this.tableData);
+                for(let i=0;i<this.tableData.length;i++){
+                    this.tableData[i].timesSetting=[{
+                        timeType:null,
+                        weekday:"",
+                        period:null
+                    }];
+                    this.tableData[i].classroomSetting=[{
+                        classroomType: null,
+                        buildingId:"",
+                        classroomId:"",
+                    }];
+                }
+                console.log(this.tableData);
+                this.currId=this.tableData[0].currId;
+                // console.log(this.currId);
+            },
             //获取教室和教学楼相关信息
             async classroomAndBuilding(){
                 let {data:buildings}=await this.$api.basic.building.fetchList();
                 this.buildings =buildings.rows
             },
             //选择时间段
-            add_time() {
+            add_time(index,value) {
                 this.chooseTimeVisit=true;
                 this.modalInfo();
+                this.timesIndex=index;
+                this.timesValue=value;
             },
             //添加教室
             add_class(){
@@ -255,10 +275,9 @@
             //获取节次时间
             async modalInfo() {
                 let {data} = await this.$api.basic.template.fetchTemplate({id: this.currId});
-                console.log(data);
+                // console.log(data);
                 let activities=[];
                 let list=[...this.activity];
-                console.log(list);
                 list.forEach(item=>{
                     for(let i=1;i<=data.result[item.value];i++){
                         activities.push({
@@ -268,8 +287,8 @@
                     }
                 });
                 this.options=activities;
-                console.log(this.options);
-                console.log(list);
+                // console.log(this.options);
+                // console.log(list);
             },
             //选择教室
             async changeBuilding(){
@@ -298,6 +317,17 @@
             //保存时间段
             handleOkTime(){
               this.chooseTimeVisit=false;
+                this.tableData.map(item=>{
+                    console.log(item);
+                //     if(item.id === this.timesIndex){
+                //         let addData={
+                //             item.timeSetting[0].peroid:
+                //         }
+                //
+                //          return item.timeSetting
+                //     }
+                })
+                // console.log(this.tableData);
             },
             //取消选择时间段
             handleCancelTime(){
@@ -343,14 +373,54 @@
             startArray(){
                 this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
+            //每周课时
+            changTimes(index,value){
+                this.tableData.map(item=>{
+                    if(item.id === index){
+                        return item.lessonNum = value
+                    }
+                })
+                console.log(this.tableData);
+                // console.log('编辑每周课时行',index);
+                // console.log('编辑每周课时值',value);
+            },
+            //最小上课天数
+            changDays(index,value){
+                this.tableData.map(item=>{
+                    if(item.id === index){
+                        return item.minNum = value
+                    }
+                })
+                console.log(this.tableData);
+                // console.log('编辑最小上课天数行',index);
+                // console.log('编辑最小上课天数值',value);
+            },
             //下一步
             Next(){
-              this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
+              this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`);
+              this.saveCourse();
             },
             async saveCourse(){
-                let pushData={
+                let pushData=[];
+                for(let i=0;i<this.tableData.length;i++){
+                    pushData[i]={
+                        id:this.tableData[i].id,
+                        planId:this.planId,
+                        lessonWeekly:this.tableData[i].lessonNum,
+                        lessonMin:this.tableData[i].minNum,
+                        timesSetting:[{
+                            // timeType:
+                            // weekday:
+                            // period:
+                        }],
+                        classroomSetting:{
+                            // classroomType:
+                            // buildingId:
+                            // classroomId:
+                        },
+                    }
+                }
 
-                };
             },
             //删除教室
             onDelete(deleId){

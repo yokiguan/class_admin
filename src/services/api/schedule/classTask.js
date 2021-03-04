@@ -9,13 +9,16 @@ const baseUrl3 = base.root + '/a/classroomSetting'
 const baseUrl4 = base.root + '/a/scheduleTeacherClass'
 const baseUrl5 = base.root + '/a/scheduleResult'
 const baseUrl6 = base.root + '/a/scheduleSyllabus'
+const scheduleTask=base.root+'/a/scheduleTask'
 const  classTask = {
-    //走班排课任务页面
+    //走班排课任务查看(已调）
     getScheduleTask(params){
-        return axios.get(`${baseUrl1}/getScheduleTask.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${scheduleTask}/getDataList.json`,{params});
     },
-    //走班排课任务 删除（待做）
+    //走班排课任务 删除(已调）
+    deletScheduleTask(params){
+        return axios.post(`${scheduleTask}/deleteDataJoint.json`,params);
+    },
     //老师树形列表查询
     getTeacherList(params){
         return axios.get(`${baseUrl2}/getTeacherList.json`,params, {

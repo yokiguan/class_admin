@@ -10,7 +10,7 @@
         </div>
         <div class="content ">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
@@ -42,7 +42,7 @@
             </a-row>
             <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
         </div>
-        <div class="table-bg">
+        <a-card class="table-bg">
             <a-row class="buttons">
                 <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -62,17 +62,21 @@
                         border: none;
                         border-radius: 5px;
                         width: 110px"  @click="subjectLook">按科目查看</button></a-col>
+                <a-col :span="3"><button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        width: 110px"  @click="studentLook">按学生查看</button></a-col>
             </a-row>
-            <a-table
+            <a-table :rowKey="'key'"
                     :columns="columns"
-                    :data-source="dataSource"
+                    :data-source="tableData"
                     :pagination="false"
                     :bordered="true"
-                    style="margin-top: 20px;width:1200px;height: 700px">
-            </a-table>
-        </div>
+                    style="margin-top: 20px;width:1200px;white-space: pre"/>
+        </a-card>
     </div>
-
 </template>
 <script>
     const columns = [
@@ -80,89 +84,127 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
         },
         {
             title: '一',
             dataIndex: 'one',
-            key:'one',
+            align: "center",
         },
         {
             title: '二',
             dataIndex: 'two',
-            key:'two',
+            align: "center",
         },
         {
             title: '三',
             dataIndex: 'three',
-            key:'three',
+            align: "center",
         },
         {
             title: '四',
             dataIndex: 'four',
-            key: 'four',
+            align: "center",
         },
         {
             title: '五',
             dataIndex: 'five',
-            key: 'five',
+            align: "center",
         },
     ];
-    // const tableData=[
-    //     {
-    //         key: '1',
-    //     },
-    //     {
-    //         key: '2',
-    //         one:'生物学考1班_李援朝(106)',
-    //         two:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-    //         five:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-    //     },
-    //     {
-    //         key: '3',
-    //         two:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-    //         three:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-    //     },{
-    //         key: '4',
-    //         one:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)',
-    //         four:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-    //         five:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)物理学考1班_钱三(206)英语学考3班_拓海(406)',
-    //     },
-    //     {
-    //         key: '5',
-    //         two:'生物学考1班_李援朝(606)政治学考2班_赵爱国(206)',
-    //     },
-    // ];
     export default {
         data() {
             return {
                 columns,
-                // tableData,
-                dataSource:[],
-                // visible: false,
+                tableData:[],
+                visible: false,
+                loading:false,
+                planId:"",
+                planData:"",
+                allData:[]
             };
         },
         async created() {
-            let {data} = await this.$api.schedule.classTask.getData({planId:"940085b583944e19a0a098ca24804afc",type:"total"});
-            // this.dataSource = data.rows;
+           this.chooseCourseInfo();
+           this.allLookInfo();
         },
         methods: {
+            //获取单个选课计划信息
+            async chooseCourseInfo(){
+                let queryString = (window.location.hash || " ").split('?')[1]
+                let planId = (queryString || " ").split('=')[1]
+                this.planId = planId;
+                if (planId) {
+                    //获取单个选课计划的信息
+                    let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                    this.planData = result.name
+                }
+            },
+            //获取整体查看数据
+            async allLookInfo(){
+                let {data:{result,success}}=await this.$api.schedule.classTask.getData({planId:this.planId,scheduleTaskId:"1e86be510ab94a99801802d52740da40"})
+                // console.log(result[0]);
+                this.allData=result[0].syllabus;
+                console.log(this.allData);
+                console.log(this.tableData);
+                //创建数组
+                let dataSource=[];
+                for(let i=0;i<this.allData.length;i++){
+                    let position = eval(this.allData[i].position);
+                    const getInfo=(dataItem,sourceItem={})=>{
+                        if(!sourceItem) sourceItem={}
+                        let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classStuNum + ')';
+                        const column=eval(dataItem.position)[1];
+                        switch (column) {
+                            case 1:
+                                sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                break;
+                            case 2:
+                                sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                break;
+                            case 3:
+                                sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                break;
+                            case 4:
+                                sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                break;
+                            case 5:
+                                sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                break;
+                        }
+                        return sourceItem
+                    };
+                        dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                }
+                console.log(dataSource);
+                this.tableData=dataSource;
+                console.log(this.tableData);
+            },
+            //手动调课
             manualChangeClass(){
-                this.$router.push('/schedule/detail/task_mobile/integrate')
+                this.$router.push(`/schedule/detail/task_mobile/integrate?planId=${this.planId}`)
             },
+            //学生调班
             changClass(){
-                this.$router.push('/schedule/detail/task_mobile/change_student')
+                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}`)
             },
+            //按老师查看
             teacherLook(){
-                this.$router.push('/schedule/detail/task_mobile/teacher')
+                this.$router.push(`/schedule/detail/task_mobile/teacher?planId=${this.planId}`)
             },
+            //按场地查看
             placeLook(){
-                this.$router.push('/schedule/detail/task_mobile/room')
+                this.$router.push(`/schedule/detail/task_mobile/room?planId=${this.planId}`)
             },
+            //按科目查看
             subjectLook(){
-                this.$router.push('/schedule/detail/task_mobile/course')
+                this.$router.push(`/schedule/detail/task_mobile/course?planId=${this.planId}`)
             },
+            //按学生查看
             studentLook(){
-                this.$router.push('/schedule/detail/curriculum/student')
+                this.$router.push(`/schedule/detail/curriculum/student?planId=${this.planId}`)
             },
             back(){
                 this.$router.go(-1)
@@ -216,13 +258,6 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-
-        height: 1000px;
         width: 100%;
-    }
-    /deep/ Table {
-        .ant-table-thead > tr > th {
-            background-color: #f4f4f4;
-        }
     }
 </style>

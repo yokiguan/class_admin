@@ -3,21 +3,16 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">选课排课</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">课程设置</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">互斥设置</a></a-breadcrumb-item>
+                <a-breadcrumb-item>排课计划</a-breadcrumb-item>
+                <a-breadcrumb-item>选课排课</a-breadcrumb-item>
+                <a-breadcrumb-item>课程设置</a-breadcrumb-item>
+                <a-breadcrumb-item>互斥设置</a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
             <a-row>
                 <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
-                <a-col><button style="background-color: blue;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        float: right;
+                <a-col><button style="background-color: blue;color: white;height: 40px;border: none; border-radius: 5px;float: right;
                         width: 100px" @click="back">返回</button></a-col>
             </a-row>
         </div>
@@ -30,18 +25,17 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-table :rowKey="'id'"
-                    :columns="columns"
+                     :columns="columns"
                      :data-source="dataSource"
                      :pagination="false"
-                     :bordered="true"
-                     class="table">
+                     :bordered="true">
                 <a-input  slot="sortName" slot-scope="text,record,index"  v-model="text" @blur="changeSort(record.id,text)"/>
-                <div slot="add_course" slot-scope="text,record">
-                    <template v-for="(tag) in text">
-                       <a-tag :key="tag.id" closable @close="handleClose(record.id,tag.id,tag.subName)">
-                           {{ tag.subName}}
-                       </a-tag>
-                   </template>
+                <div slot="subId" slot-scope="text,record">
+                    <template v-for="(tag) in text.split(',')">
+                        <a-tag :key="tag.id" closable @close="handleClose(record.id,tag.subName)">
+                            {{computedSubName(tag)}}
+                        </a-tag>
+                    </template>
                     <a-button  style="background-color: #00ccff;  white-space: pre-line; width: 100px;color: white;height:40px;" @click="add_course(record.id)">
                         添加课程
                     </a-button>
@@ -56,10 +50,10 @@
                 </template>
             </a-table>
             <div style="margin-top: 20px;margin-left: 55px;float: left;font-size: 1.0rem;color: blue;" @click="AddContent">
-               <a-icon type="plus" />
-               <span>添加一项</span>
+                <a-icon type="plus" />
+                <span>添加一项</span>
             </div>
-<!--            选择课程-->
+            <!--            选择课程-->
             <a-modal  title="选择课程"
                       :visible="chooseCourseModal"
                       :closable="false">
@@ -67,15 +61,15 @@
                     <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                     <a-button key="back" @click="handleCancel">取消</a-button>
                 </template>
-                   <a-form-model :model="form" :rules="rules" :label-col="{span:3}" :wrapper-col="{span:12}">
-                       <a-form-model-item>
-                           <a-checkbox-group v-model="form.course">
-                               <a-checkbox v-for="(course,index) in this.course" :value="course.subName" @change="onChange(course.id,course.subName)">
-                                   {{course.subName}}
-                               </a-checkbox>
-                           </a-checkbox-group>
-                       </a-form-model-item>
-                   </a-form-model>
+                <a-form-model :model="form" :rules="rules" :label-col="{span:3}" :wrapper-col="{span:12}">
+                    <a-form-model-item>
+                        <a-checkbox-group v-model="form.course">
+                            <a-checkbox v-for="(course,index) in this.course" :value="course.subName" @change="onChange(course.id,course.subName)">
+                                {{course.subName}}
+                            </a-checkbox>
+                        </a-checkbox-group>
+                    </a-form-model-item>
+                </a-form-model>
             </a-modal>
         </a-card>
         <button style="background-color: #00ccff;
@@ -107,8 +101,8 @@
         },
         {
             title: '课程',
-            dataIndex: 'course',
-            scopedSlots: { customRender: 'add_course' },
+            dataIndex: 'subId',
+            scopedSlots: { customRender: 'subId' },
             align:'center'
         },
         {
@@ -146,38 +140,47 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name
             }
-            this.lookContrast();
+            let { data } = await this.$api.basic.subject.fetchMainList();
+            // console.log(data);
+            this.course=data.rows;
+            // console.log( 'this.course',this.course);
+            await this.lookContrast();
         },
         methods: {
+            computedSubName(subId){
+                let filterCourse = this.course.filter(item => item.id === subId)
+                console.log(filterCourse);
+                if(filterCourse.length > 0){
+                    return filterCourse[0].subName
+                }
+            },
             //互斥规则查看
             async lookContrast(){
                 //获取互斥规则信息
                 let {data}=await this.$api.schedule.arrangeClass.banGetting({planId:this.planId,ruleType:"0"})
                 console.log(data);
                 this.dataSource=data.rows
-                for(let i in this.dataSource){
-                    this.dataSource[i].course=[];
-                }
-                // console.log(this.dataSource);
             },
             //添加课程
             async add_course(id) {
                 this.chooseCourseModal = true;
                 this.chooseCourseId=this.dataSource.findIndex(item=>item.id==id);
-                console.log(this.chooseCourseId);
+                // console.log(this.chooseCourseId);
                 //获取课程接口
                 let { data } = await this.$api.basic.subject.fetchMainList();
-               // console.log(data);
-               this.course=data.rows;
-               console.log( this.course);
+                // console.log(data);
+                this.course=data.rows;
+                // console.log( 'this.course',this.course);
             },
             //修改分组名称
             changeSort(index,value){
-              // console.log(index);
-              this.inputValue=value;
-              console.log(this.inputValue);
-              this.dataSource.groupName=value;
-              console.log(this.dataSource.groupName);
+                // console.log(index,value);
+                this.dataSource.map(item=>{
+                    if(item.id === index){
+                        return item.groupName = value
+                    }
+                })
+                console.log(this.dataSource);
             },
             //关闭添加课程
             handleCancel () {
@@ -187,30 +190,23 @@
             //选择课程
             onChange(index,value){
                 //数据保存
-              console.log(this.dataSource);
-              const { count, dataSource} = this;
-              console.log(dataSource);
-              let pushData={
-                    id:index,
-                    subName:value,
+                const { count, dataSource} = this;
+                if(dataSource[this.chooseCourseId].subId==""){
+                    dataSource[this.chooseCourseId].subId=index;
+                }else{
+                    dataSource[this.chooseCourseId].subId += ',' + index;
                 }
-              dataSource[this.chooseCourseId].course.push(pushData);
-              console.log(pushData);
-              this.dataSource=[...dataSource];
-              console.log(this.dataSource[this.chooseCourseId].course);
-              console.log(this.dataSource);
+                this.dataSource=[...dataSource];
+                console.log('weew',this.dataSource);
             },
             //删除课程
-            handleClose(id,removeTagId,removeTag){
-                console.log(removeTagId);
+            handleClose(id,removeTag){
                 let deleId=-1;
                 deleId=this.dataSource.findIndex(item=>item.id==id);
-                this.labelId=this.dataSource[deleId].course.findIndex(item=>item.id==removeTagId);
                 console.log(deleId);
-                console.log(this.labelId);
                 console.log(removeTag);
                 let course=[];
-                for(let i=0;i<this.dataSource[deleId].course.length;i++){
+                for(let i in this.dataSource[deleId].course){
                     if(this.dataSource[deleId].course[i].subName!==removeTag){
                         course=[...course,this.dataSource[deleId].course[i]]
                     }
@@ -244,50 +240,37 @@
             courseSetting(){
                 this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
             },
-            //保存并跳转至下一步
-            async Next(){
-                let courseId=[];
-                // let pushData=[];
-                // for(let i in this.dataSource){
-                //     pushData[i]={
-                //         groupName:this.dataSource[i].groupName,
-                //     }
-                //     console.log(this.dataSource[i].groupName);
-                //     for(let j in this.dataSource[i].course){
-                //         courseId.push(this.dataSource[i].course[j].id);
-                //     }
-                // }
-
-                console.log(courseId);
-                console.log(this.dataSource.groupName);
-                // let newData={
-                //     planId:this.planId,
-                //     ruleType:"0",
-                //     setInfo:{
-                //
-                //       subId :courseId,
-                //     },
-                // }
-                // console.log(newData);
-                // let addData={...this.dataSource,...newData}
-                //
-                // let {data}=await this.$api.schedule.arrangeClass.banAdding(addData);
-                // console.log(data);
-                this.$router.push(`/schedule/detail/sort_course/course/course/same_class?planId=${this.planId}`);
-            },
             //开始排课
             startArray(){
                 this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
+            //保存并跳转至下一步
+            async Next(){
+                let pushData=[];
+                for(let i in this.dataSource){
+                    pushData[i] = {}
+                    pushData[i].groupName =  this.dataSource[i].groupName
+                    pushData[i].subId = this.dataSource[i].subId
+                }
+                console.log('pushData',pushData);
+                let newData={
+                    planId:this.planId,
+                    ruleType:"0",
+                    setInfo: pushData
+                }
+                console.log('newData',newData);
+                let {data}=await this.$api.schedule.arrangeClass.banAdding(newData);
+                console.log(data);
+                this.$router.push(`/schedule/detail/sort_course/course/course/same_class?planId=${this.planId}`);
+            },
             //添加一项规则
             AddContent(){
                 const { count, dataSource} = this;
-                console.log(dataSource);
-                const newData = {
+                let newData = {
                     id:this.dataSource.length+1,
-                    course:[],
+                    subId:"",
                 };
-                this.dataSource= [...dataSource, newData];
+                this.dataSource.push(newData);
                 this.count = count + 1;
             },
             //删除一行数据
@@ -295,7 +278,13 @@
                 console.log(deleId);
                 let {data}=await this.$api.schedule.arrangeClass.banDeleting({ids:deleId})
                 console.log(data);
-                this.lookContrast();
+                 if(data&&data.success){
+                    //获取互斥规则信息
+                    this.lookContrast();
+                    message.info('删除成功');
+                }else{
+                    message.info('删除失败');
+                }
             },
             //返回
             back(){

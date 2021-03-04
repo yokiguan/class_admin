@@ -32,35 +32,30 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
-            <a-table :rowKey="'classId'" :columns="columns" :dataSource="data" :pagination='false'>
+            <a-table :rowKey="'classId'" :columns="columns" :dataSource="data" :pagination='false' bordered>
                 <div slot="subjectTeacherList" slot-scope="text, record,index1">
                     <a-table :rowKey="'text.subId'"
                              :dataSource="text"
                              :columns="columnsSubject"
                              :pagination="false"
                              bordered>
+                        <template slot="class_day" slot-scope="text, record,index2">
+                            <a-input :value="text" style="float: left;width: 200px" disabled/>
+                            <a-icon type="edit"  style="color: #00ccff;font-size: 25px;font-weight: bold; float:right" @click="edit(index1,index2)"/>
+                        </template>
+                        <a-icon type="close" slot="blank" style="font-weight: bolder;font-size: 30px;color: #0099ff" @click="delet(index1,index2)" />
                     </a-table>
-                    <template slot="class_day" slot-scope="text, record,index2">
-                        <a-icon type="edit"  style="color: #00ccff;font-size: 25px;font-weight: bold; float:right" @click="edit"/>
-                    </template>
-                    <a-icon type="close" slot="blank" style="font-weight: bolder;font-size: 30px;color: #0099ff" @click="delet" />
+                    <span slot="add" style="color:blue;margin-top: 20px;float: left;font-size: 18px;margin-left: 10px" @click="addSubject">+添加学科</span>
                 </div>
-                <template slot="action" slot-scope="text, record">
+                <template slot="action" slot-scope="text, record,index">
                     <a-popconfirm
                             v-if="data.length"
                             title="确认删除?"
-                            @confirm="() => onDelete(record.id)">
+                            @confirm="() => onDelete(index)">
                         <a href="javascript:;">删除</a>
                     </a-popconfirm>
                 </template>
             </a-table>
-<!--
-
-
-<!--&lt;!&ndash;                <span slot="add" style="color:blue">+添加一项</span>&ndash;&gt;-->
-
-<!--&lt;!&ndash;                <span slot="action" slot-scope="text" @click="editInfo(record.key)" style="background-color:blue">{{text}}</span>&ndash;&gt;-->
-<!--            </a-table>-->
             <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
@@ -71,6 +66,29 @@
                         margin-bottom: 20px;
                         width: 200px" @click="Next">下一步</button>
         </div>
+<!--        编辑教师名称-->
+        <a-modal  title="修改教师名称"
+                  :visible="editTeacherVisit"
+                  :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOkTeacher">保存</a-button>
+                <a-button key="back" @click="handleCancelTeacher">取消</a-button>
+            </template>
+           <a-form-model :modal="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 18}">
+               <a-form-model-item label="教师姓名：">
+                   <a-input v-model="form.teacherName"/>
+               </a-form-model-item>
+           </a-form-model>
+        </a-modal>
+<!--        添加课程弹框-->
+        <a-modal  title="添加学科"
+                  :visible="addSubjectVisit"
+                  :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
+            </template>
+        </a-modal>
     </div>
 </template>
 <script>
@@ -122,16 +140,20 @@
     ];
     export default {
         data() {
-
             return {
                 data:[],
-                dataSource:[],
                 columns,
                 columnsSubject,
-                visible: false,
+                addSubjectVisit: false,
+                editTeacherVisit:false,
                 loading: false,
                 planData:"",
                 gradeId:"",
+                form:{
+                    teacherName:"",
+                },
+                index1:null,
+                index2:null,
             };
         },
         async created() {
@@ -158,31 +180,48 @@
                 }
 
             },
-            //
-            delet(){
-
+            //删除学科老师
+            delet(index1,index2){
+                this.data[index1].subjectTeacherList.splice(index2,1);
+                console.log(this.data);
             },
-            add_course: function () {
-                this.visible = true;
+            //添加学科
+            addSubject(){
+                this.addSubjectVisit=true;
             },
-            change: function () {
-                this.visible = true;
+            //编辑教室姓名
+            edit(index1,index2){
+                console.log(index1);
+                console.log(index2);
+                this.index1=index1;
+                this.index2=index2;
+                this.editTeacherVisit=true;
             },
-            closed: function () {
-                this.visible = false
-                this.loading = false
+            //保存添加学科
+            handleOk(){
+                this.addSubjectVisit=false;
             },
-            handleSubmit1: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
-                setTimeout(() => {
-                    that.visible = false
-                    that.loading = false
-                }, 2000)
+            //取消添加学科
+            handleCancel(){
+                this.addSubjectVisit=false;
             },
-            onChange(e){
-                console.log('radio checked',e.target.value)
+            //保存教师姓名
+            handleOkTeacher(){
+                this.editTeacherVisit=false;
+                console.log(this.form.teacherName);
+                this.data[this.index1].subjectTeacherList[this.index2].teacherName=this.form.teacherName;
+                console.log(this.data[this.index1].subjectTeacherList[this.index2].teacherName);
+            },
+            //取消教师姓名
+            handleCancelTeacher(){
+                this.editTeacherVisit=false;
+            },
+            //删除班级
+            async onDelete(id){
+                // console.log(id);
+                // console.log(this.data[id].classId);
+                let {data}=await this.$api.schedule.adminClass.deleteCoursesetting({ids:[this.data[id].classId]});
+                console.log(data);
             },
             //课时设置
             timesSetting(){
@@ -211,10 +250,10 @@
             Next(){
                 this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`)
             },
+            //返回
             back(){
                 this.$router.go(-1)
             },
-            edit(){},
         }
     };
 </script>

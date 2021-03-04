@@ -25,7 +25,7 @@ const adminClass = {
         return axios.post(`${baseUrl1}/saveData.json`,params, {
             'Content-Type': 'multipart/form-data'});
     },
-    //班级设置查看
+    //班级设置查看(已调）
     getClassSetting(params){
         return axios.get(`${baseUrl2}/getClassSettingDataList.json`,{params});
     },
@@ -36,17 +36,15 @@ const adminClass = {
     },
     //班级设置删除
     deleteCoursesetting(params){
-        return axios.post(`${baseUrl2}/deleteData.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.post(`${baseUrl2}/deleteData.json`,params);
     },
-    //规则设置-学科时间规则查看
+    //规则设置-学科时间规则查看(已调）
     searchSubjectTimeRule(params) {
         return axios.get(`${baseUrl3}/searchXzbSubjectTimeRule.json`, {params});
     },
-    //规则设置-教师时间规则查看
+    //规则设置-教师时间规则查看(已调)
     searchTeacherTimeRule(params) {
-        return axios.get(`${baseUrl3}/searchXzbTeacherTimeRule.json`, params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${baseUrl3}/searchXzbTeacherTimeRule.json`,{params});
     },
     //规则设置-班级时间规则设置
     searchClassTimeRule(params) {
