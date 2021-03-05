@@ -1,112 +1,115 @@
 <template>
-   <EasyScrollbar :barOption="myBarOption">
-       <div id="wrapper" style="width: 600px">
-           <div style="width: 1800px">
-               <div class="result">
-                   <a-breadcrumb>
-                       <a-breadcrumb-item>首页</a-breadcrumb-item>
-                       <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                       <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
-                       <a-breadcrumb-item><a href="">老师查看</a></a-breadcrumb-item>
-                   </a-breadcrumb>
-               </div>
-               <div class="left">
-                   <a-row class="left_title">
-                       <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
+    <div id="wrapper" style="width: 600px">
+        <div style="width: 1800px">
+            <div class="result">
+                <a-breadcrumb>
+                    <a-breadcrumb-item>首页</a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">老师查看</a></a-breadcrumb-item>
+                </a-breadcrumb>
+            </div>
+            <div class="left">
+                <a-row class="left_title">
+                    <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
                     font-weight: bold"/></a-col>
-                       <a-col :span="12"><span style="font-size: 1.2em">刷新菜单</span></a-col>
-                       <a-col><span style="font-size: 1.2em">全部展开</span></a-col>
-                   </a-row>
-                   <div style="width: 100%; height: 1px;
+                    <a-col :span="12"><span style="font-size: 1.2em">刷新菜单</span></a-col>
+                    <a-col><span style="font-size: 1.2em">全部展开</span></a-col>
+                </a-row>
+                <div style="width: 100%; height: 1px;
             margin-top: 10px;
             border-top: solid black 1px;"></div>
-                   <a-tree
-                               :tree-data="treeData"
-                               :default-expanded-keys="['0-0-0', '0-0-1']"
-                               :default-selected-keys="['0-0-0', '0-0-1']"
-                               :default-checked-keys="['0-0-0', '0-0-1']"
-                               :replace-fields="replaceFields"
-                               @select="onSelect"
-                               @check="onCheck"
-                               checkable
-                               style="font-size: 1.3em;"/>
-               </div>
-               <div class="right">
-                   <div class="title">
-                       <a-row>
-                           <a-col :span="18"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
-                           <a-col :span="3"><button style="background-color: #19b294;
+                <a-tree
+                        :tree-data="treeData"
+                        :default-expanded-keys="['0-0-0', '0-0-1']"
+                        :default-selected-keys="['0-0-0', '0-0-1']"
+                        :default-checked-keys="['0-0-0', '0-0-1']"
+                        :replace-fields="replaceFields"
+                        @select="onSelect"
+                        @check="onCheck"
+                        checkable
+                        style="font-size: 1.3em;"/>
+            </div>
+            <div class="right">
+                <div class="title">
+                    <a-row>
+                        <a-col :span="18"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
+                        <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
                         width: 150px">删除已发布课表</button></a-col>
-                           <a-col><button style="background-color: #19b294;
+                        <a-col><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
                         width: 150px" @click="back">返回</button></a-col>
-                       </a-row>
-                       <a-row style="margin-top: 20px">
-                           <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
-                           <button @click="maxTime" style="background-color: #19b294;
+                    </a-row>
+                    <a-row style="margin-top: 20px">
+                        <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
+                        <button @click="maxTime" style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 150px">查看学生冲突</button>
-                           <button style="background-color: #19b294;margin-left: 30px;
+                        <button style="background-color: #19b294;margin-left: 30px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 150px" @click="changeCourse">手动调课</button>
-                           <button style="background-color: #19b294;margin-left: 30px;
+                        <button style="background-color: #19b294;margin-left: 30px;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 150px" @click="changClass">学生调班</button>
-                       </a-row>
-                       <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
-                   </div>
-                   <div class="table-bg">
-                       <a-row class="buttons">
-                           <a-col :span="3"><button style="background-color: #19b294;
+                    </a-row>
+                    <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
+                </div>
+                <div class="table-bg">
+                    <a-row class="buttons">
+                        <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 110px" @click="allLook">整体查看</button></a-col>
-                           <a-col :span="3"><button style="background-color: #19b294;
+                        <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 110px" @click="placeLook">按场地查看</button></a-col>
-                           <a-col :span="3"><button style="background-color: #19b294;
+                        <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 110px" @click="subjectLook">按科目查看</button></a-col>
-                       </a-row>
-                       <a-table
-                               :columns="columns"
-                               :data-source="tableData"
-                               :pagination="false"
-                               :bordered="true"
-                               style="margin-top: 20px;width:75%;height:100% ">
-                       </a-table>
-                   </div>
-               </div>
-           </div>
-       </div>
-   </EasyScrollbar>
-
+                        <a-col :span="3"><button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        width: 110px"  @click="studentLook">按学生查看</button></a-col>
+                    </a-row>
+                    <a-table
+                            :columns="columns"
+                            :data-source="tableData"
+                            :pagination="false"
+                            :bordered="true"
+                            style="margin-top: 20px;width:75%;height:100% ">
+                    </a-table>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 <script>
     const columns = [
@@ -187,9 +190,6 @@
                 treeData,
                 columns,
                 tableData,
-                myBarOption:{
-                    barColor:'block'
-                },
                 disabled: false,
                 replaceFields: {
                     children: 'child',
@@ -213,15 +213,23 @@
             changClass(){
                 this.$router.push('/schedule/detail/task_mobile/change_student')
             },
+            //整体查看
             allLook(){
-                this.$router.push('/schedule/detail/task_mobile/all')
+                this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}`)
             },
+            //按场地查看
             placeLook(){
-                this.$router.push('/schedule/detail/task_mobile/room')
+                this.$router.push(`/schedule/detail/task_mobile/room?planId=${this.planId}`)
             },
+            //按科目查看
             subjectLook(){
-                this.$router.push('/schedule/detail/task_mobile/course')
+                this.$router.push(`/schedule/detail/task_mobile/course?planId=${this.planId}`)
             },
+            //按学生查看
+            studentLook(){
+                this.$router.push(`/schedule/detail/curriculum/student?planId=${this.planId}`)
+            },
+            //返回
             back(){
                 this.$router.go(-1)
             },
@@ -245,7 +253,7 @@
         border-radius: 5px;
     }
     .left{
-        width: 300px;
+        width: 230px;
         height: 900px;
         background-color: white;
         margin: 0px 0px 20px 0px;
@@ -255,8 +263,7 @@
     .right{
         border-radius: 5px;
         margin-top: -935px;
-        margin-left: 320px;
-        height:700px;
+        margin-left: 240px;
     }
     .title{
         width: 100%;
@@ -275,14 +282,6 @@
         margin-top: -35px;
         width: 100%;
         background-color: #fff;
-    }
-    /deep/ Table {
-        .ant-table-thead > tr > th {
-            background-color: #f4f4f4;
-        }
-        .ant-table-tbody>tr{
-            height:100px;
-        }
     }
 </style>
 

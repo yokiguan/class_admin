@@ -1,138 +1,129 @@
 <template>
-    <EasyScrollbar :barOption="myBarOption">
-        <div id="wrapper" style="width: 600px">
-            <div style="width: 1800px">
-                <div class="result">
-                    <a-breadcrumb>
-                        <a-breadcrumb-item>首页</a-breadcrumb-item>
-                        <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                        <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
-                        <a-breadcrumb-item><a href="">学生调班</a></a-breadcrumb-item>
-                    </a-breadcrumb>
-                </div>
-                <div class="left">
-                    <a-row class="left_title">
-                        <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
+    <div id="wrapper">
+            <div class="result">
+                <a-breadcrumb>
+                    <a-breadcrumb-item>首页</a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+                    <a-breadcrumb-item><a href="">学生调班</a></a-breadcrumb-item>
+                </a-breadcrumb>
+            </div>
+           <div class="box">
+               <a-card class="left">
+                   <a-row class="left_title">
+                       <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
                     font-weight: bold"/></a-col>
-                        <a-col :span="12"><span style="font-size: 1.2em">刷新菜单</span></a-col>
-                        <a-col><span style="font-size: 1.2em">全部展开</span></a-col>
-                    </a-row>
-                    <a-row >
-                        <a-col :span="17" style="margin-top: 15px"> <input placeholder="学生姓名" style="height: 30px;
-                        background-radius: 5px;
-                        border: 1px solid #d9d9d9;"></a-col>
-                        <a-col style="margin-top: 15px"> <button style="background-color: #19b294;color: white;
-                        border: none;
-                        width: 50px;
-                        height: 30px;
-                        border-radius: 5px">查询</button></a-col>
-                    </a-row>
-                    <a-divider style="background-color: black"></a-divider>
-                    <div>
-                        <a-tree
-                                :tree-data="treeData"
-                                :default-expanded-keys="['0-0-0', '0-0-1']"
-                                :default-selected-keys="['0-0-0', '0-0-1']"
-                                :default-checked-keys="['0-0-0', '0-0-1']"
-                                :replace-fields="replaceFields"
-                                @select="onSelect"
-                                @check="onCheck"
-                                checkable
-                                style="font-size: 1.3em;"
-                        />
-                    </div>
-                </div>
-                <div class="right">
-                    <div class="title">
-                        <a-row>
-                            <a-col ><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
-                            <a-col>
-                                <button style="background-color: #19b294;
+                       <a-col :span="12"><span style="font-size: 1.2em">刷新菜单</span></a-col>
+                       <a-col><span style="font-size: 1.2em">全部展开</span></a-col>
+                   </a-row>
+                   <a-row>
+                       <a-input-search placeholder="请输入老师姓名"  v-model="studentName" @search="onSearch" style="margin-top: 20px"/>
+                   </a-row>
+                   <div style="width: 100%; height: 1px;
+            margin-top: 10px;
+            border-top: solid black 1px;"></div>
+                   <div>
+                       <a-tree v-model="checkedKeys"
+                               :tree-data="treeData"
+                               checkable
+                               @check="onCheck"
+                               style="font-size: 1.3em;"/>
+                   </div>
+               </a-card>
+               <div class="right">
+                   <div class="title">
+                       <a-row>
+                           <a-col ><span style="font-size:1.5em">{{this.planData}}</span></a-col>
+                           <a-col>
+                               <button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
                         width: 150px" @click="back">返回</button>
-                            </a-col>
-                            <a-col><span style="font-size: 1.2em ">XXX-101</span></a-col>
-                        </a-row>
-                    </div>
-                    <div class="table-bg">
-                        <a-row class="buttons">
-                            <a-col :span="3"><button style="background-color: #19b294;
+                           </a-col>
+                           <a-col><span style="font-size: 1.2em ">XXX-101</span></a-col>
+                       </a-row>
+                   </div>
+                   <div class="table-bg">
+                       <a-row class="buttons">
+                           <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 110px" @click="allLook">整体查看</button></a-col>
-                            <a-col :span="3"><button style="background-color: #19b294;
+                           <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 110px" @click="teacherLook">按老师查看</button></a-col>
-                            <a-col :span="3"><button style="background-color: #19b294;
+                           <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         width: 110px" @click="placeLook">按场地查看</button></a-col>
-                            <a-col :span="3"><button style="background-color: #19b294;
+                           <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 110px" @click="subjectLook">按科目查看</button>
-                            </a-col>
-                        </a-row>
-                        <a-table
-                                :columns="columns"
-                                :data-source="tableData"
-                                :pagination="false"
-                                :bordered="true"
-                                style="margin-top: 20px;width:50%;">
-                            <a-button slot="change"
-                                      @click="change_class"
-                                      style="background-color: #19b294;
+                        width: 110px" @click="subjectLook">按科目查看</button> </a-col>
+                           <a-col :span="3"><button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        width: 110px"  @click="studentLook">按学生查看</button></a-col>
+                       </a-row>
+                       <a-table
+                               :columns="columns"
+                               :data-source="tableData"
+                               :pagination="false"
+                               :bordered="true"
+                               style="margin-top: 20px;width:50%;">
+                           <a-button slot="change"
+                                     @click="change_class"
+                                     style="background-color: #19b294;
                                       width: 80px;
                                       height: 40px;
                                       color:white">调班</a-button>
-                        </a-table>
-                    </div>
-                </div>
-<!--                调班窗口-->
-                <create-modal
-                        :visible="visible"
-                        :loading="loading"
-                        @modalClosed="closed"
-                        @modalSubmit="handleSubmit">
-                    <div slot="content">
-                        <div class="title" style="width:520px;height: 50px;
+                       </a-table>
+                   </div>
+               </div>
+           </div>
+            <!--                调班窗口-->
+            <create-modal
+                    :visible="visible"
+                    :loading="loading"
+                    @modalClosed="closed"
+                    @modalSubmit="handleSubmit">
+                <div slot="content">
+                    <div class="title" style="width:520px;height: 50px;
                         margin-top:-24px;
                         margin-left:-24px;
                         border-radius: 3px;
                         background-color: #6Db5a7">
-                            <h4 style="color: white">学生调班</h4>
-                        </div>
-                        <div class="content_table">
-                            <a-table
-                                    :columns="columns_class"
-                                    :data-source="classData"
-                                    :pagination="false"
-                                    :bordered="true"
-                                    :cell-style="changeCellStyle"
-                                    style="">
-                                <a-checkbox slot="radio" @change="onChange">
-                                </a-checkbox>
-                            </a-table>
-                        </div>
+                        <h4 style="color: white">学生调班</h4>
                     </div>
-                </create-modal>
-            </div>
-        </div>
-    </EasyScrollbar>
-
+                    <div class="content_table">
+                        <a-table
+                                :columns="columns_class"
+                                :data-source="classData"
+                                :pagination="false"
+                                :bordered="true"
+                                :cell-style="changeCellStyle"
+                                style="">
+                            <a-checkbox slot="radio" @change="onChange">
+                            </a-checkbox>
+                        </a-table>
+                    </div>
+                </div>
+            </create-modal>
+    </div>
 </template>
 <script>
     import CreateModal from "../../../../components/modal/CreateModal";
@@ -145,19 +136,16 @@
         {
             title: '课程',
             dataIndex: 'subject',
-            key:'subject',
             align: "center",
         },
         {
             title: '所分班级',
             dataIndex: 'class',
-            key:'class',
             align: "center",
         },
         {
             title: '操作',
             dataIndex: 'opt',
-            key:'opt',
             scopedSlots: { customRender: 'change' },
             align:'center'
         },
@@ -193,19 +181,16 @@
         {
             title: '课程班',
             dataIndex: 'subject',
-            key:'subject',
             align: "center",
         },
         {
             title: '人数',
             dataIndex: 'number',
-            key:'number',
             align: "center",
         },
         {
             title: '说明',
             dataIndex: 'text',
-            key:'text',
             align:'center'
         },
     ];
@@ -234,62 +219,99 @@
             text:'可调'
         },
     ];
-    const treeData = [
-        {
-            name: '高二学生',
-            key: '0-0',
-            child: [
-                { name: '赵卫民-101', key: '0-0-0'},
-                { name: '李援朝-102', key: '0-0-1' },
-            ],
-        },
-        {
-            name: '高三学生',
-            key: '0-1',
-            child: [
-                { name: '赵卫民-101', key: '0-0-0'},
-                { name: '李援朝-102', key: '0-0-1' },
-            ],
-        },
-    ];
     export default {
         components: {CreateModal},
         data() {
             return {
-                treeData,
+                treeData:[],
                 columns,
                 tableData,
                 columns_class,
                 classData,
+                planData:"",
+                planId:"",
+                scheduleTaskId:"",
+                studentName:"",
                 visible: false,
                 loading: false,
-                myBarOption:{
-                    barColor:'block'
-                },
-                disabled: false,
-                replaceFields: {
-                    children: 'child',
-                    title: 'name',
-                },
+                checkedKeys:[],
             };
         },
+        created() {
+            this.chooseCourseInfo();
+            this.treeInfo();
+        },
         methods: {
-            handleDisabledChange(disabled) {
-                this.disabled = disabled;
-            },
-            onSelect(selectedKeys, info) {
-                console.log('selected', selectedKeys, info);
+            //获取单个选课计划信息
+            async chooseCourseInfo(){
+                //获取planId
+                let queryString = (window.location.hash || " ").split(/[?&]/)[1];
+                let planId = (queryString || " ").split('=')[1];
+                // console.log(planId);
+                this.planId = planId;
+                //获取scheduleTaskId
+                let queryTaskString = (window.location.hash || " ").split(/[?&]/)[2];
+                let scheduleTaskId = (queryTaskString || " ").split('=')[1];
+                this.scheduleTaskId= scheduleTaskId;
+                // console.log( this.scheduleTaskId);
+                if (planId) {
+                    //获取单个选课计划的信息
+                    let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                    this.planData = result.name
+                }
             },
             onCheck(checkedKeys, info) {
                 console.log('onCheck', checkedKeys, info);
+            }, //学生树查询
+            async treeInfo(){
+                let {data}=await this.$api.schedule.classTask.getStudentList({planId:this.planId});
+                console.log(data.result);
+                this.treeData = [];
+                for (let i in data.result) {
+                    // 第一层
+                    let numberTree = {}
+                    //将Object转换为数组
+                    let arr=Object.values(data.result[i].schWxUserEntity);
+                    // let item = ;
+                    console.log(arr);
+                    numberTree.title = arr[1];
+                    numberTree.key = arr[2];
+                    this.treeData.push(numberTree)
+                }
+                console.log(this.treeData);
             },
+            //根据学生姓名查询
+            onSearch(value){
+                console.log(value);
+                this.nameInfo([value]);
+            },
+            //根据姓名查信息接口
+            async nameInfo(value){
+                let {data:{result,success}}=await this.$api.schedule.classTask.getStudent({planId:this.planId,name:value.toString()});
+                console.log(result);
+                let subId=result[0].schWxUserEntity.wxUid;
+                console.log(subId);
+                this.conflictLook(subId);
+            },
+            //选择学生
+            onCheck(checkedKeys) {
+                console.log('onCheck', checkedKeys);
+                let stuId=checkedKeys.toString();
+                this.conflictLook(stuId);
+            },
+            //课表查看接口
+            async conflictLook(stuId){
+              let {data}=await this.$api.schedule.classTask.conflictInfo({planId:this.planId,scheduleTaskId:this.scheduleTaskId,stuId:stuId});
+              console.log(data);
+            },
+
             change_class: function () {
                 this.visible = true;
             },
-            change: function () {
+            change() {
                 this.visible = true;
             },
-            closed: function () {
+            closed () {
                 this.visible = false
                 this.loading = false
             },
@@ -309,21 +331,27 @@
                     return ''
                 }
             },
+            //整体查看
             allLook(){
-                this.$router.push('/schedule/detail/task_mobile/all')
+                this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
             },
+            //按老师查看
             teacherLook(){
-                this.$router.push('/schedule/detail/task_mobile/teacher')
+                this.$router.push(`/schedule/detail/task_mobile/teacher?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
             },
+            //按场地查看
             placeLook(){
-                this.$router.push('/schedule/detail/task_mobile/place')
+                this.$router.push(`/schedule/detail/task_mobile/room?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
             },
+            //按科目查看
             subjectLook(){
-                this.$router.push('/schedule/detail/task_mobile/course')
+                this.$router.push(`/schedule/detail/task_mobile/course?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
             },
+            //按学生查看
             studentLook(){
-                this.$router.push('/schedule/detail/curriculum/student')
+                this.$router.push(`/schedule/detail/task_mobile/student?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
             },
+            //返回
             back(){
                 this.$router.go(-1)
             },
@@ -344,36 +372,35 @@
         vertical-align: top;
         border-radius: 5px;
     }
+    .box{
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        flex-direction:row;
+    }
     .left{
-        width: 300px;
-        height: 900px;
+        width: 22%;
         background-color: white;
-        margin: 0px 0px 20px 0px;
-        padding: 20px 25px;
         border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
     }
     .right{
         border-radius: 5px;
-        margin-top: -935px;
-        margin-left: 320px;
-        height:900px;
+        width: 77%;
     }
     .title{
-        width: 100%;
         background-color: #fff;
         height: 110px;
         padding: 20px 25px;
         border-radius: 10px;
         margin-bottom: 50px;
-        margin-top: 35px;
     }
     .table-bg{
         padding: 20px 25px;
         border-radius: 10px;
         text-align: center;
-        height: 790px;
         margin-top: -35px;
-        width: 100%;
         background-color: #fff;
     }
 </style>

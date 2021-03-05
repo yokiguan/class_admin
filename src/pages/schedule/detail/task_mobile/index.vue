@@ -30,7 +30,7 @@
                     :bordered="true" style="margin-top: 20px;width:1200px;height: 700px">
                 <div slot="option" style="color: blue"  slot-scope="text,record">
                     <a-row>
-                       <span style="float:left "  @click="onClickLook">查看</span>
+                       <span style="float:left "  @click="onClickLook(record.id)">查看</span>
                        <span style="margin-left:0px "  @click="delet(record.id)">删除</span>
                        <span style="margin-left: 50px ">继续排课</span>
                        <span style="margin-left: 50px " @click="integrate">手动调整</span>
@@ -136,8 +136,8 @@
                 this.lookInfo();
             },
             //查看
-            onClickLook(){
-                this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}`)
+            onClickLook(id){
+                this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}&scheduleTaskId=${id}`)
             },
             //删除
             async delet(id){

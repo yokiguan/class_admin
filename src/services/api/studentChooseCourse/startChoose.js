@@ -3,14 +3,13 @@
 * */
 import base from '../base';    //导入接口域名列表
 import axios from '../../axios'      //导入从http众创建的axios实例
-const baseUrl1 = base.root +'/a/scheduleSyllabus'
+const scheduleSyllabus = base.root +'/a/scheduleSyllabus'
 const baseUrl2 = base.root + '/a/schedulePlan'
 const baseUrl3 = base.root + '/a/scheduleTeacher'
 const startChoose = {
     // 学生端选课课表查看（已测）
     getStuCourse(params){
-        return axios.get(`${baseUrl1}/getStuData.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${scheduleSyllabus}/getStuData.json`,params);
     },
     //开始选课修改（已测）
     alterCourseSelect(params){

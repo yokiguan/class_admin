@@ -56,11 +56,11 @@
                     <a-col :span="4"><h3>必修课：</h3></a-col>
                     <a-col style="margin-left: 120px">
                         <a-table style="width: 50%;" :rowKey="'id'" :columns="column"
-                                     :selectRows="rowMustSelection"
+                                 :row-selection="{ selectedRowKeys: selectedMustRowKeys, onChange: onSelectMustChange }"
+                                 :selectedRows="rowMustSelection"
                                      :data-source="mustDataSource"
                                      :pagination="false"
                                      :showHeader="false"
-                                     @change="mustChange"
                                      bordered>
                         <template slot="chooseTeacher" style="color: blue;" slot-scope="text,record">
                             <span style="float:left">{{text}}</span>
@@ -76,9 +76,9 @@
                 <a-row>
                     <a-col :span="4"><h3>选修课：</h3></a-col>
                     <a-col style="margin-left: 120px">
-                        <a-table style="width: 50%"
-                                 :rowKey="'id'"
-                                 :columns="column"
+                        <a-table style="width: 50%" :rowKey="'id'" :columns="column"
+                                 :row-selection="{ selectedRowKeys: selectedChooseRowKeys, onChange: onSelectChooseChange }"
+                                 :selectedRows="rowChooseSelection"
                                  :data-source="chooseDataSource"
                                  :pagination="false"
                                  :showHeader="false"
@@ -100,10 +100,6 @@
 <script>
     const column=[
         {
-            title:'',
-            dataIndex:'id',
-            align:'center'
-        }, {
             title:'课程名',
             dataIndex:'subject',
             align:'center'
@@ -145,8 +141,10 @@
                 mustDataSource,
                 chooseDataSource,
                 planId:"",
-                selectedRowKeys:[],
-                selectedRows:[],
+                selectedMustRowKeys:[],
+                rowMustSelection:[],
+                selectedChooseRowKeys:[],
+                rowChooseSelection:[],
             };
         },
         //查看单个选课计划
@@ -160,17 +158,22 @@
             //开始选课查看
             async chooseCourseInfo(){
                 // console.log(this.planId);
-                // let {data}=await this.$api.studentChooseCourse.studentChooseCourse.getCourseSelect({planId:this.planId})
-                // console.log(data);
+                let {data}=await this.$api.studentChooseCourse.startChoose.getStuCourse();
+                console.log(data);
             },
             //选择必修课
-            rowMustSelection(){
-
+            onSelectMustChange( selectedRowKeys,selectedRows) {
+                this.selectedMustRowKeys = selectedRowKeys;
+                this.rowMustSelection=selectedRows
+                console.log(this.selectedMustRowKeys);
+                console.log(this.rowMustSelection);
             },
-            //选择必修课
-            mustChange(selectedRowKeys,selectedRows){
-              this.selectedRowKeys=selectedRowKeys;
-              this.selectedRows=selectedRows;
+            //选择选修课
+            onSelectChooseChange( selectedRowKeys,selectedRows) {
+                this.selectedChooseRowKeys = selectedRowKeys;
+                this.rowChooseSelection=selectedRows
+                console.log(this.selectedChooseRowKeys);
+                console.log(this.rowChooseSelection);
             },
             //规则说明查看
             warning(){

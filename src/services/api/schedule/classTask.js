@@ -3,13 +3,13 @@
 * */
 import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'      //导入从http众创建的axios实例
-const baseUrl1 = base.root +'/a/schedulePlan'
-const baseUrl2 = base.root + '/a/scheduleTeacher'
-const baseUrl3 = base.root + '/a/classroomSetting'
-const baseUrl4 = base.root + '/a/scheduleTeacherClass'
-const baseUrl5 = base.root + '/a/scheduleResult'
-const baseUrl6 = base.root + '/a/scheduleSyllabus'
+const classroomSetting = base.root + '/a/classroomSetting'
+const scheduleResult = base.root + '/a/scheduleResult'
+const scheduleSyllabus = base.root + '/a/scheduleSyllabus'
 const scheduleTask=base.root+'/a/scheduleTask'
+const scheduleConflict=base.root+'/a/scheduleConflict'
+const studentSyllabus=base.root+'/a/studentSyllabus'
+const scheduleClass=base.root+'/a/scheduleClass'
 const  classTask = {
     //走班排课任务查看(已调）
     getScheduleTask(params){
@@ -21,43 +21,54 @@ const  classTask = {
     },
     //老师树形列表查询
     getTeacherList(params){
-        return axios.get(`${baseUrl2}/getTeacherList.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${scheduleSyllabus}/getTeacherList.json`,{params});
     },
-    //教室树形列表查询
+    //教室树形列表查询(已调)
     getClassList(params){
-        return axios.post(`${baseUrl3}/getClassroomList.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${classroomSetting}/getClassroomList.json`,{params} );
     },
-    //课程列表查询
-    getCourseList(params){
-        return axios.post(`${baseUrl4}/getClassList.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+    //教室课表查看(已调）
+    getClassroomList(params){
+        return axios.get(`${scheduleSyllabus}/getDataSelectByClassroom.json`,{params} );
     },
-    //学生列表查看
+    //学生列表查看(已调）
     getStudentList(params){
-        return axios.post(`${baseUrl5}/getStudentList.json`,params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${scheduleResult}/getStudentList.json`,{params});
     },
-    //按姓名查找学生
+    //按姓名查找学生(已调）
     getStudent(params) {
-        return axios.post(`${baseUrl5}/getStudent.json`, params, {
-            'Content-Type': 'multipart/form-data'});
+        return axios.get(`${scheduleResult}/getStudent.json`, {params});
     },
-    //整体查看
+    //整体查看(已调）
     getData(params) {
-        return axios.get(`${baseUrl6}/getDataSelect.json`, {params});
+        return axios.get(`${scheduleSyllabus}/getDataSelect.json`, {params});
     },
-    //学生调班查看
-    getStudentResult(params) {
-        return axios.get(`${baseUrl5}/getStudentResult.json`, params, {
+    //手动调课换课
+    manualClass(){
+        return axios.post(`${scheduleSyllabus}/updateSyllabus.json`, params, {
             'Content-Type': 'multipart/form-data'
         });
-    }
-    //冲突查看
-    //学生调班
-    //手动调课查看
-    //手动调课修改（需讨论）
+    },
+    //冲突查看(已调）
+    contrastLook(params){
+        return axios.get(`${scheduleConflict}/getConflictList.json`,{params});
+    },
+    //学生调班（根据课程查看冲突信息）
+    conflictInfo(params){
+        return axios.get(`${scheduleSyllabus}/getConflictInfo.json`,{params});
+    },
+    //课程班级列表查询(已调）
+    getCourseList(params){
+        return axios.get(`${scheduleClass}/searchScheduleClassResult.json`,{params});
+    },
+    //课程课表查看(已调)
+    courseLook(params){
+        return axios.get(`${scheduleSyllabus}/getDataSelectBySubAndClass.json`,{params});
+    },
+    //学生课表查看(已调）
+   studentLook(params){
+        return axios.get(`${studentSyllabus}/getDataByStuId.json`,{params});
+    },
 }
 export default  classTask
 
