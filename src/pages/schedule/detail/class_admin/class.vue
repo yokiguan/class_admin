@@ -34,7 +34,7 @@
             </a-row>
             <a-table :rowKey="'classId'" :columns="columns" :dataSource="data" :pagination='false' bordered>
                 <div slot="subjectTeacherList" slot-scope="text, record,index1">
-                    <a-table :rowKey="'text.subId'"
+                    <a-table :rowKey="'text.scheduleTeacherClassId'"
                              :dataSource="text"
                              :columns="columnsSubject"
                              :pagination="false"
@@ -88,6 +88,7 @@
                 <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
+                <a-tree></a-tree>
         </a-modal>
     </div>
 </template>
@@ -148,6 +149,7 @@
                 editTeacherVisit:false,
                 loading: false,
                 planData:"",
+                planId:"",
                 gradeId:"",
                 form:{
                     teacherName:"",
@@ -172,13 +174,21 @@
         methods: {
             //班级设置查看
             async classSettingInfo(){
-                let {data:{result,success}}=await this.$api.schedule.adminClass.getClassSetting({gradeId:this.gradeId});
+                let {data:{result,success}}=await this.$api.schedule.adminClass.getClassSetting({planId:this.planId,gradeId:this.gradeId});
                 console.log(result);
-                this.data=result;
+                let allData=[];
                 for(let i=0;i<result.length;i++){
+                    let addData={
+                        classId:result[i].classId,
+                        className:result[i].gradeName+result[i].className,
+                        subjectTeacherList:result[i].subjectTeacherList,
+                    }
+                    allData[i]=addData;
                     console.log(result[i].subjectTeacherList)
                 }
-
+                console.log(allData);
+                this.data=allData;
+                console.log(this.data);
             },
             //删除学科老师
             delet(index1,index2){
@@ -188,6 +198,12 @@
             //添加学科
             addSubject(){
                 this.addSubjectVisit=true;
+                this.subjectInfo();
+            },
+            //获取学科信息
+            async subjectInfo(){
+                let {data}=await this.$api.schedule.adminClass. getCourseSetting({planId:this.planId,scheduleType:1});
+                console.log(data);
             },
             //编辑教室姓名
             edit(index1,index2){
@@ -222,6 +238,12 @@
                 // console.log(this.data[id].classId);
                 let {data}=await this.$api.schedule.adminClass.deleteCoursesetting({ids:[this.data[id].classId]});
                 console.log(data);
+                if(data&&data.success){
+                    message.info("删除成功");
+                    this.classSettingInfo();
+                }else{
+                    message.info("删除失败");
+                }
             },
             //课时设置
             timesSetting(){

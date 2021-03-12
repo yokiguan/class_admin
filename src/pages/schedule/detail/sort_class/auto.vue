@@ -27,27 +27,22 @@
                 :visible="maxPerNumModal"
                 :closable="false">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
-                <a-button key="back" @click="handleCancel">取消</a-button>
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOkMax()">保存</a-button>
+                <a-button key="back" @click="handleCancelMax">取消</a-button>
             </template>
             <a-form-model :model="form" :rules="rules" :label-col="{ span:5 }" :wrapper-col="{ span: 19}">
                 <a-form-model-item label="最大人数：" style="margin-top: 50px" props="maxPerNum" ref="maxPerNum">
                     <a-input placeholder="请输入" v-model="form.maxPerNum"/>
                 </a-form-model-item>
-                <a-form-model-item >
-                    <a-checkbox @change="onChange" style="margin-top: 30px;margin-left: 100px;font-size: 15px" v-model="form.classNum">
-                        生成班级个数
-                    </a-checkbox>
-                </a-form-model-item>
             </a-form-model>
         </a-modal>
 <!--        统一设置最大课时数-->
-        <a-modal title="统一设置最课时数"
+        <a-modal title="统一设置课时数"
                  :visible="maxTimeNumModal"
                  :closable="false">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
-                <a-button key="back" @click="handleCancel">取消</a-button>
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOkTime()">保存</a-button>
+                <a-button key="back" @click="handleCancelTime">取消</a-button>
             </template>
             <a-form-model :model="form" ref="rules" :label-col="{ span:5 }" :wrapper-col="{ span: 19}">
                 <a-form-model-item label="课时数：" style="margin-top: 50px" props="times" ref="times">
@@ -56,33 +51,29 @@
             </a-form-model>
         </a-modal>
         <div class="table-bg">
-            <a-form :form="form" :label-col="{ span:6 }" :wrapper-col="{ span: 13 }" style="margin-left: 300px">
-                <a-form-item label="可用教室数：">
-                    <a-input  placeholder="16" style="width: 300px;"></a-input>
-                </a-form-item>
-            </a-form>
             <a-table :rowKey="'subId'"
                     :columns="columns"
                     :data-source="dataSource"
                     :pagination="false"
                     :bordered="true">
 <!--                <input slot="average"  @change="average(record.key, classNum)">-->
-                <a-input slot="classNum" slot-scope="classNum"  @change="change"></a-input>
-                <a-input slot="max" slot-scope="max"  @change="change"></a-input>
-                <a-input slot="classTime" slot-scope="classTime"  @change="change" ></a-input>
-                <a-button slot="action" slot-scope="text" @click="add" style="background-color:blue;color:white">添加</a-button>
+                <a-input slot="classNum" slot-scope="classNum,recordClass,classIndex" v-model="classNum" @blur="changeClass(classNum,classIndex)"/>
+                <a-input slot="max" slot-scope="max,recordMax,maxIndex" v-model="max"  @blur="changeMax(max,maxIndex)"/>
+                <a-input slot="classTime" slot-scope="classTime,recordClassTime,timeIndex" v-model="classTime" @blur="changeClassTime(classTime,timeIndex)"/>
+                <a-button slot="action" slot-scope="text,record" @click="add(record.subId,record.id)" style="background-color:blue;color:white">添加</a-button>
             </a-table>
             <div style="margin: 20px 0px 20px 40%">
-                <a-button type="primary" style="margin-right:40px;margin-top: 50px;width: 100px;height: 40px">开始分班</a-button>
+                <a-button type="primary" @click="saveAll" style="margin-right:40px;margin-top: 50px;width: 100px;height: 40px">保存</a-button>
                 <a-button type="primary" style="width: 100px;height: 40px">返回</a-button>
             </div>
         </div>
 <!--        添加-->
-        <a-modal :visible='addVisit' width="800px" :closable="false">
+        <a-modal  width="800px"
+                 :visible="addVisit"
+                 :closable="false">
             <template slot="footer">
                 <a-button key="Save" type="primary" :loading="loading" @click="handleAdd">添加</a-button>
-                <a-button key="back" @click="handleCancel">取消
-                </a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
             <div class="title" style="width:770px;height: 50px;border-radius: 5px; margin-left: -10px;
                         margin-top: -10px; background-color: #6Db5a7">
@@ -96,19 +87,13 @@
                     <a-row style="font-size: 1.2em;margin-top: 10px;margin-bottom: 10px">
                         <a-form :form="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 12 }" >
                             <a-form-item label="选择老师">
-                                <a-input placeholder="请输入" v-decorator="['选择老师', { rules: [{ required: true, message: '请选择老师' }] }]"/>
+<!--                                <a-input placeholder="请输入"  v-model="form.teacherName" @blur="inputTeacher"/>-->
                             </a-form-item>
                         </a-form>
                         <span style="float: right;margin-top: -30px">全部展开</span>
                     </a-row>
                     <a-divider style="background-color: black;margin-top: -50px"></a-divider>
-                    <a-tree
-                            :tree-data="treeData"
-                            :default-expanded-keys="['0-0-0', '0-0-1']"
-                            :default-selected-keys="['0-0-0', '0-0-1']"
-                            :default-checked-keys="['0-0-0', '0-0-1']"
-                            :replace-fields="replaceFields"
-                            @select="onSelect"
+                    <a-tree :tree-data="treeData"
                             @check="onCheck"
                             checkable
                             style="font-size: 1.3em;margin-top: -20px"/>
@@ -119,30 +104,33 @@
                         <a-col :span="10"><span style="font-size: 1.2em;font-weight: bold">已选教师：</span></a-col>
                         <a-col> <span style="font-size: 1.2em;" @click="allClear">全部清除</span></a-col>
                     </a-row>
-                    <a-table
-
-                        :columns="teacherColumns"
-                        :data-source="teacherData"
-                        :pagination="false"
-                        :bordered="true"
-                        :cell-style="changeCellStyle"
-                        style="float:right;width: 400px;margin-right: 30px;margin-top: 30px">
-
-                    <a-input slot="classNums" placeholder="0"></a-input>
-                     <button slot="delete"
-                             @click="teacherDelete"
-                             style="background-color: red;color: white;border: none;width: 80px;height: 30px;border-radius: 5px">删除</button>
-                </a-table></div>
+                    <a-table :rowKey="'id'"
+                             :columns="teacherColumns" :data-source="teacherData"
+                             :pagination="false"
+                             :bordered="true"
+                             style="float:right;width: 400px;margin-right: 30px;margin-top: 30px">
+                        <a-input slot="classNums" slot-scope="text,record,index" placeholder="0" v-model="text" @blur="changeCapacity(text,index)"/>
+                        <button slot="delete" slot-scope="text,record"
+                                @click="teacherDelete(record.id)"
+                                style="background-color: red;color: white;border: none;width: 80px;height: 30px;border-radius: 5px">删除</button>
+                    </a-table></div>
             </div>
         </a-modal>
     </div>
 </template>
 <script>
     const columns = [
+        {
+            title:'',
+            dataIndex:'id',
+            align:'center',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
+        },
         {   title: '课程',
             dataIndex: 'subjectChildEntity',
             align:'center',
-            width:'12%',
             customRender:(text)=>{
                 return  text.name
             }
@@ -150,35 +138,48 @@
         {
             title: '学生总人数',
             dataIndex: 'total',
+            align:'center',
         },
         {
             title: '班级个数',
             dataIndex: 'classNum',
+            align:'center',
             scopedSlots: { customRender: 'classNum' },
         },
         {
             title: '平均人数',
             dataIndex: 'average',
+            align:'center',
             // scopedSlots: { customRender: 'average' },
         },
         {
             title: '每班最大人数',
             dataIndex: 'maxNum',
+            align:'center',
             scopedSlots: { customRender: 'max' },
         },
         {
             title: '每周课时数',
             dataIndex: 'lessonNum',
+            align:'center',
             scopedSlots: { customRender: 'classTime' },
         },
         {
             title: '教师所教班级个数',
+            align:'center',
             dataIndex: 'scheduleTeacherEntities',
-            customRender:(text,index,i)=>{
-                // console.log(text.schWxUserEntity)
-                let grade=0;
-                grade=text.classNum
-                return  grade
+            customRender:(text,i)=>{
+                console.log(text)
+                console.log(i)
+                let content="";
+                for(let i=0;i<text.length;i++){
+                    if(content==""){
+                        content=text[i].schWxUserEntity.userName+"("+text[i].classNum+")"
+                    }else{
+                        content=content+"，"+text[i].schWxUserEntity.userName+"("+text[i].classNum+")"
+                    }
+                }
+                 return  content
             }
         },
         {
@@ -187,41 +188,31 @@
             scopedSlots: { customRender: 'action' },
         },
     ];
-    const treeData = [
-        {
-            name: '小学语文',
-            key: '0-0',
-            child: [
-                { name: '赵卫民', key: '0-0-0'},
-                { name: '李援朝', key: '0-0-1' },
-            ],
-        },
-        {
-            name: '初中英语',
-            key: '0-1',
-            child: [
-                { name: '赵卫民', key: '0-1-0'},
-                { name: '李援朝', key: '0-1-1' },
-            ],
-        },
-    ];
     const teacherColumns=[
         {
+          title:"",
+          dataIndex:"id",
+          align:"center",
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
+        },
+        {
             title:'教师名称',
-            dataIndex:'teacherName',
+            dataIndex:'schWxUserEntity',
             align:'center',
-            width:'30%',
+            customRender:(text)=>{
+                return  text.userName
+            }
         },{
-        title: '所教班级个数',
+            title: '所教班级个数',
             dataIndex:'classNum',
             align: 'center',
-            width: '45%',
             scopedSlots: { customRender: "classNums" },
         },{
             title:'操作',
             dataIndex:'opt',
             align:'center',
-            width:'25%',
             scopedSlots: { customRender: "delete" },
         }
     ]
@@ -230,7 +221,7 @@
             return {
                 dataSource:[],
                 columns,
-                treeData,
+                treeData:[],
                 teacherColumns,
                 teacherData:[],
                 teacherCount:4,
@@ -241,10 +232,10 @@
                 loading:false,
                 planData:" ",
                 editText:-1,
-                replaceFields: {
-                    children: 'child',
-                    title: 'name',
-                },
+                subId:"",
+                courseId:"",
+                checkName:"",
+                checkId:"",
                 form:{
                     maxPerNum:0,
                     classNum:0,
@@ -264,80 +255,238 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name
             }
-            //自动分班查看
-            let {data}=await this.$api.schedule.sortClass.classAutoGet({planId});
-            this.dataSource=data.rows;
-            console.log(this.dataSource)
+           this.lookAuto();
         },
         methods: {
+            //自动分班查看
+            async lookAuto(){
+                //自动分班查看
+                let {data}=await this.$api.schedule.sortClass.classAutoGet({planId:this.planId});
+                // console.log(data);
+                this.dataSource=data.rows;
+                console.log(this.dataSource)
+            },
+            //班级个数
+            changeClass(classNum,classIndex){
+                console.log(classNum);
+                console.log(classIndex);
+               // console.log( this.dataSource[classIndex]);
+                this.dataSource[classIndex].classNum=classNum;
+                // console.log( this.dataSource[classIndex].classNum);
+                //丢弃小数部分,保留整数部分parseInt(7/2)
+                this.dataSource[classIndex].average=Math.floor(this.dataSource[classIndex].total/classNum);
+                // console.log( this.dataSource[classIndex].average);
+            },
+            //每班最大人数
+            changeMax(maxNum,maxIndex){
+                console.log(maxNum);
+                console.log(maxIndex);
+                this.dataSource[maxIndex].maxNum=maxNum;
+            },
+            changeClassTime(timeNum,timeIndex){
+                console.log(timeNum);
+                console.log(timeIndex);
+                this.dataSource[timeIndex].lessonNum=timeNum;
+            },
+            //统一设置最大人数
             maxNum(){
               this.maxPerNumModal=true;
             },
+            //保存统一设置最大人数
+            async handleOkMax(){
+                let {data}=await this.$api.schedule.sortClass.settingMaxNum({planId:this.planId,maxNum:parseInt(this.form.maxPerNum)});
+                console.log(data);
+                if(data&&data.success){
+                    alert('最大人数设置成功！');
+                }
+                this.maxPerNumModal=false;
+            },
+            //关闭统一设置最大人数
+            handleCancelMax(){
+                this.maxPerNumModal=false;
+            },
+            //统一设置课时数
             timeNum(){
               this.maxTimeNumModal=true;
             },
-            handleOk(){
-                this.maxPerNumModal=false;
+            //保存统一设置课时数
+            async handleOkTime(){
+                this.maxTimeNumModal=false;
+                let {data}=await this.$api.schedule.sortClass.settingTimeNum({planId:this.planId,lessonNum:parseInt(this.form.times)});
+                console.log(data);
+                if(data&&data.success){
+                    alert('统一课时数设置成功！');
+                }
+            },
+            //关闭统一设置课时数
+            handleCancelTime(){
                 this.maxTimeNumModal=false;
             },
-            handleCancel() {
-                this.maxPerNumModal=false;
-                this.maxTimeNumModal=false;
-                this.addVisit=false;
+            //改变所教班级数量
+            async changeCapacity(num,index){
+                if(num===0){
+                    alert('所教班级个数为0,不能保存！')
+                }else{
+                    let pushData={
+                        scheduleTeacherEntity:{
+                            id:this.teacherData[index].id,
+                            classNum:num,
+                            teacherId:this.teacherData[index].teacherId,
+                            subId:this.subId,
+                        },
+                        courseId:this.courseId,
+                    }
+                    let {data}= await this.$api.schedule.sortClass.classAutoAlter(pushData);
+                    console.log(data);
+                    if(data&&data.success){
+                        alert("保存成功");
+                        this.teacherList(this.subId);
+                    }
+                }
             },
-            async change(key, val,id) {
-                this.tableData[key].max = val;
-                this.tableData[key].classNum = val;
-                this.tableData[key].ave = val;
-                //获取当前编辑行的下表
-                // this.editText=this.dataSource.findIndex(item=>item.id==id)
-                // let formData={
-                //
-                //     id:
-                // }
-                let {data}=await this.$api.schedule.sortClass.classAutoAlter();
+            //添加教师
+            add (subId,id) {
+                // console.log(subId);
+                this.addVisit=true;
+                this.teacherInfo(subId);
+                this.teacherList(subId);
+                this.subId=subId;
+                this.courseId=id;
             },
-            add () {
-                this.addVisit=true
+            //查看教师信息
+            async teacherInfo(subId){
+                this.treeData=[];
+              let {data:{result,success}}=await this.$api.schedule.sortClass.classGetTeacherList({subChildId:subId});
+              console.log(result);
+              for(let i=0; i<result.length;i++){
+                  let numberTree={};
+                  numberTree.title=result[i].departName+result[i].subjectChildEntity.name;
+                  numberTree.key=result[i].id+result[i].subjectChildEntity.subChildId;
+                  numberTree.children=[];
+                  if(result[i].schWxUserEntities.length){
+                      for(let j=0;j<result[i].schWxUserEntities.length;j++){
+                          let item=result[i].schWxUserEntities;
+                          let childData={};
+                          childData.title=item[j].userName;
+                          childData.key=item[j].wxUid;
+                          numberTree.children.push(childData);
+                      }
+                  }
+                  this.treeData.push(numberTree);
+                  console.log(this.treeData);
+              }
             },
-            onChange(e) {
-                console.log(`checked = ${e.target.checked}`);
+            //查看教师列表
+            async teacherList(subId){
+              let {data}=await this.$api.schedule.sortClass.classGetTeacherlist({planId:this.planId,subId:subId})
+              console.log(data);
+              this.teacherData=data.rows;
+              console.log(this.teacherData);
             },
+            //返回
             back(){
                 this.$router.go(-1)
             },
-            teacherDelete(){
-                const dataSource = [...this. teacherData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this. teacherData= dataSource
+            //删除老师
+            async teacherDelete(id){
+                let {data}=await this.$api.schedule.sortClass.classDeleteTeacher({ids:[id]})
+                console.log(data);
+                if(data&&data.success){
+                    message.info('删除成功');
+                    this.teacherList(this.subId);
+                }else{
+                    message.info('删除失败');
+                }
             },
-            allClear(){
-                this. teacherData= []
+            //清空教师
+            async allClear(){
+                console.log(this.subId);
+                let {data}=await this.$api.schedule.sortClass.clearTeacher({planId:this.planId,subId:this.subId});
+                console.log(data);
+                this.teacherList(this.subId);
             },
             //添加弹框的保存
-            async handleAdd() {
-                this.loading = true;
-                setTimeout(() => {
-                    this.addVisit=false
-                    this.loading =false
-                },20)
-                const {  teacherCount, teacherData} = this;
-                const newData = {
-                    teacherCount:teacherCount,
-                    teacherName:'赵卫民',
-                };
-                this.teacherData= [...teacherData, newData];
-                this. teacherCount =  teacherCount + 1;
+            handleAdd() {
                 //获取添加老师列表信息
-                this.editText=this.dataSource.findIndex(item=>item.subId==id)
-                let {data}= await this.$api.schedule.sortClass.classGetTeacherlist({planId:this.planId,subId:this.dataSource.subId});
-                console.log(data);
+                const {  teacherCount, teacherData} = this;
+                console.log(this.checkName);
+                if(this.checkName===" "){
+                    alert("没有选择老师，请选择老师！")
+                }else{
+                    const newData = {
+                        capacity:0,
+                        teacherId:this.checkId,
+                        schWxUserEntity:{
+                            userName:this.checkName,
+                        },
+                    };
+                    this.teacherData= [...teacherData, newData];
+                }
             },
+            //关闭添加弹框
+            handleCancel() {
+                this.addVisit=false;
+            },
+            //选择老师
+            onCheck(check){
+                console.log(this.treeData);
+                console.log(check);
+                let checkedValue=[];
+                for(let i=0;i<this.treeData.length;i++){
+                    let item=this.treeData[i].children;
+                    for(let j=0;j<item.length;j++){
+                        for(let k=0;k<check.length;k++){
+                            if(item[j].key===check[k]){
+                                this.checkName=item[j].title;
+                                this.checkId=item[j].key;
+                            }
+                        }
+                    }
 
-            changeCellStyle(){},
-            onCheck(){},
-            onSelect(){},
-
+                };
+                console.log(this.checkName);
+            },
+            //保存所有数据
+            async saveAll(){
+                let pushData=[];
+                for(let i in this.dataSource){
+                    pushData[i]={
+                        id:this.dataSource[i].id,
+                        classNum:Number(this.dataSource[i].classNum) ,
+                        average:this.dataSource[i].average,
+                        maxNum:Number(this.dataSource[i].maxNum) ,
+                        lessonNum:Number(this.dataSource[i].lessonNum) ,
+                    }
+                }
+                console.log(pushData);
+                let addData={
+                    classroomNum:"10",
+                    scheduleCourseEntities:pushData
+                }
+                let {data}=await this.$api.schedule.sortClass.classAutoAlter(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.info("保存成功");
+                    this.lookAuto();
+                }else{
+                    message.info("保存失败");
+                }
+            },
+            //根据教师姓名查找老师信息
+            // async inputTeacher(){
+            //     // //只根据姓名查找教师信息
+            //     let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({teacherName:this.form.teacherName});
+            //     console.log(this.treeData);
+            //     for(let i in this.treeData){
+            //         for (let j in this.treeData.children){
+            //             if(this.form.teacherName==this.treeData[i].children[j].title){
+            //                 this.checkedKeys==this.form.teacherName;
+            //                 this.checkName==this.form.teacherName;
+            //             }
+            //         }
+            //     }
+            //     console.log(allTeacherData);
+            // },
         }
     };
 </script>
@@ -369,14 +518,6 @@
     .link-font-color{
         color: #0000ff;
     }
-    .info{
-        height: 50px;
-        width: 100%;
-        margin: 0px 0px 10px 0px;
-        padding: 10px 5px;
-        background-color: white;
-        border-radius: 5px;
-    }
     .table-bg{
         background-color: white;
         margin: 0px 0px 20px 0px;
@@ -387,10 +528,5 @@
         border:1px solid black;
         border-radius: 5px;
         width:6em;
-    }
-    /deep/ Table {
-        .ant-table-thead > tr > th {
-            background-color: #f4f4f4;
-        }
     }
 </style>

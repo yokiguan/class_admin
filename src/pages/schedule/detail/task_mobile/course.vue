@@ -31,7 +31,7 @@
                         <a-col :span="5"><button style="background-color: #19b294;color: white;height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 150px">删除已发布课表</button></a-col>
+                        width: 150px" @click="deletPublic">删除已发布课表</button></a-col>
                         <button style="background-color: #19b294;color: white;height: 40px;border: none;
                         border-radius: 5px;width: 150px" @click="back">返回</button>
                     </a-row>
@@ -133,8 +133,9 @@
                 planData:"",
                 planId:"",
                 scheduleTaskId:"",
-                showTable:true,
+                showTable:false,
                 checkedKeys:[],
+                allData:[],
             };
         },
         created() {
@@ -165,7 +166,6 @@
               let {data:{result,success}}=await this.$api.schedule.classTask.getCourseList({planId:this.planId,scheduleTaskId:this.scheduleTaskId});
               console.log(result);
               this.treeData=[];
-              let pushData=[];
               for(let i=0;i<result.length;i++){
                   let numberTree={};
                   numberTree.title=result[i].subChildName+result[i].classNumId;
@@ -188,11 +188,52 @@
                     console.log(classId);
                     this.courseLookInfo(subChildId,classId);
                 }
+                this.showTable=true;
             },
             //课程课表查看
             async courseLookInfo(subChildId,classId){
-              let {data}=await this.$api.schedule.classTask. courseLook({planId:this.planId,scheduleTaskId:this.scheduleTaskId,subChildId:subChildId,classId:classId});
-              console.log(data);
+                let {data:{result,success}}=await this.$api.schedule.classTask. courseLook({planId:this.planId,scheduleTaskId:this.scheduleTaskId,subChildId:subChildId,classId:classId});
+                console.log(result);
+                this.allData=result.subjectCurriDtoList;
+                console.log(this.allData);
+                let dataSource=[];
+                for(let i=0;i<this.allData.length;i++){
+                    let position=eval(this.allData[i].position);
+                    const getInfo=(dataItem,sourceItem={})=>{
+                        if(!sourceItem) sourceItem={};
+                        // let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classroomName + ')';
+                        let content = dataItem.subChildName +dataItem.classNumId+"_"+dataItem.teacherName+'(' +  dataItem.classroomName + ')'+"共"+dataItem.classStuNum+"人";
+                        const column=eval(dataItem.position)[1];
+                        switch (column) {
+                            case 1:
+                                sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                break;
+                            case 2:
+                                sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                break;
+                            case 3:
+                                sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                break;
+                            case 4:
+                                sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                break;
+                            case 5:
+                                sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                break;
+                        }
+                        return sourceItem
+                    };
+                    dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                }
+                console.log(dataSource);
+                this.tableData=dataSource;
+                console.log(this.tableData);
+                //编号
+                for(let i=0;i<this.tableData.length;i++){
+                    this.tableData[i].key=i+1;
+                }
+                console.log(this.tableData);
+
             },
             //手动调课
             changeCourse(){
@@ -212,6 +253,14 @@
             //按场地查看
             placeLook(){
                 this.$router.push(`/schedule/detail/task_mobile/room?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+            },
+            //删除已发布课表
+            async deletPublic(){
+                let {data}=await this.$api.schedule.classTask.reBack({planId:this.planId,scheduleTaskId:this.scheduleTaskId});
+                console.log(data);
+                if(data&&data.success){
+                    alert("删除已发布课表成功");
+                }
             },
             //返回
             back(){
@@ -250,8 +299,6 @@
     .right{
         border-radius: 5px;
         width: 81%;
-        margin-top: -35px;
-
     }
     .title{
         width: 100%;
@@ -259,7 +306,6 @@
         height: 170px;
         padding: 20px 25px;
         border-radius: 10px;
-        margin-top: 35px;
         margin-bottom: 50px;
     }
     .table-bg{

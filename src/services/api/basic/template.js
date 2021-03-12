@@ -10,7 +10,6 @@ const curriculumTemplates = {
     fetchList(){
         return axios.get(`${baseUrl}/getDataList.json`);
     },
-
     // 查询指定课表模板信息，用于教室规则等的课表模板选择，编辑模板前，先查询模板信息，利用模板id
     fetchTemplate(params){
         return axios.get(`${baseUrl}/getDataInfo.json`,{params});

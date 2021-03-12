@@ -1,6 +1,6 @@
 import startChoose from "./startChoose";
 const studentChooseCourse = {
-    studentChooseCourse: startChoose,
+    startChoose,
 }
 
 export default studentChooseCourse

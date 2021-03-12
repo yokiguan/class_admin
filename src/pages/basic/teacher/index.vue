@@ -27,21 +27,17 @@
         </a-col>
       </a-row>
     </a-form-model>
-    <div>
-      <a-table
-              :rowKey="'teacherId'"
+    <a-table :rowKey="'teacherId'"
               :columns="columns"
               :pagination="pagination"
               :dataSource="dataSource"
               @change="handleTableChange">
-        <div slot="operation" slot-scope="text,record">
-          <span @click="edit(record.teacherId)">编辑</span>|
+        <div slot="operation" slot-scope="text,record,index">
+          <span @click="edit(index)">编辑</span>|
           <span @click="settingRule">规则设置</span>
         </div>
       </a-table>
-    </div>
-    <a-modal
-            :visible='editVisit'
+    <a-modal :visible='editVisit'
             width="600px"
             :closable="false">
       <template slot="footer">
@@ -50,28 +46,27 @@
       </template>
       <a-form-model :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" style="margin-left: 70px">
         <a-form-model-item label="老师姓名">
-          <a-input style="width: 300px" disabled="disabled" v-model="form.teacherName1"/>
+          <a-input style="width: 300px" disabled="disabled" v-model="form.teaName"/>
         </a-form-model-item>
         <a-form-model-item label="联系电话">
           <a-input style="width: 300px" disabled="disabled" v-model="form.tel"/>
         </a-form-model-item>
         <a-form-model-item label="是否是班主任" style="margin-left: 30px">
-          <a-input v-model="form.type" disabled="disabled" style="width: 270px"></a-input>
-<!--          <a-radio-group v-model="form.type" disabled="disabled" style="margin-left: 40px">-->
-<!--            <a-radio value="0">是</a-radio>-->
-<!--            <a-radio value="1">否</a-radio>-->
-<!--          </a-radio-group>-->
+          <a-input v-model="form.type" disabled="disabled" style="width: 270px"/>
         </a-form-model-item>
-        <a-form-item label="所授课程">
-          <a-tree-select v-model="form.addSub"
+        <a-form-model-item label="所授课程">
+<!--          :checkedKeys="checkedKeys"-->
+          <a-tree-select v-model="form.course"
                          placeholder="请选择所授课程"
                          style="width: 275px"
-                         :checkedKeys="checkedKeys"
-                         :tree-data="treeData"
+                         @change="selectCourse"
                          tree-checkable
+                         :tree-data="treeData"
+                         :checkStrictly="true"
+                         :defaultCheckedKeys="checkedKeys"
                          :show-checked-strategy="SHOW_PARENT">
           </a-tree-select>
-        </a-form-item>
+        </a-form-model-item>
       </a-form-model>
     </a-modal>
   </a-card>
@@ -149,7 +144,6 @@
     }
   ]
   export default {
-    name: 'teacher',
     data () {
       return {
         columns: columns,
@@ -159,9 +153,12 @@
         teacherNameData:[],
         editVisit:false,
         loading:false,
+        value:"",
         treeData:[],
-        SHOW_PARENT,
         checkedKeys:[],
+        courseInfo:[],
+        SHOW_PARENT,
+        gradeIds:[],
         pagination:{
           total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
           pageSize:20,    //默认每页显示的条数
@@ -178,16 +175,17 @@
         },
         editText:-1,
         form:{
+          teaName:"",
         },
       }
     },
     async created(){
       //获取年级信息接口
       let {data:{result,success}}=await this.$api.basic.grade.fetchList();
-      console.log(result);
+      // console.log(result);
       //获取级部
       this.adminData=result;
-      console.log(this.adminData);
+      // console.log(this.adminData);
       this.allTeacher();
     },
     methods: {
@@ -214,9 +212,9 @@
       async allTeacher(){
         //获取所有教师信息
         let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page});
-        console.log(allTeacherData);
+        // console.log(allTeacherData);
         this.dataSource=allTeacherData.rows;
-        console.log(this.dataSource)
+        // console.log(this.dataSource)
         const pagination={...this.pagination};
         pagination.total=allTeacherData.total;
         this.pagination=pagination;
@@ -247,7 +245,9 @@
       },
       //年级监听
        async handleGradeChange(){
-        // console.log(this.form.gradeId)
+         this.gradeIds=this.form.gradeId;
+         console.log(this.gradeIds);
+        console.log(this.form.gradeId)
         for (let i=0;i<this.gradeData.length;i++){
           if(i==this.form.gradeId){
             console.log(this.adminData[this.form.adminId].adminId)
@@ -284,28 +284,60 @@
       },
       //获取课程信息
       async edit(editId){
-        this.getCourseInfo();
-        this.form.addSub=[];
+        console.log(editId);
+        console.log(this.dataSource[editId]);
+        this.treeData=[];
         this.checkedKeys=[];
-        console.log('selectData',this.treeData,this.dataSource);
-        let selectData = this.dataSource.filter(item => item.teacherId=== editId)
-        console.log(selectData);
-        selectData[0].subjectTeacherDtos.forEach((item)=>{
-          this.form.addSub.push(item.subName);
-        })
-        // selectData[0].
+        this.getCourseInfo();
         this.editVisit=true;
-        this.editText=this.dataSource.findIndex(item=>item.teacherId==editId);
-          console.log(this.editText);
-          this.form.teacherName1=this.dataSource[this.editText].teacherName;
-          this.form.tel=this.dataSource[this.editText].tel;
-          console.log(this.dataSource[this.editText].teacherRoleDtos);
-          if(this.dataSource[this.editText].teacherRoleDtos.length==0){
-            this.form.type='否';
+        this.editText=editId,
+        console.log(this.dataSource);
+        this.form.teaName=this.dataSource[editId].teacherName;
+        this.form.tel=this.dataSource[editId].tel;
+        this.dataSource[editId].teacherRoleDtos.length===0?this.form.type='否':this.form.type='是';
+        let pushData=[]
+        console.log(this.gradeIds)
+        let list=[...this.dataSource[editId].subjectTeacherDtos];
+        list.forEach(item=>{
+          console.log(item);
+          pushData.push(item.subName);
+          this.gradeIds=item.gradeId;
+          console.log(this.gradeIds);
+          // console.log(pushData);
+        })
+        this.value=pushData.toString();
+        console.log(this.value);
+      },
+      //选择课程信息
+      selectCourse(allInfo){
+        console.log(this.checkedKeys);
+        let courseInfo=[];
+        // console.log(this.treeData);
+        for(let i=0;i<allInfo.length;i++){
+          // console.log(allInfo[i]);
+          for(let j=0;j<this.treeData.length;j++){
+            let teachData=this.treeData[i].children;
+            // console.log('teacherData',teachData);
+            for(let k=0;k<teachData.length;k++){
+              let couData=teachData[k].children;
+              for(let w in couData){
+                if(couData[w].key===allInfo[i]){
+                  courseInfo.push(couData[w].key)
+                }
+              }
+            }
           }
-          else{
-            this.form.type='是'
-          }
+        }
+        console.log(courseInfo);
+        let gradeId=[];
+        console.log(courseInfo);
+        courseInfo.forEach(item=>{
+          gradeId.push((item || " ").split(',')[0])
+          this.courseInfo.push((item || " ").split(',')[1])
+        }),
+                this.gradeIds=gradeId;
+        // console.log(gradeId);
+        console.log(this.courseInfo);
       },
       //获取所属课程信息
       async getCourseInfo(editId){
@@ -315,8 +347,8 @@
         for(let i in result){
           //第一层(级部）
           let adminTree={};
-          adminTree.title=result[i].adminName;
-          adminTree.key=adminTree.value=result[i].adminId;
+          adminTree.title=adminTree.value=result[i].adminName;
+          adminTree.key=result[i].adminId;
           // console.log(result[i].adminGrades)
           if(result[i].adminGrades.length){
             //第二层(年级）
@@ -324,16 +356,16 @@
             for(let j=0;j<result[i].adminGrades.length;j++){
               let gradeItem=result[i].adminGrades[j];
               let childData={}
-              childData.key=gradeItem.gradeId;
-              childData.title=childData.value=gradeItem.gradeName;
+              childData.key=childData.value=gradeItem.gradeId;
+              childData.title=gradeItem.gradeName;
               // console.log(gradeItem.subjectEntities);
               if(gradeItem.subjectEntities.length){
                 //第三层(主课程)
                 childData.children=[];
                 for(let k in gradeItem.subjectEntities){
                   let mainCourse={};
-                  mainCourse.key=result[i].adminId+gradeItem.gradeId+gradeItem.subjectEntities[k].subChildId;
-                  mainCourse.title=mainCourse.value=gradeItem.subjectEntities[k].name;
+                  mainCourse.key=mainCourse.value=gradeItem.gradeId+','+gradeItem.subjectEntities[k].subChildId;
+                  mainCourse.title=gradeItem.subjectEntities[k].name;
                   childData.children.push(mainCourse)
                 }
               }
@@ -350,16 +382,26 @@
       },
       //编辑信息的保存
       async handleOk(){
+        console.log(this.gradeIds);
         this.editVisit=false;
-        let addData={
-          teacherId:this.dataSource[this.editText].teacherId,
-          gradeSubjectDtoList:[{
-            // gradeId:
-            // subIds:[this.form.addSub],
-          }]
+        let addData={};
+        console.log(this.courseInfo);
+        for(let i in this.dataSource){
+           addData={
+            teacherId:this.dataSource[this.editText].teacherId,
+            gradeSubjectDtoList:[{
+              gradeId:this.gradeIds[i].toString(),
+              subIds:this.courseInfo,
+            }]
+          }
         }
-        let {data:saveData}=await this.$api.basic.teacher.saveTeacherInfo();
+        console.log(addData);
+        let {data}=await this.$api.basic.teacher.saveTeacherInfo(addData);
         console.log(data);
+        if(data&&data.success){
+          alert("编辑老师成功");
+          this.handleGradeChange();
+        }
       },
       //编辑信息的取消
       handleCancel(){

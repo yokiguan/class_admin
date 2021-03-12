@@ -30,7 +30,7 @@
                         <a-col :span="3"><button style="background-color: #19b294;color: white;height: 40px;
                         border: none;
                         border-radius: 5px;
-                        width: 150px">删除已发布课表</button></a-col>
+                        width: 150px" @click="deletPublic">删除已发布课表</button></a-col>
                         <button style="background-color: #19b294;color: white;height: 40px;border: none;
                         border-radius: 5px;width: 150px" @click="back">返回</button>
                     </a-row>
@@ -139,6 +139,7 @@
                 treeData:[],
                 allData:[],
                 showTable:false,
+                classroom:"",
 
             };
         },
@@ -197,7 +198,7 @@
                 }
             },
             //教室选择
-            onCheck(checkedKeys, info) {
+            onCheck(checkedKeys) {
                 let classroomId=[];
                 this.checkedKeys.forEach((item,index)=>{
                     console.log(item);
@@ -227,7 +228,17 @@
                 console.log(classroomId);
                 this.checkedKeys=classroomId;
                 console.log(this.checkedKeys);
+                console.log(this.treeData);
+                for(let i=0;i<this.treeData.length;i++){
+                    let teacherData=this.treeData[i].children;
+                    for(let j=0;j<teacherData.length;j++){
+                        if(teacherData[j].key===this.checkedKeys.toString()){
+                            this.classroom=teacherData[j].title;
+                        }
+                    }
+                }
                 this.classroomInfo();
+                // console.log( this.classroom)
                 this.showTable=true;
             },
             //教室设置查看
@@ -241,7 +252,7 @@
                   const getInfo=(dataItem,sourceItem={})=>{
                       if(!sourceItem) sourceItem={};
                       // let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classroomName + ')';
-                      let content = dataItem.subChildName +dataItem.classNumId;
+                      let content = dataItem.subChildName +dataItem.classNumId+"_"+dataItem.teacherName+'(' +  this.classroom + ')'+"共"+dataItem.classStuNum+"人";
                       const column=eval(dataItem.position)[1];
                       switch (column) {
                           case 1:
@@ -293,6 +304,14 @@
             //按科目查看
             subjectLook(){
                 this.$router.push(`/schedule/detail/task_mobile/course?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+            },
+            //删除已发布课表
+            async deletPublic(){
+                let {data}=await this.$api.schedule.classTask.reBack({planId:this.planId,scheduleTaskId:this.scheduleTaskId});
+                console.log(data);
+                if(data&&data.success){
+                    alert("删除已发布课表成功");
+                }
             },
             //返回
             back(){

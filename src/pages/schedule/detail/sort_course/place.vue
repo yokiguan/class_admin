@@ -166,7 +166,7 @@
                 let {data:{result,success}}=await this.$api.schedule.arrangeClass.getClass({planId:this.planId})
                 console.log(result);
                 this.dataSource=result;
-                console.log(this.dataSource);
+                // console.log(this.dataSource);
             },
             //添加教室
             async addClass() {

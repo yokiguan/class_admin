@@ -53,16 +53,8 @@
                             :bordered="true">
                         <a-input slot="add_times" slot-scope="timeText,timeRecord" v-model="timeText" @blur="changTimes(timeRecord.id,timeText)"/>
                         <a-input slot="add_datas" slot-scope="dayText,dayRecord" v-model="dayText" @blur="changDays(dayRecord.id,dayText)"/>
-                        <a-button slot="adds_times" slot-scope="timesText,timesRecord" style="background-color: #00ccff;color:white;" @click="add_time(timesRecord.id,timesText)">添加时间段</a-button>
-                        <a-button slot="adds_datas" slot-scope="daysText,daysRecord" style="background-color: #00ccff;color:white;" @click="add_class(daysRecord.id,daysText)">添加教室</a-button>
-                        <template slot="action" slot-scope="text,record" style="color:blue">
-                            <a-popconfirm
-                                    v-if="tableData.length"
-                                    title="确认删除?"
-                                    @confirm="() => onDelete(record.id)">
-                                <a href="javascript:;">删除</a>
-                            </a-popconfirm>
-                        </template>
+                        <a-button slot="adds_times" slot-scope="timesText,timesRecord,timesIndex" style="background-color: #00ccff;color:white;" @click="add_time(timesIndex)">添加时间段</a-button>
+                        <a-button slot="adds_datas" slot-scope="daysText,daysRecord,daysIndex" style="background-color: #00ccff;color:white;" @click="add_class(daysIndex)">添加教室</a-button>
                     </a-table>
                     <button style="background-color: #00ccff;
                 border: none;color: white;
@@ -86,27 +78,27 @@
                 </template>
                 <a-form-model style="margin-top: 30px" :form="form" :rules="rules" ref="ruleForm" :label-col="{ span:4}" :wrapper-col="{ span: 18}">
                     <a-form-model-item label="类型" ref="type" prop="type">
-                        <a-select placeholder="不使用/优先使用/必须使用" v-model="form.type">
-                            <a-select-option value="不使用">不使用</a-select-option>
-                            <a-select-option value="优先使用">优先使用</a-select-option>
-                            <a-select-option value="必须使用">必须使用</a-select-option>
+                        <a-select placeholder="不使用/优先使用/必须使用" :default-value="type" @change="changeTimeType">
+                            <a-select-option value="0">不使用</a-select-option>
+                            <a-select-option value="1">优先使用</a-select-option>
+                            <a-select-option value="2">必须使用</a-select-option>
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择天" ref="day" prop="day">
-                        <a-select placeholder="星期一" v-model="form.day">
-                            <a-select-option value="one">星期一</a-select-option>
-                            <a-select-option value="two">星期二</a-select-option>
-                            <a-select-option value="three">星期三</a-select-option>
-                            <a-select-option value="four">星期四</a-select-option>
-                            <a-select-option value="five">星期五</a-select-option>
-                            <a-select-option value="six">星期六</a-select-option>
-                            <a-select-option value="seven">星期日</a-select-option>
+                        <a-select placeholder="星期一" :default-value="day" @change="changeDays">
+                            <a-select-option value="星期一">星期一</a-select-option>
+                            <a-select-option value="星期二">星期二</a-select-option>
+                            <a-select-option value="星期三">星期三</a-select-option>
+                            <a-select-option value="星期四">星期四</a-select-option>
+                            <a-select-option value="星期五">星期五</a-select-option>
+                            <a-select-option value="星期六">星期六</a-select-option>
+                            <a-select-option value="星期日">星期日</a-select-option>
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择节">
                         <a-checkbox-group
-                                v-model="form.checkValue"
-                                name="checkboxgroup"
+                                @change="chooseTime"
+                                :default-value="checkValue"
                                 :options="options"
                                 style="margin-left: 20px;padding-left: 20px;padding-bottom: 10px"/>
                     </a-form-model-item>
@@ -123,23 +115,23 @@
                 </template>
                 <a-form-model style="margin-top: 30px" :form="form" :rules="rules" ref="ruleForm" :label-col="{ span:4}" :wrapper-col="{ span: 18}">
                     <a-form-model-item label="类型" ref="classroomType" prop="classroomType">
-                        <a-select placeholder="不使用/优先使用/必须使用" v-model="form.classroomType">
-                            <a-select-option value="不使用">不使用</a-select-option>
-                            <a-select-option value="优先使用">优先使用</a-select-option>
-                            <a-select-option value="必须使用">必须使用</a-select-option>
+                        <a-select placeholder="不使用/优先使用/必须使用" :default-value="classroomType" @change="changeType">
+                            <a-select-option value="0">不使用</a-select-option>
+                            <a-select-option value="1">优先使用</a-select-option>
+                            <a-select-option value="2">必须使用</a-select-option>
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择教学楼" ref="building" prop="building">
                         <a-select v-model="form.building" :default-value="buildings[0].name" placeholder="请选择教学楼" @change="changeBuilding">
-                            <a-select-option v-for="(building,index) in this.buildings" :key="index" :value="building.name">
+                            <a-select-option v-for="(building,index) in this.buildings" :key="index" :value="building.buildingId">
                                 {{ building.name}}
                             </a-select-option>
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择教室">
                         <a-checkbox-group
-                                v-model="form.checkValue"
-                                name="checkboxgroup"
+                                :default-value="classroomValue"
+                                @change="selectClassroom"
                                 :options="classOptions"
                                 style="margin-left: 20px;padding-left: 20px;padding-bottom: 10px"/>
                     </a-form-model-item>
@@ -167,32 +159,24 @@
             align:'center',
         },{
             title:'每周课时',
-            dataIndex:'lessonNum',
+            dataIndex:'lessonWeekly',
             align:'center',
             scopedSlots: { customRender: 'add_times' }
         },{
             title:'最小上课天数',
-            dataIndex:'minNum',
+            dataIndex:'lessonMin',
             align:'center',
             scopedSlots: { customRender: 'add_datas' }
         },{
             title:'时间设置',
-            dataIndex:'setting_time',
-            key:'setting_time',
+            dataIndex:'timeSetting',
             align:'center',
             scopedSlots: { customRender: 'adds_times' }
         },{
             title:'教室设置',
-            dataIndex:'setting_class',
-            key:'setting_class',
+            dataIndex:'classroomSetting',
             align:'center',
             scopedSlots: { customRender: 'adds_datas'}
-        },{
-            title:'操作',
-            dataIndex:'opt',
-            key:'opt',
-            align:'center',
-            scopedSlots: { customRender: 'action' }
         }];
     const activity = [
         { name: '上午',options:[0,1,2,3,4], value: 'morning' },
@@ -216,10 +200,17 @@
                 currId:"",
                 form:{},
                 rules:{},
-                timesValue:"",
+                classroomIndex:"",
                 timesIndex:"",
                 daysValue:"",
                 daysIndex:"",
+                classroomValue:[],
+                checkValue:[],
+                classroomType:"",
+                classroomId:[],
+                timeId:[],
+                type:"",
+                day:"",
             }
         },
         async created() {
@@ -236,21 +227,10 @@
         methods:{
             //课程设置信息查看
             async courseLookInfo(){
-                let {data}=await this.$api.schedule.arrangeClass.getList({planId:this.planId})
-                this.tableData=data.rows;
-                // console.log(this.tableData);
-                for(let i=0;i<this.tableData.length;i++){
-                    this.tableData[i].timesSetting=[{
-                        timeType:null,
-                        weekday:"",
-                        period:null
-                    }];
-                    this.tableData[i].classroomSetting=[{
-                        classroomType: null,
-                        buildingId:"",
-                        classroomId:"",
-                    }];
-                }
+                let {data:{result,success}}=await this.$api.schedule.arrangeClass.getList({planId:this.planId});
+                console.log(result);
+                this.tableData=result;
+                console.log(this.tableData);
                 console.log(this.tableData);
                 this.currId=this.tableData[0].currId;
                 // console.log(this.currId);
@@ -259,18 +239,69 @@
             async classroomAndBuilding(){
                 let {data:buildings}=await this.$api.basic.building.fetchList();
                 this.buildings =buildings.rows
+                console.log(this.buildings);
+            },
+            //修改教室类型
+            changeType(info){
+              console.log(info);
+              this.classroomType=info;
+              console.log(this.classroomType);
+            },
+            //选择教室
+            selectClassroom(info){
+                console.log(info);
+                this.classroomId=info;
+                console.log(this.classroomId);
+            },
+            //修改时间类型
+            changeTimeType(info){
+                this.type=info;
+                console.log(this.type);
+            },
+            //修改日期
+            changeDays(info){
+                this.day=info;
+                console.log(this.day);
+            },
+            //选择节次数
+            chooseTime(info){
+                this.timeId=info;
+                console.log(this.timeId);
             },
             //选择时间段
-            add_time(index,value) {
+            add_time(index) {
                 this.chooseTimeVisit=true;
                 this.modalInfo();
                 this.timesIndex=index;
-                this.timesValue=value;
+                // console.log(index);
+                if(this.tableData[index].timeSetting.timeType===0){
+                    this.type="不使用";
+                }else if(this.tableData[index].timeSetting.timeType===1){
+                    this.type="优先使用";
+                }else{
+                    this.type="必须使用";
+                };
+                this.day=this.tableData[index].timeSetting.weekday;
+                this.checkValue=this.tableData[index].timeSetting.period
+                console.log(this.checkValue);
             },
             //添加教室
-            add_class(){
+            add_class(index){
                 this.addClassroomVisit=true;
                 this.classroomAndBuilding();
+                this.classroomIndex=index;
+                // console.log(this.classroomIndex);
+                if(this.tableData[index].classroomSetting.classroomType===0){
+                    this.classroomType="不使用";
+                }else if(this.tableData[index].classroomSetting.classroomType===1){
+                    this.classroomType="优先使用";
+                }else{
+                    this.classroomType="必须使用";
+            };
+                this.form.building=this.tableData[index].classroomSetting.buildingId;
+                this.classroomValue=[this.tableData[index].classroomSetting.classroomId];
+                console.log(this.classroomValue);
+                this.changeBuilding();
             },
             //获取节次时间
             async modalInfo() {
@@ -292,11 +323,12 @@
             },
             //选择教室
             async changeBuilding(){
-                console.log(this.form.building);
+                // console.log(this.form.building);
+                this.classOptions=[];
                 let {data} = await this.$api.basic.classroom.fetchRoomList();
                 console.log(data.result);
                 for(let i=0;i<data.result.length;i++){
-                    if(this.form.building==data.result[i].building_name){
+                    if(this.form.building==data.result[i].building_Id){
                         let floorData=data.result[i].floor_list;
                         console.log(floorData);
                         for(let j=0;j<floorData.length;j++){
@@ -305,7 +337,7 @@
                             for(let k=0;k<classData.length;k++){
                                 let pushData={
                                     label:classData[k].classroom_name,
-                                    value:classData[k].classroom_name,
+                                    value:classData[k].room_id,
                                 }
                                 this.classOptions.push(pushData);
                             }
@@ -316,18 +348,24 @@
             },
             //保存时间段
             handleOkTime(){
+                // console.log(this.form.type);
+                // console.log(this.form.day);
+                // console.log(this.form.checkValue);
+                let classroomType=null;
+                if(this.type==="不使用"){
+                    classroomType=0;
+                }else if(this.type==="优先使用"){
+                    classroomType=1;
+                }else{
+                    classroomType=2;
+                }
               this.chooseTimeVisit=false;
-                this.tableData.map(item=>{
-                    console.log(item);
-                //     if(item.id === this.timesIndex){
-                //         let addData={
-                //             item.timeSetting[0].peroid:
-                //         }
-                //
-                //          return item.timeSetting
-                //     }
-                })
-                // console.log(this.tableData);
+                this.tableData[this.timesIndex].timesSetting={
+                    timeType:classroomType,
+                    weekday:this.day,
+                    period:this.timeId.toString(),
+                }
+                console.log(this.tableData[this.timesIndex].timesSetting);
             },
             //取消选择时间段
             handleCancelTime(){
@@ -336,6 +374,23 @@
             //保存教室
             handleOkClass(){
               this.addClassroomVisit=false;
+              console.log(this.form.building);
+              console.log(this.classroomId);
+              console.log(this.classroomType)
+              let classroomType=null;
+                if(this.classroomType==="不使用"){
+                    classroomType=0;
+                }else if(this.classroomType==="优先使用"){
+                    classroomType=1;
+                }else{
+                    classroomType=2;
+                }
+                this.tableData[this.classroomIndex].classroomSetting={
+                    classroomType:classroomType,
+                    buildingId:this.form.building,
+                    classroomId:this.classroomId.toString(),
+                }
+                console.log(this.tableData[this.classroomIndex].classroomSetting);
             },
             //取消选择教室
             handleCancelClass(){
@@ -400,6 +455,7 @@
               this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`);
               this.saveCourse();
             },
+            //获取保存接口
             async saveCourse(){
                 let pushData=[];
                 for(let i=0;i<this.tableData.length;i++){
@@ -408,27 +464,25 @@
                         planId:this.planId,
                         lessonWeekly:this.tableData[i].lessonNum,
                         lessonMin:this.tableData[i].minNum,
-                        timesSetting:[{
-                            // timeType:
-                            // weekday:
-                            // period:
-                        }],
-                        classroomSetting:{
-                            // classroomType:
-                            // buildingId:
-                            // classroomId:
-                        },
+                        timesSetting:this.tableData[i].timesSetting,
+                        classroomSetting:this.tableData[i].classroomSetting
                     }
                 }
-
+                console.log(pushData);
+                let addData={
+                    planId:this.planId,
+                    classTeacherInfo:pushData,
+                }
+                let {data}=await this.$api.schedule.arrangeClass.saveCoursesetting(addData);
+                console.log(data);
             },
-            //删除教室
-            onDelete(deleId){
-                this.deleteText=this.tableData.findIndex(item=>item.id===deleId);
-                console.log(this.deleteText);
-                this.tableData.splice(this.deleteText,1);
-                console.log(this.tableData);
-            },
+            // //删除教室
+            // onDelete(deleId){
+            //     this.deleteText=this.tableData.findIndex(item=>item.id===deleId);
+            //     console.log(this.deleteText);
+            //     this.tableData.splice(this.deleteText,1);
+            //     console.log(this.tableData);
+            // },
             //返回
             back(){
                 this.$router.go(-1)

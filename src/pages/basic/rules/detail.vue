@@ -108,7 +108,7 @@
           this.checkedKeys.push(item.subChildId)
         })
         //获取课程信息
-        let {data}=await this.$api.basic.subject.fetchSubjectList()
+        let {data}=await this.$api.basic.subject.fetchSubjectList({subType:0})
         console.log(data.result);
         for(let i in data.result){
           //第一层(级部）

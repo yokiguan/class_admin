@@ -27,16 +27,14 @@ const classroom = {
     fetchRuleList(params){
      return axios.get(`${ruleUrl}/getDataListByCurrId.json`,{params});
     },
-    // 场地规则项查看
+    // 场地规则项查看(已调)
     fetchRule(params){
         return axios.get(`${baseRoomUrl}/getDataInfoJoint.json`,{params})
     },
-
-    // 场地规则删除
+    // 场地规则删除(已调）
     deleteRule(params){
         return axios.post(`${baseRoomUrl}/deleteDataJoint.json`,params);
     },
-
     // 场地规则新增编辑(已调）
     saveRule(params){
         return axios.post(`${ruleUrl}/saveDataJoint.json`,params)
@@ -46,5 +44,4 @@ const classroom = {
         return axios.get(`${ruleUrl}/getClassroomList.json`,params)
     }
 }
-
 export default classroom;

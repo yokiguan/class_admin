@@ -23,7 +23,7 @@
                      :data-source="dataSource"
                      :bordered="true"
                      :pagination="false">
-                <div slot="action" slot-scope="scheduleTeacherClassEntities">
+                <div slot="action" slot-scope="scheduleTeacherClassEntities,index1">
                     <template v-if="scheduleTeacherClassEntities.length">
                         <li v-for="(s, index) in scheduleTeacherClassEntities" :key="index" class="situation">
                             <a-row>
@@ -34,7 +34,7 @@
                                 </a-col>
                                 <a-col  :span="4"><span>{{s.number}}</span></a-col>
                                 <a-col  :span="4"><a style="color:blue" @click="edit(s.id)" type="dashed">修改</a></a-col>
-                                <a-col  :span="4"><a style="color:red" @click="onDelete(s)" type="dashed">删除</a></a-col>
+                                <a-col  :span="4"><a style="color:red" @click="onDelete(s.id)" type="dashed">删除</a></a-col>
                             </a-row>
                         </li>
                     </template>
@@ -56,8 +56,7 @@
                 </a-form-model-item>
                 <a-form-model-item label="任课教师：" props="teacher" ref="teacher">
                     <a-select placeholder="请选择任课教师" v-model="form.teacherId">
-                        <a-select-option value="0">智能</a-select-option>
-                        <a-select-option value="1">赵老师</a-select-option>
+                        <a-select-option v-for="(teacher,index) in this.teacherData" :value="teacher.teacherId">{{teacher.teacherName}}</a-select-option>
                     </a-select>
                 </a-form-model-item>
             </a-form-model>
@@ -71,25 +70,21 @@
         {   title: '课程名称',
             dataIndex: 'subjectChildEntity.name',
             align:'center',
-            width:'12%',
         },
         {
             title: '总人数',
             dataIndex: 'total',
             align:'center',
-            width:'12%',
         },
         {
             title: '未分班人数',
             dataIndex: 'unscheduled',
             align:'center',
-            width:'12%',
         },
         {
             title: '分班个数',
             dataIndex: 'classNum',
             align:'center',
-            width:'12%',
         },
         {
             title: '分班情况',
@@ -99,7 +94,6 @@
         },
     ];
     export default {
-        components: {TagSelectOption, CreateModal},
         data() {
             return {
                 dataSource:[],
@@ -129,7 +123,9 @@
                         }
                     ],
                 },
-                chooseId:''
+                chooseId:'',
+                gradeId:"",
+                teacherData:[],
             };
         },
         async created() {
@@ -140,30 +136,52 @@
                 //获取单个选课计划的信息
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 console.log(result)
+                this.gradeId=result.gradeId;
                 this.planData = result.name
-                console.log(this.planData);
+                // console.log(this.planData);
             };
-            //选课分班信息查看
-            let {data}=await this.$api.schedule.sortClass.classGet({planId});
-            this.dataSource=data.rows;
-            console.log(this.dataSource);
+          this.classLookInfo();
+            this.TeacherInfo();
         },
         methods: {
-            edit (value) {
-                this.chooseId = value
+            //选课分班信息查看
+            async classLookInfo(){
+                //选课分班信息查看
+                let {data}=await this.$api.schedule.sortClass.classGet({planId:this.planId});
+                this.dataSource=data.rows;
+                console.log(this.dataSource);
+            },
+            //根据年级查询老师
+            async TeacherInfo(){
+                //根据年级信息调用接口
+                let {data}=await this.$api.basic.teacher.fetchTeacherList({gradeId:this.gradeId});
+                console.log(data);
+                console.log(data.rows);
+                for(let i=0;i<data.rows.length;i++){
+                    this.teacherData.push(data.rows[i]);
+                }
+                console.log(this.teacherData);
+            },
+            //修改
+            edit (courseId) {
+                console.log(courseId);
+                this.chooseId = courseId;
                 this.chooseSortClass = true;
-                this.form.className=this.dataSource.scheduleTeacherClassEntities.className;
-                // this.form.
             },
             //保存修改
             async handleOk(){
-                // 老师id未查询？？？？？？
                 let formData={
                     id:this.chooseId,
-                    ...this.form
+                    className:this.form.className,
+                    teacherId:this.form.teacherId,
                 }
-                let {data}=await this.$api.schedule.sortClass.classAlter(formData)
-                alert(data.result?'修改成功':'修改失败')
+                console.log(formData);
+                let {data}=await this.$api.schedule.sortClass.classAlter(formData);
+                if(data&&data.success){
+                    alert("修改成功");
+                }else{
+                    alert("修改失败");
+                }
                 this.chooseSortClass=false;
             },
             //取消
@@ -173,19 +191,17 @@
             back(){
                 this.$router.go(-1)
             },
-            async onDelete(row){
-                console.log(row.id)
-                let {data} = await this.$api.schedule.sortClass.classDelete({"ids":[row.id]});
+            async onDelete(deleId){
+                console.log(deleId)
+                let {data} = await this.$api.schedule.sortClass.classDelete({ids:[deleId]});
                 console.log(data);
-                if (data.result) {
-                    // 表示请求成功，我们刷新表格数据，重新加载  调用请求表格数据接口函数
-                    // this.getTableDat()
-                } else {
-                    this.$message.error('请求失败')
+                if (data&&data.success) {
+                    alert("删除成功");
+                    message.info("删除成功");
+                    this.classLookInfo();
+                }else{
+                    message.info("删除失败");
                 }
-                // const dataSource = [...this. dataSource];
-                // dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                // this. dataSource= dataSource
             },
             //手动分班
             manaulSortClass(){

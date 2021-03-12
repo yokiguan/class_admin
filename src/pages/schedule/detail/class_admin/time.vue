@@ -5,8 +5,7 @@
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">课节设置</a></a-breadcrumb-item>
-            </a-breadcrumb>
+                <a-breadcrumb-item><a href="">课节设置</a></a-breadcrumb-item></a-breadcrumb>
         </div>
         <div class="content">
             <a-row>
@@ -35,7 +34,7 @@
                 <a-col :span="3"><a-button type="danger" style="color:white;width: 100%;height: 30px;" @click="diasbleBtn">禁选</a-button></a-col>
                 <a-col :span="3"><a-button style="background-color:grey;width: 100px;height: 30px;color:white" @click="normalBtn">普通</a-button></a-col>
                 <a-col :span="3"><a-button type="primary" style="color:white;width: 100px;height: 30px;" @click="priorityBtn">优先</a-button></a-col>
-                <a-col :span="3"><a-button style="background-color:#0099cc;width: 100px;height: 30px;color:white" @click="classBtn">走班课</a-button></a-col>
+                <a-col :span="3"><a-button style="background-color:#0099cc;width: 100px;height: 30px;color:white">走班课</a-button></a-col>
             </a-row>
             <div class="class-table">
                 <div class="table-header"><!-- 表头 -->
@@ -97,10 +96,12 @@
                 //需要传到后端的数据
                 disableData:[],
                 priorityData:[],
+                zouBanData:[],
                 settingLessonInfo:{},
                 disable:[],
                 priority:[],
                 classData:[],
+                zouBan:[],
                 tableData:[],
                 tableHeader: ['星期一','星期二','星期三','星期四','星期五','星期六','星期天'],
                 planData:"",
@@ -123,22 +124,15 @@
                 this.planData = result.name
             }
             //课节设置查看
-            let {data:{result,success}}=await this.$api.schedule.arrangeClass.getLesson({planId})
+            let {data:{result,success}}=await this.$api.schedule.adminClass.getLesson({planId})
             console.log(result);
             this.modalId=result.currId;
             // console.log(result.lessonMax)
-            this.tableData4=result.lessonMax;
-            console.log(this.tableData4);
-            // for(let i=0;i<this.tableData4.length;i++){
-            //     this.tableData4[i].id=i;
-            //     this.selectUseMax[i]=this.tableData4[i].useMax;
-            // }
-            this.tableData4.forEach((item,i)=>{
-                item.id=i
-            })
-            // console.log(this.tableData4);
-            this.settingLessonInfo=result.settingLessonInfo;
+            this.settingLessonInfo=result.xzbSettingLessonInfo;
+            // console.log(this.settingLessonInfo);
             // console.log(this.settingLessonInfo.disable);
+            // console.log(this.settingLessonInfo.priority);
+            // console.log(this.settingLessonInfo.zouBan);
             this.modalInfo();
         },
         methods: {
@@ -256,25 +250,6 @@
                     console.log(this.priorityData);
                 }
             },
-            //设置走班课按钮
-            classBtn(){
-                let cellRow=0;
-                let cellColumn=0;
-                console.log(this.cellCheck);
-                for(let i=0;i<this.cellCheck.length;i++) {
-                    cellRow = this.cellCheck[i][0];
-                    cellColumn = this.cellCheck[i][1];
-                    // console.log(this.cellCheck[i][0])
-                    // console.log(this.cellCheck[i][1])
-                    if (this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0) {
-                        // 修改颜色为蓝色
-                        this.tableData[cellRow].rowList[cellColumn].defaultCheck = 4
-                        this.classData.push([cellRow, cellColumn])
-                    }
-                    this.setStore(this.tableData)
-                    console.log(this.classData);
-                }
-            },
             //颜色设置
             setColor(child){
                 let cellCheck = child.defaultCheck;
@@ -307,9 +282,11 @@
                 //字符串转化为数组
                 this.priority=eval(this.settingLessonInfo.priority);
                 this.disable=eval(this.settingLessonInfo.disable);
-                // console.log(this.priority);
+                this.zouBan=eval(this.settingLessonInfo.zouBan);
+                console.log(this.zouBan);
+                console.log(this.priority);
                 // console.log(this.priority.length);
-                // console.log(this.disable);
+                console.log(this.disable);
                 // console.log(this.disable.length);
                 //后端获取数据的显示
                 let getRRow=0;
@@ -317,11 +294,9 @@
                 for (let i in this.disable){
                     getRRow=this.disable[i][0];
                     getRColumn=this.disable[i][1];
-                    // console.log(getRRow);
-                    // console.log(getRRow);
-                    this.tableData[getRColumn].rowList[getRRow].defaultCheck = 1;
+                    this.tableData[getRRow].rowList[getRColumn].defaultCheck = 1;
                 }
-                this.disableData.push([getRColumn,getRRow]);
+                this.disableData.push([getRRow,getRColumn]);
                 console.log(this.disableData);
                 let getGRow=0;
                 let getGColumn=0;
@@ -330,10 +305,21 @@
                     getGColumn=this.priority[j][1];
                     // console.log(getGRow);
                     // console.log(getGColumn);
-                    this.tableData[getGColumn].rowList[getGRow].defaultCheck = 3;
+                    this.tableData[getGRow].rowList[getGColumn].defaultCheck = 3;
                 }
-                this.priorityData.push([getGColumn,getGRow]);
+                this.priorityData.push([getGRow,getGColumn]);
                 console.log(this.priorityData);
+                let getBRow=0;
+                let getBColumn=0;
+                for (let j in this.zouBan){
+                    getBRow=this.zouBan[j][0];
+                    getBColumn=this.zouBan[j][1];
+                    // console.log(getGRow);
+                    // console.log(getGColumn);
+                    this.tableData[getBRow].rowList[getBColumn].defaultCheck = 4;
+                }
+                this.zouBanData.push([getBRow,getBColumn]);
+                console.log(this.zouBanData);
             },
             //课时设置
             timesSetting(){

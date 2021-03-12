@@ -239,7 +239,6 @@
             let {data:{result,success}}=await this.$api.schedule.arrangeClass.getLesson({planId})
             console.log(result);
             this.modalId=result.currId;
-            // console.log(result.lessonMax)
             this.tableData4=result.lessonMax;
             console.log(this.tableData4);
             // for(let i=0;i<this.tableData4.length;i++){
@@ -252,7 +251,7 @@
             // console.log(this.tableData4);
             this.count=this.tableData4.length
             this.settingLessonInfo=result.settingLessonInfo;
-            // console.log(this.settingLessonInfo.disable);
+            console.log(this.settingLessonInfo.disable);
             this.modalInfo();
         },
         methods: {
@@ -386,36 +385,33 @@
             },
             //settingInfo显示
             async settingInfo(){
-                // console.log(this.tableData)
+                console.log(this.tableData)
                 //字符串转化为数组
                 this.priority=eval(this.settingLessonInfo.priority);
                 this.disable=eval(this.settingLessonInfo.disable);
-                // console.log(this.priority);
-                // console.log(this.priority.length);
-                // console.log(this.disable);
-                // console.log(this.disable.length);
+                console.log(this.disable);
                 //后端获取数据的显示
                 let getRRow=0;
                 let getRColumn=0;
                 for (let i in this.disable){
                     getRRow=this.disable[i][0];
                     getRColumn=this.disable[i][1];
-                    // console.log(getRRow);
-                    // console.log(getRRow);
-                    this.tableData[getRColumn].rowList[getRRow].defaultCheck = 1;
+                    this.tableData[getRRow].rowList[getRColumn].defaultCheck = 1;
+                    this.disableData.push([getRRow,getRColumn]);
                 }
-                this.disableData.push([getRColumn,getRRow]);
                 console.log(this.disableData);
                 let getGRow=0;
                 let getGColumn=0;
+                console.log(this.priority);
                 for (let j in this.priority){
                     getGRow=this.priority[j][0];
                     getGColumn=this.priority[j][1];
                     // console.log(getGRow);
                     // console.log(getGColumn);
-                    this.tableData[getGColumn].rowList[getGRow].defaultCheck = 3;
+                    console.log(this.tableData[getGRow].rowList[getGColumn]);
+                    this.tableData[getGRow].rowList[getGColumn].defaultCheck = 3;
+                    this.priorityData.push([getGRow,getGColumn]);
                 }
-                this.priorityData.push([getGColumn,getGRow]);
                 console.log(this.priorityData);
             },
             change() {

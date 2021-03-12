@@ -182,13 +182,14 @@
             async staticCourse(){
                 //查询课程组合以及选课人数
                 let {data}=await this.$api.schedule.statics.getSubjectCombination({planId:this.planId});
+                console.log(data);
                 this.dataSource=data.result;
                 //统计选课人数以及课程被选情况
                 let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId:this.planId});
                 this.chooseCourseData=chooseCourse.result;
                 this.staticChooseData=chooseCourse.result.selectPerSubNumberDtos;
                 console.log(this.staticChooseData);
-                for(let i=1;i<this.staticChooseData.length;i++){
+                for(let i=0;i<this.staticChooseData.length;i++){
                     let arrDatas = {
                         name: this.staticChooseData[i].subName,
                         value: this.staticChooseData[i].number,

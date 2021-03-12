@@ -57,55 +57,40 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
-            width:'12.5%'
         },
         {
             title: '星期一',
             dataIndex: 'one',
-            key:'one',
-            width:'12.5%',
             align: "center",
         },
         {
             title: '星期二',
             dataIndex: 'two',
-            key:'two',
-            width:'12.5%',
             align: "center",
         },
         {
             title: '星期三',
             dataIndex: 'three',
-            key:'three',
-            width:'12.5%',
             align: "center",
         },
         {
             title: '星期四',
             dataIndex: 'four',
-            key: 'four',
-            width:'12.5%',
             align: "center",
         },
         {
             title: '星期五',
             dataIndex: 'five',
-            key: 'five',
-            width:'12.5%',
             align: "center",
         },
         {
             title: '星期六',
             dataIndex: 'six',
-            key: 'six',
-            width:'12.5%',
             align: "center",
         },
         {
             title: '星期日',
             dataIndex: 'seven',
-            key: 'seven',
-            width:'12.5%',
             align: "center",
         },
     ];
@@ -153,7 +138,15 @@
                 loading: false
             };
         },
+        created() {
+            this.chooseCourseInfo();
+        },
         methods: {
+            async chooseCourseInfo(){
+                // console.log(this.planId);
+                let {data}=await this.$api.studentChooseCourse.startChoose.getStuCourse();
+                console.log(data);
+            },
         }
     };
 </script>

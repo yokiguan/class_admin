@@ -413,6 +413,10 @@
                 }
             let {data} = await this.$api.schedule.setting.settingAdd(addData);
                 console.log(data);
+                if(data&&data.success){
+                    alert("保存成功");
+                    this.chooseClassSettingInfo();
+                }
 
             },
             //清空

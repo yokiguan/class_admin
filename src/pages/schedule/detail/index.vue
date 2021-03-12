@@ -82,6 +82,7 @@
 </template>
 <script>
   import {message} from "ant-design-vue";
+
   // import pick from "lodash.pick"
   const operationList = [
     {
@@ -283,6 +284,12 @@
           };
           let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
           console.log(data);
+          if(data&&data.success){
+            message.info("发布选课成功！");
+            this.publishVisit=false;
+          }else{
+            message.info("发布选课失败！");
+          }
           this.editVisit=false;
         }
       },

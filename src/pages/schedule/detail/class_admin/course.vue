@@ -36,13 +36,17 @@
                      :data-source="dataSource"
                      :pagination="false"
                      :bordered="true">
-                <input slot="priority" slot-scope="text, record"/>
-                <a-input slot="lessonWeek" slot-scope="text, record" :default-value="text" />
-                <a-icon type="edit" slot="dayNums" style="color: #00ccff;font-size: 25px;font-weight: bold" @click="editDays"/>
-                <a-input slot="lessonMax" slot-scope="text, record" :default-value="text"/>
-                <a-input slot="lessonDaily" slot-scope="text, record" :default-value="text"/>
-                <a-input slot="lessonMorning" slot-scope="text, record" :default-value="text"/>
-                <a-input slot="lessonAfternoon" slot-scope="text, record" :default-value="text"/>
+<!--                <input slot="priority" slot-scope="text, record"/>-->
+                <template slot="lessonWeek" slot-scope="lessonWeektext, lessonWeekrecord,leWeIndex">
+                    <a-input v-model="lessonWeektext" @blur="lessonWeekChange(leWeIndex,lessonWeektext)"/>
+                </template>
+                <template slot="dayNums" slot-scope="text, record,index">
+                    <a-icon type="edit"  style="color: #00ccff;font-size: 25px;font-weight: bold" :default-value="text" @click="editDays(text,index)"/>
+                </template>
+                <a-input slot="lessonMax"  slot-scope="text, record,index"  v-model="text" @blur="lessonMaxChange(index,text)"/>
+                <a-input slot="lessonDaily" slot-scope="text, record,index" v-model="text" @blur="lessonDailyChange(index,text)"/>
+                <a-input slot="lessonMorning" slot-scope="text, record,index" v-model="text" @blur="lessonMorningChange(index,text)"/>
+                <a-input slot="lessonAfternoon" slot-scope="text, record,index" v-model="text" @blur="lessonAfternoonChange(index,text)"/>
                 <template slot="action" slot-scope="text, record">
                     <a-popconfirm
                             v-if="dataSource.length"
@@ -72,33 +76,29 @@
                         margin-bottom: 20px;
                         width: 150px" @click="Next">下一步</button>
 <!--            添加课程弹窗-->
-            <a-modal
-                    title="添加课程"
+            <a-modal title="添加课程"
                     :visible='addCourseModal'
                     :closable="false">
                 <template slot="footer">
-                    <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
-                    <a-button key="back" @click="handleCancel">取消</a-button>
+                    <a-button key="Save" type="primary" :loading="loading" @click="handleOkAdd">保存</a-button>
+                    <a-button key="back" @click="handleCancelAdd">取消</a-button>
                 </template>
                 <template>
-                    <a-input-search v-model="form.course" placeholder="Search" @change="onChange"/>
-<!--                    <a-tree-->
-<!--                            :expanded-keys="expandedKeys"-->
-<!--                            :auto-expand-parent="autoExpandParent"-->
-<!--                            :tree-data="gData"-->
-<!--                            @expand="onExpand">-->
-<!--                        <template slot="title" slot-scope="{title}">-->
-<!--                            <span v-if="title.indexOf(searchValue)>-1">-->
-<!--                                {{title.substr(0,title.indexOf(searchValue))}}-->
-<!--                                <span style="color: #f50">{{searchValue}}</span>-->
-<!--                                {{title.substr(title.indexOf(searchValue)+searchValue.length)}}-->
-<!--                            </span>-->
-<!--                            <span v-else>{{title}}</span>-->
-<!--                        </template>-->
-<!--                    </a-tree>-->
+                    <a-form-model :form="form">
+                        <a-form-model-item>
+                            <a-tree-select
+                                    v-model="form.value"
+                                    style="width: 100%"
+                                    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                                    :tree-data="gData"
+                                    placeholder="Please select"
+                                    tree-default-expand-all
+                                    :checkedKeys="checkedKeys"/>
+                        </a-form-model-item>
+                    </a-form-model>
                 </template>
             </a-modal>
-            <!--        编辑弹窗-->
+        <!--        编辑弹窗-->
         <a-modal  title="设置上课天数"
                   :visible='settingLessonDays'
                   :closable="false">
@@ -106,22 +106,27 @@
                 <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
-            <a-form-model  style="margin-top: 30px;"  :model="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 18}">
+            <div></div>
+            <a-form-model  style="margin-top: 30px;" :model="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 18}">
                 <a-form-model-item label="类型" ref="type" props="type">
-                    <a-select placeholder="小于/大于/等于" v-model="form.type">
-                        <a-select-option value="1">小于</a-select-option>
-                        <a-select-option value="2">大于</a-select-option>
-                        <a-select-option value="3">等于</a-select-option>
+                    <a-select placeholder="小于/大于/等于" :default-value="type" @change="changType">
+                        <a-select-option value="小于">小于</a-select-option>
+                        <a-select-option value="大于">大于</a-select-option>
+                        <a-select-option value="等于">等于</a-select-option>
+                        <!--                            <a-select-option value="0">{{record}}</a-select-option>-->
                     </a-select>
                 </a-form-model-item>
                 <a-form-model-item label="天数" ref="days" props="days">
-                    <a-input placeholder="请输入上课天数" v-model="form.days"/>
+                    <a-input placeholder="请输入上课天数" :default-value="days"/>
                 </a-form-model-item>
             </a-form-model>
         </a-modal>
+
     </div>
 </template>
 <script>
+    import { TreeSelect } from 'ant-design-vue';
+    const SHOW_PARENT = TreeSelect.SHOW_PARENT;
     const columns = [
         {
             title:'',
@@ -136,12 +141,12 @@
             dataIndex: 'subName',
             align:'center',
         },
-        {
-            title: '优先级',
-            dataIndex: 'priority',
-            align:'center',
-            scopedSlots: { customRender: 'priority' },
-        },
+        // {
+        //     title: '优先级',
+        //     dataIndex: 'priority',
+        //     align:'center',
+        //     scopedSlots: { customRender: 'priority' },
+        // },
         {
             title: '每周节数',
             dataIndex: 'lessonWeekly',
@@ -188,18 +193,28 @@
         data() {
             return {
                 inputData: null,
-                dataSource:[],
+                dataSource: [],
+                gData: [],
+                SHOW_PARENT,
+                checkedKeys:[],
                 columns,
-                planData:"",
-                count:5,
-                form:{},
-                id:null,
-                addCourseModal:false,
-                loading:false,
+                planData: "",
+                count: 5,
+                form: {},
+                id: null,
+                addCourseModal: false,
+                loading: false,
                 expandedKeys: [],
                 searchValue: '',
                 autoExpandParent: true,
-                settingLessonDays:false,
+                settingLessonDays: false,
+                days: "",
+                type:"",
+                chooseType:"",
+                editIndex:null,
+                form:{
+                    value:[],
+                },
             };
         },
         async created() {
@@ -214,60 +229,160 @@
             this.subjectInfo();
         },
         methods: {
+            //每周课节数设置
+            lessonWeekChange(index,value){
+                console.log(index);
+                console.log(value);
+                this.dataSource[index].lessonWeekly=value;
+                this.saveData(index);
+                console.log(this.dataSource);
+            },
+            //最大开课数
+            lessonMaxChange(index,value){
+                console.log(index);
+                console.log(value);
+                this.dataSource[index].lessonMax=value;
+                this.saveData(index);
+                console.log(this.dataSource);
+            },
+            //每天课时数设置
+            lessonDailyChange(index,value){
+                console.log(index);
+                console.log(value);
+                this.dataSource[index].lessonDaily=value;
+                this.saveData(index);
+                console.log(this.dataSource);
+            },
+            //上午课时数
+            lessonMorningChange(index,value){
+                console.log(index);
+                console.log(value);
+                this.dataSource[index].lessonMorning=value;
+                this.saveData(index);
+                console.log(this.dataSource);
+            },
+            //下午课时数
+            lessonAfternoonChange(index,value){
+                console.log(index);
+                console.log(value);
+                this.dataSource[index].lessonAfternoon=value;
+                this.saveData(index);
+                console.log(this.dataSource);
+            },
+            //改变类型
+            changType(info){
+                console.log(info);
+                this.chooseType=info;
+            },
             //学科设置查看
             async subjectInfo(){
-                let {data}=await this.$api.schedule.adminClass. getCourseSetting({planId:this.planId,scheduleType:0});
-                // console.log(data)
-                this.dataSource=data.rows
-                console.log(this.dataSource)
+                let {data}=await this.$api.schedule.adminClass. getCourseSetting({planId:this.planId,scheduleType:1});
+                console.log(data)
+                this.dataSource=data.rows;
+                console.log(this.dataSource);
             },
             //删除行数据
             async onDelete(ids){
-                // this.editText=this.dataSource.findIndex(item=>item.id==id);
-                // this.editId=this.dataSource[ this.editText].id
-                // console.log(this.editId)
                 let {data}=await this.$api.schedule.adminClass.deleteCourseSetting({ids:[ids]});
                 console.log(data);
-                // const dataSource = [...this. dataSource];
-                // dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                // this. dataSource= dataSource
+                if(data&&data.success){
+                    message.info("删除成功");
+                    this.subjectInfo();
+                }else{
+                    message.info("删除失败");
+                }
             },
             //编辑上课天数
-            editDays(){
+            editDays(value,index){
+                // // console.log(index);
+                // console.log(this.dataSource[index]);
+                this.editIndex=index;
+                console.log(index);
+                this.type=this.dataSource[index].type;
+                this.days=value;
+                console.log(this.type);
+                console.log(this.days);
                 this.settingLessonDays=true;
-            },
-            //搜索课程
-            onChange(){
-
             },
             //添加课程方法
             add(){
                 this.addCourseModal=true;
+                this.lookCourse();
+            },
+            //查看课程接口
+            async lookCourse(){
+                this.gData=[];
+                let {data}=await this.$api.basic.subject.fetchSubjectList({subType:1})
+                // console.log(data.result);
+                for(let i in data.result){
+                    //第一层(级部）
+                    let mainCourseTree={};
+                    mainCourseTree.title=data.result[i].subName;
+                    mainCourseTree.key=mainCourseTree.value=data.result[i].id;
+                    if(data.result[i].subjectChildEntitys.length){
+                        //第二层(年级）
+                        mainCourseTree.children=[];
+                        for(let j=0;j<data.result[i].subjectChildEntitys.length;j++){
+                            let gradeItem=data.result[i].subjectChildEntitys[j];
+                            let childData={}
+                            childData.key=childData.value=gradeItem.subChildId;
+                            childData.title=gradeItem.name;
+                            mainCourseTree.children.push(childData);
+                        }
+                    }
+                    this.gData.push(mainCourseTree);
+                }
+                // console.log(this.gData);
             },
             //保存上课天数
             handleOk(){
-              this.addCourseModal=false;
               this.settingLessonDays =false;
+              this.dataSource[this.editIndex].type=this.form.type;
+              this.dataSource[this.editIndex].dayNum=this.form.days;
+              this.saveData(this.editIndex);
+            },
+            //保存添加
+            async handleOkAdd(){
+                this.addCourseModal=false;
+               let addData={
+                   planId:this.planId,
+                   subId:this.form.value,
+                   scheduleType: 1,
+               }
+                let {data}=await this.$api.schedule.adminClass.addCourseSetting(addData);
+                console.log(data);
+                if(data&&data.success){
+                    this.subjectInfo();
+                }
             },
             //关闭编辑上课天数
             handleCancel(){
-                this.addCourseModal=false;
                 this.settingLessonDays =false;
             },
-            //添加课程中的树
-            onExpand(expandedKeys) {
-                this.expandedKeys = expandedKeys;
-                this.autoExpandParent = false;
+            //关闭添加
+            handleCancelAdd(){
+                this.addCourseModal=false;
             },
-            changeSituation(key, index){
-                console.log(key, index)
-            },
-            delSituation(key, index){
-                console.log(key, index)
-                this.dataSource[key].situation.pop(index)
-            },
-            onSelect(selectedKeys, info) {
-                console.log('selected', selectedKeys, info);
+            async saveData(index){
+                let addData={
+                    id:this.dataSource[index].id,
+                    planId:this.planId,
+                    subId:this.dataSource[index].subName,
+                    scheduleType: 1,
+                    lessonWeekly:Number(this.dataSource[index].lessonWeekly),
+                    type:this.dataSource[index].type,
+                    dayNum:Number(this.dataSource[index].dayNum),
+                    lessonMax:Number(this.dataSource[index].lessonMax),
+                    lessonDaily:Number(this.dataSource[index].lessonDaily),
+                    lessonMorning:Number(this.dataSource[index].lessonMorning),
+                    lessonAfternoon:Number(this.dataSource[index].lessonAfternoon),
+                    };
+                console.log(addData);
+               let {data}=await this.$api.schedule.adminClass.addCourseSetting(addData);
+               console.log(data);
+               if(data&&data.success){
+                   this.subjectInfo();
+               }
             },
             //课时设置
             timesSetting(){

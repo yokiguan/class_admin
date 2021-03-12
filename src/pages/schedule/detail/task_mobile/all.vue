@@ -20,7 +20,6 @@
                         width: 150px" @click="back">返回</button></a-col>
             </a-row>
             <a-row style="margin-top: 20px">
-                <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
                     <button style="background-color: #19b294;
                         color: white;
                         height: 40px;
@@ -76,7 +75,7 @@
                 <a-button key="Save" type="primary" :loading="loading" @click="handleAdd">添加</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
-            <div class="title"><h3 style="color: white;padding-top: 8px;margin-left: 15px">查看学生冲突(共3名学生发生冲突)</h3></div>
+            <div class="title"><h3 style="color: white;padding-top: 8px;margin-left: 15px">查看学生冲突(共{{pagination.total}}名学生发生冲突)</h3></div>
             <a-table :rowKey="'id'"
                      :columns="stuColumns"
                      :data-source="stuTableData"
@@ -126,13 +125,16 @@
     const stuColumns=[
         {
             title:'',
-            dataIndex:'subConflict',
-            align:'center'
+            dataIndex:'id',
+            align:'center',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
         },
         {
             title:'学生',
-            dataIndex:'student',
-            align:'center'
+            dataIndex:'studentName',
+            align:'center',
         },
         {
             title:'课程班',
@@ -141,7 +143,7 @@
         },
         {
             title:'说明',
-            dataIndex:'illusion',
+            dataIndex:'information',
             align:'center'
         },
     ]
@@ -160,13 +162,13 @@
                 contrastModal:false,
                 scheduleTaskId:"",
                 pagination:{
-                    total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
-                    pageSize:20,    //默认每页显示的条数
+                    total:0,    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
+                    pageSize:20,    //默认每页显示的数据总数
                     showSizeChanger:true,
                     onShowSizeChange:(current,pageSize)=>{
-                        this.pageSize=pageSize;
+                        this.pageSize=pageSize
                     },
-                    showTotal:total=>`共有${total}条数据`,            //分页中显示的数据总数
+                    showTotal:total=>`共有${total}条数据`,
                 },
                 //查询参数
                 queryParam:{
@@ -210,7 +212,7 @@
                     let position = eval(this.allData[i].position);
                     const getInfo=(dataItem,sourceItem={})=>{
                         if(!sourceItem) sourceItem={}
-                        let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classroomName + ')';
+                        let content = dataItem.subChildName +dataItem.classNumId +"_"+dataItem.teacherName+'(' + dataItem.classroomName + ')'+"共"+dataItem.classStuNum+"人";
                         const column=eval(dataItem.position)[1];
                         switch (column) {
                             case 1:
@@ -250,8 +252,23 @@
             //查看学生冲突接口
             async lookConflict(){
               let {data}=await this.$api.schedule.classTask.contrastLook({planId:this.planId,scheduleTaskId:this.scheduleTaskId});
+              let addData=[];
               console.log(data);
-              this.stuTableData=data.rows;
+                addData=data.rows;
+                console.log(addData);
+                for(let i in addData){
+                    let course = (addData[i].info || " ").split('---')[0];
+                    // console.log(course);
+                    let information = (addData[i].info || " ").split('---')[1];
+                    // console.log(information);
+                    this.stuTableData[i]={
+                        id:addData[i].id,
+                        studentName:addData[i].schWxUserEntity.userName,
+                        course:course,
+                        information:information,
+                    }
+                }
+                console.log(this.stuTableData);
                 const pagination={...this.pagination};
                 pagination.total=data.total;
                 this.pagination=pagination;
@@ -264,6 +281,7 @@
                 this.queryParam.size = pagination.pageSize;
                 console.log(this.pagination.current)
                 console.log(this.pagination.pageSize);
+                this.lookConflict();
             },
             //添加学生冲突
             handleAdd(){

@@ -27,14 +27,41 @@
                         width: 150px">查看调课记录</button></a-row>
         </div>
         <a-card class="table-bg">
-            <a-table :rowKey="'key'"
-                     :columns="columns"
-                     :data-source="tableData"
-                     :pagination="false"
-                     :bordered="true"
-                     style="margin-top: 20px;width:1200px;white-space: pre">
-<!--                <button slot="change" style="background-color: #19b294;color: white;width: 100px;height: 30px">调换</button>-->
-            </a-table>
+            <div class="class-table">
+                <div class="table-header"><!-- 表头 -->
+                    <div class="table-header_one"></div><!-- 左上角 -->
+                    <div class="table-header_other" v-for="(item, index) in tableHeader">{{item}}</div>
+                </div>
+                <div class="table-body">
+                    <div class="row-box" v-for="(item, rowIndex) in tableData" :key="rowIndex">
+                        <div class="table-body_one">{{item.key}}</div><!-- 第一列 -->
+                        <div class="table-body_two" @click="choose(rowIndex,1)">
+                            {{item.one}}
+                            <button class="bottom" @click="change">调换</button>
+                        </div><!-- 第一列 -->
+                        <div class="table-body_three" @click="choose(rowIndex,2)">
+                            {{item.two}}
+                            <button class="bottom" @click="change">调换</button>
+                        </div><!-- 第一列 -->
+                        <div class="table-body_four" @click="choose(rowIndex,3)">
+                            {{item.three}}
+                            <button class="bottom" @click="change">调换</button>
+                        </div><!-- 第一列 -->
+                        <div class="table-body_five" @click="choose(rowIndex,4)">
+                            {{item.four}}
+                            <button class="bottom" @click="change">调换</button>
+                        </div><!-- 第一列 -->
+                        <div class="table-body_six" @click="choose(rowIndex,5)">
+                            {{item.five}}
+                            <button class="bottom" @click="change">调换</button>
+                        </div><!-- 第一列 -->
+<!--                        <div class="table-body_other" v-for="(child, columnIndex) in item.rowList"-->
+<!--                             :key="columnIndex + rowIndex + 1" :style="{ 'background-color': setColor(child) }"-->
+<!--                             @click="getColumnRow(rowIndex,columnIndex)"></div>-->
+<!--                    </div>&lt;!&ndash; 11个数据  &ndash;&gt;-->
+                    </div>
+                </div>
+            </div>
         </a-card>
     </div>
 </template>
@@ -52,26 +79,31 @@
             title: '一',
             dataIndex: 'one',
             align: "center",
+            scopedSlots: { customRender: 'change' },
         },
         {
             title: '二',
             dataIndex: 'two',
             align: "center",
+            scopedSlots: { customRender: 'change' },
         },
         {
             title: '三',
             dataIndex: 'three',
             align: "center",
+            scopedSlots: { customRender: 'change' },
         },
         {
             title: '四',
             dataIndex: 'four',
             align: "center",
+            scopedSlots: { customRender: 'change' },
         },
         {
             title: '五',
             dataIndex: 'five',
             align: "center",
+            scopedSlots: { customRender: 'change' },
         },
     ];
     export default {
@@ -79,6 +111,7 @@
             return {
                 columns,
                 tableData:[],
+                tableHeader: ['星期一','星期二','星期三','星期四','星期五'],
                 planId:"",
                 planData:"",
                 scheduleTaskId:"",
@@ -124,7 +157,7 @@
                         const column=eval(dataItem.position)[1];
                         switch (column) {
                             case 1:
-                                sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                sourceItem.one=sourceItem.one ?sourceItem.one+",\n"+content:content;
                                 break;
                             case 2:
                                 sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
@@ -189,4 +222,133 @@
         text-align: center;
         width: 100%;
     }
+    .change{
+        display: flex;
+        align-items:center;
+        flex-direction: column;
+    }
+    .top{
+        margin-bottom:40px;
+    }
+    .bottom{
+        display: flex;
+        background-color: #19b294;
+        color: white;
+        width: 42px;
+        height: 25px;
+        margin-bottom: 0px;
+        border: 0px;
+        border-radius: 5px;
+        /*padding: center;*/
+    }
+    .class-table{
+        width: 93%;
+        height: auto;
+        border: 1px solid;
+        border-color: #f0f0f0;
+        margin-left: 50px;
+        padding:10px;
+
+    }
+    .table-header{
+        height: 53.33px;
+        display: flex;
+        border-bottom: 1px solid;
+        border-color: #f0f0f0;
+        border:1px solid;
+
+    }
+    .table-header_one{
+        flex: 12.5%;
+        align:center;
+        padding-top: 15px;
+        border-right: 1px solid;
+        border-color: black;
+    }
+
+    .table-header_other{
+        flex: 12.5%;
+        align:center;
+        border-right: 1px solid;
+        border-color: black;
+        padding-top: 15px;
+        font-weight: bold;
+    }
+    .table-body{
+        display: flex;
+        flex-direction: column;
+        white-space: pre;
+        border-bottom:1px solid;
+        border-color: black;
+    }
+    .row-box {
+        display: flex;
+    }
+    .row-box div {
+        flex: 1;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .row-box:last-child {
+        border-bottom: none;
+    }
+    .table-body_one{
+        /*width: 13.5%;*/
+        border-right: 1px solid;
+        border-left: 1px solid;
+        border-top:1px solid;
+        border-color: black;
+        padding-top: 15px;
+        flex-direction: column;
+    }
+    .table-body_two{
+        /*width: 13.5%;*/
+        border-right: 1px solid;
+        border-top:1px solid;
+        border-color: black;
+        padding-top: 15px;
+        flex-direction: column;
+    }
+    .table-body_three{
+        /*width: 13.5%;*/
+        border-right: 1px solid;
+        border-top:1px solid;
+        border-color: black;
+        padding-top: 15px;
+        flex-direction: column;
+    }
+    .table-body_four{
+        /*width: 13.5%;*/
+        border-right: 1px solid;
+        border-top:1px solid;
+        border-color: black;
+        padding-top: 15px;
+        flex-direction: column;
+    }
+    .table-body_five{
+        /*width: 13.5%;*/
+        border-right: 1px solid;
+        border-top:1px solid;
+        border-color: black;
+        padding-top: 15px;
+        flex-direction: column;
+    }
+    .table-body_six{
+        /*width: 13.5%;*/
+        border-right: 1px solid;
+        border-top:1px solid;
+        border-color: black;
+        padding-top: 15px;
+        flex-direction: column;
+    }
+
+    /*.table-body_other{*/
+    /*    !*width: 13.5%;*!*/
+    /*    height: 54px;*/
+    /*    border-right: 1px solid;*/
+    /*    border-color: #f0f0f0;*/
+    /*    !*background-color: red;*!*/
+    /*}*/
+    /*.table-body_other:last-child{*/
+    /*    border-right: none;*/
+    /*}*/
 </style>

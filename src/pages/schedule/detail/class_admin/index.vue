@@ -4,7 +4,7 @@
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">选课排课</a></a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">课时设置</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
@@ -147,7 +147,8 @@
                 modalIds:[],
                 form:{
                     modalId:" ",
-                }
+                },
+                modalId:"",
             };
         },
         async created() {
@@ -167,31 +168,55 @@
                 this.modalIds.push(this.modalInfo[i].id);
             }
             console.log(this.modalIds);
+            this.lookInfo();
         },
         methods: {
+            //课时设置查看
+            async lookInfo(){
+                let {data:{result,success}}=await this.$api.schedule.arrangeClass.timeLookInfo({planId:this.planId});
+                console.log(result);
+                this.modalId=result.currId;
+                console.log(this.modalId);
+                this.modalInformation();
+            },
+            //获取课表模板相关信息
+            async modalInformation() {
+                let {data:{result,success}}=await this.$api.basic.template.fetchTemplate({id:this.modalId});
+                console.log(result);
+                this.currId=this.modalId;
+                // console.log(this.currId);
+                let activities = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    for (let i = 1; i <= result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                    }
+                });
+                this.dataSource= activities;
+                this.form.modalId=result.templateName;
+                // console.log(this.tableData)
+            },
+            //模板选择
             async handleSelectChange(id) {
                 let {data}=await this.$api.basic.template.fetchTemplate({id:this.form.modalId})
-                console.log(data.result);
+                // console.log(data.result);
                 this.currId=this.form.modalId;
                 console.log(this.currId);
                 let activities = [];
-                let timeDatas = [];
                 let list = [...this.activity];
                 list.forEach(item => {
+                    console.log(item.value);
                     for (let i = 1; i <= data.result[item.value]; i++) {
                         activities.push({
                             activity: item.name + i,
                             value: item.value + i
                         });
-                        timeDatas.push({
-                            activity: item.name + i,
-                            value: item.value + i,
-                            time: [moment(undefined), moment(undefined)]
-                        });
                     }
                 });
                 this.dataSource = activities;
-                this.timeData = timeDatas;
             },
             //课时设置
             timesSetting(){
@@ -207,7 +232,7 @@
             },
             //班级设置
             classSetting(){
-                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`)
+                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`);
             },
             //规则设置
             ruleSetting(){
@@ -227,7 +252,7 @@
                 if(this.form.modalId==" "){
                     message.info("请选择课表模板！");
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/sort_course/time?planId=${this.planId}`);
                     //保存课表模板
                     let {data}=await this.$api.schedule.arrangeClass.saveCoursetime({planId:this.planId,currId:this.currId})
                 }

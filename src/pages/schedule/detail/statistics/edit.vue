@@ -55,7 +55,6 @@
                                        valueFormat="YYYY-MM-DD"/>
                     </a-form-model-item>
                 </a-form-model>
-
             </div>
         </a-modal>
         <div class="info link-font-color">
@@ -187,7 +186,8 @@
          //选课结果详情查看
         let {data}=await this.$api.schedule.statics.getResult({planId});
         console.log(data.result)
-        this.dataSource=data.result.splice(1,data.result.length - 1);
+        // this.dataSource=data.result.splice(1,data.result.length - 1);
+        this.dataSouce=data.result;
         console.log(this.dataSource);
         for(var i=0;i<this.dataSource.length;i++){
             this.tags.push(this.dataSource[i].studentInfoDtoList)

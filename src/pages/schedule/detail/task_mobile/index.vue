@@ -35,7 +35,7 @@
                        <span style="margin-left: 50px ">继续排课</span>
                        <span style="margin-left: 50px " @click="integrate">手动调整</span>
                        <span @click="changeClass" style="margin-left: 50px ">学生调班</span>
-                       <span style="margin-left: 50px ">发布结果</span>
+                       <span style="margin-left: 50px " @click="publishChoose(record.id)">发布结果</span>
                     </a-row>
                 </div>
             </a-table>
@@ -154,6 +154,14 @@
             //学生调班
             changeClass(){
                 this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}`)
+            },
+            //发布选课
+            async publishChoose(id){
+                let {data}=await this.$api.schedule.classTask.publishResult({planId:this.planId,scheduleTaskId:id});
+                console.log(data);
+                if(data&&data.success){
+                    alert("发布选课成功");
+                }
             },
             //返回
             back(){

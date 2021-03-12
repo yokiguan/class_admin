@@ -19,10 +19,6 @@ const  classTask = {
     deletScheduleTask(params){
         return axios.post(`${scheduleTask}/deleteDataJoint.json`,params);
     },
-    //老师树形列表查询
-    getTeacherList(params){
-        return axios.get(`${scheduleSyllabus}/getTeacherList.json`,{params});
-    },
     //教室树形列表查询(已调)
     getClassList(params){
         return axios.get(`${classroomSetting}/getClassroomList.json`,{params} );
@@ -68,6 +64,18 @@ const  classTask = {
     //学生课表查看(已调）
    studentLook(params){
         return axios.get(`${studentSyllabus}/getDataByStuId.json`,{params});
+    },
+    //发布选课结果(已调）
+    publishResult(params){
+        return axios.post(`${scheduleSyllabus}/updateSyllabusTrue.json`,params);
+    },
+    //撤回已发布课表(已调)
+    reBack(params){
+        return axios.post(`${scheduleSyllabus}/updateSyllabusFalse.json`,params);
+    },
+    //按老师查看课表(已调）
+    teacherLook(params){
+        return axios.get(`${scheduleSyllabus}/getDataSelectByTeacherId.json`,{params});
     },
 }
 export default  classTask

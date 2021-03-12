@@ -643,18 +643,17 @@
                 this.gradeName=result.gradeName;
             }
             this.subjectTimeRule();
-            this.teacherTimeRule();
-            this.clsassTimeRule();
+            // this.teacherTimeRule();
+            // this.clsassTimeRule();
         },
         methods:{
             //学科时间规则查看
             async subjectTimeRule(){
                 //获取学科时间规则
-                let {data:subjectTimeRuleData}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId:"934e3a63aadc47d398da0d395ad41420"})
-                let newData=[];
-                newData=subjectTimeRuleData.result;
-                // console.log(newData);
-                let list=[...newData];
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId:"934e3a63aadc47d398da0d395ad41420"})
+                console.log(result);
+                let timeRuleSetting=result.timeRuleSetting;
+                let list=[...timeRuleSetting];
                 list.forEach(item=>{
                     let timeDay="";
                     for(let i=1;i<8;i++){
@@ -664,7 +663,7 @@
                         // console.log(timeDay);
                     }
                     let time1=[];
-                    //字符串转换为数组
+                //     //字符串转换为数组
                     let timeLesson=item.timeLesson.split(',');
                     // console.log(timeLesson);
                     for(let i=0;i<timeLesson.length;i++){
@@ -684,7 +683,7 @@
                     }
                     this.studyTimeData.push(pushData)
                 })
-                // console.log(this.studyTimeData);
+                console.log(this.studyTimeData);
             },
             //教师时间规则查看
             async teacherTimeRule(){

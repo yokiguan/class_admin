@@ -46,7 +46,7 @@ const subject = {
 
     // 课程树（已调）
     fetchSubjectList(params){
-        return axios.get(`${baseUrl2}/getMainChildSubjectTree.json`,params)
+        return axios.get(`${baseUrl2}/getMainChildSubjectTree.json`,{params})
     }
 }
 
