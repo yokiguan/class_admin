@@ -34,31 +34,28 @@
                 </div>
                 <div class="table-body">
                     <div class="row-box" v-for="(item, rowIndex) in tableData" :key="rowIndex">
-                        <div class="table-body_one">{{item.key}}</div><!-- 第一列 -->
-                        <div class="table-body_two" @click="choose(rowIndex,1)">
-                            {{item.one}}
-                            <button class="bottom" @click="change">调换</button>
-                        </div><!-- 第一列 -->
-                        <div class="table-body_three" @click="choose(rowIndex,2)">
-                            {{item.two}}
-                            <button class="bottom" @click="change">调换</button>
-                        </div><!-- 第一列 -->
-                        <div class="table-body_four" @click="choose(rowIndex,3)">
-                            {{item.three}}
-                            <button class="bottom" @click="change">调换</button>
-                        </div><!-- 第一列 -->
-                        <div class="table-body_five" @click="choose(rowIndex,4)">
-                            {{item.four}}
-                            <button class="bottom" @click="change">调换</button>
-                        </div><!-- 第一列 -->
-                        <div class="table-body_six" @click="choose(rowIndex,5)">
-                            {{item.five}}
-                            <button class="bottom" @click="change">调换</button>
-                        </div><!-- 第一列 -->
-<!--                        <div class="table-body_other" v-for="(child, columnIndex) in item.rowList"-->
-<!--                             :key="columnIndex + rowIndex + 1" :style="{ 'background-color': setColor(child) }"-->
-<!--                             @click="getColumnRow(rowIndex,columnIndex)"></div>-->
-<!--                    </div>&lt;!&ndash; 11个数据  &ndash;&gt;-->
+                        <div class="table-body_one">{{item.key}}</div>
+                        <!-- 第一列 -->
+                        <div class="table-body_two" :class="{chooseCell:rowIndex===firstRow&&firstCol===1}">
+                            <span @click="choose(rowIndex,1)">{{item.one}}</span>
+                            <button class="bottom"  @click="change(rowIndex+1,1)">调换</button>
+                        </div><!-- 第二列 -->
+                        <div class="table-body_three" :class="{chooseCell:rowIndex===firstRow&&firstCol===2}">
+                           <span  @click="choose(rowIndex,2)">{{item.two}}</span>
+                            <button class="bottom" @click="change(rowIndex+1,2)">调换</button>
+                        </div><!-- 第三列 -->
+                        <div class="table-body_four" :class="{chooseCell:rowIndex===firstRow&&firstCol===3}">
+                            <span  @click="choose(rowIndex,3)">{{item.three}}</span>
+                            <button class="bottom" @click="change(rowIndex+1,3)">调换</button>
+                        </div><!-- 第四列 -->
+                        <div class="table-body_five" :class="{chooseCell:rowIndex===firstRow&&firstCol===4}" >
+                            <span @click="choose(rowIndex,4)">{{item.four}}</span>
+                            <button class="bottom" @click="change(rowIndex+1,4)">调换</button>
+                        </div><!-- 第五列 -->
+                        <div class="table-body_six" :class="{chooseCell:rowIndex===firstRow&&firstCol===5}">
+                            <span  @click="choose(rowIndex,5)">{{item.five}}</span>
+                            <button class="bottom" @click="change(rowIndex+1,5)">调换</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -66,6 +63,7 @@
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue";
     const columns = [
         {
             align: "center",
@@ -116,6 +114,10 @@
                 planData:"",
                 scheduleTaskId:"",
                 allData:[],
+                firstRow:-1,
+                firstCol:-1,
+                tableId:"",
+                firstRows:-1,
             };
         },
         created() {
@@ -139,14 +141,16 @@
                     //获取单个选课计划的信息
                     let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                     this.planData = result.name
-                    console.log(result);
+                    // console.log(result);
                 }
             },
+            //课表查看
             async allLookInfo(){
                 let {data:{result,success}}=await this.$api.schedule.classTask.getData({planId:this.planId,scheduleTaskId:this.scheduleTaskId})
                 // console.log(result[0]);
+                this.tableId=result[0].id;
                 this.allData=result[0].syllabus;
-                // console.log(this.allData);
+                console.log(this.allData);
                 //创建数组
                 let dataSource=[];
                 for(let i=0;i<this.allData.length;i++){
@@ -184,6 +188,28 @@
                     this.tableData[i].key=i+1;
                 }
                 console.log(this.tableData);
+            },
+            //选择单元格
+            choose(rowIndex,colIndex){
+                console.log(rowIndex+1);
+                this.firstRows=rowIndex+1;
+                console.log(colIndex);
+                this.firstRow=rowIndex;
+                    this.firstCol=colIndex;
+                // if(this.firstCol===-1||this.firstRow===-1){
+                //
+                // }
+                // message.info("已选中的单元格("+rowIndex+","+colIndex+")");
+            },
+            //调换
+            async change(row,col){
+                let changPos=[[ this.firstRows,this.firstCol],[row,col]];
+                console.log(JSON.stringify(changPos));
+                let {data}=await this.$api.schedule.classTask.manualClass({id:this.tableId,info:JSON.stringify(changPos)});
+                console.log(data);
+                if(data&&data.success){
+                    this.allLookInfo();
+                }
             },
             //返回
             back(){
@@ -248,29 +274,24 @@
         border-color: #f0f0f0;
         margin-left: 50px;
         padding:10px;
-
     }
     .table-header{
         height: 53.33px;
         display: flex;
-        border-bottom: 1px solid;
-        border-color: #f0f0f0;
-        border:1px solid;
-
+        border:1px solid #f0f0f0;
     }
     .table-header_one{
         flex: 12.5%;
         align:center;
         padding-top: 15px;
         border-right: 1px solid;
-        border-color: black;
+        border-color: #f0f0f0;
     }
-
     .table-header_other{
         flex: 12.5%;
         align:center;
         border-right: 1px solid;
-        border-color: black;
+        border-color: #f0f0f0;
         padding-top: 15px;
         font-weight: bold;
     }
@@ -279,7 +300,7 @@
         flex-direction: column;
         white-space: pre;
         border-bottom:1px solid;
-        border-color: black;
+        border-color: #f0f0f0;
     }
     .row-box {
         display: flex;
@@ -296,15 +317,15 @@
         border-right: 1px solid;
         border-left: 1px solid;
         border-top:1px solid;
-        border-color: black;
-        padding-top: 15px;
+        border-color: #f0f0f0;
+        padding-top: 90px;
         flex-direction: column;
     }
     .table-body_two{
         /*width: 13.5%;*/
         border-right: 1px solid;
         border-top:1px solid;
-        border-color: black;
+        border-color: #f0f0f0;
         padding-top: 15px;
         flex-direction: column;
     }
@@ -312,7 +333,7 @@
         /*width: 13.5%;*/
         border-right: 1px solid;
         border-top:1px solid;
-        border-color: black;
+        border-color: #f0f0f0;
         padding-top: 15px;
         flex-direction: column;
     }
@@ -320,7 +341,7 @@
         /*width: 13.5%;*/
         border-right: 1px solid;
         border-top:1px solid;
-        border-color: black;
+        border-color: #f0f0f0;
         padding-top: 15px;
         flex-direction: column;
     }
@@ -328,7 +349,7 @@
         /*width: 13.5%;*/
         border-right: 1px solid;
         border-top:1px solid;
-        border-color: black;
+        border-color: #f0f0f0;
         padding-top: 15px;
         flex-direction: column;
     }
@@ -336,19 +357,15 @@
         /*width: 13.5%;*/
         border-right: 1px solid;
         border-top:1px solid;
-        border-color: black;
+        border-color: #f0f0f0;
         padding-top: 15px;
         flex-direction: column;
     }
-
-    /*.table-body_other{*/
-    /*    !*width: 13.5%;*!*/
-    /*    height: 54px;*/
-    /*    border-right: 1px solid;*/
-    /*    border-color: #f0f0f0;*/
-    /*    !*background-color: red;*!*/
-    /*}*/
-    /*.table-body_other:last-child{*/
-    /*    border-right: none;*/
-    /*}*/
+    .bottom{
+        margin-left: 59px;
+        margin-top: 10px;
+    }
+    .chooseCell{
+        background-color:#c2f2f2;
+    }
 </style>

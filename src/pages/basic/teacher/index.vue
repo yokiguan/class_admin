@@ -196,7 +196,7 @@
         this.queryParam.page=pagination.current;
         this.queryParam.size=pagination.pageSize;
         console.log(this.pagination.current)
-        console.log( this.pagination.pageSize);
+        console.log(this.pagination.pageSize);
         this.allTeacher();
         if(this.form.adminId!=undefined){
           if(this.form.gradeId!=undefined){
@@ -229,14 +229,6 @@
             // // //根据年级选择教师
             let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,adminId: this.adminData[i].adminId});
             console.log(data.rows);
-            // let newObj = []
-          //   for(let i in data.rows){
-          //     if(data.rows[i]) {
-          //       newObj.push((data.rows[i]))
-          //     }
-          //   }
-          //   console.log(newObj)
-          //   this.dataSource=newObj;
             const pagination={...this.pagination};
             pagination.total=data.total;
             this.pagination=pagination;
@@ -312,17 +304,21 @@
       selectCourse(allInfo){
         console.log(this.checkedKeys);
         let courseInfo=[];
-        // console.log(this.treeData);
-        for(let i=0;i<allInfo.length;i++){
-          // console.log(allInfo[i]);
-          for(let j=0;j<this.treeData.length;j++){
-            let teachData=this.treeData[i].children;
-            // console.log('teacherData',teachData);
-            for(let k=0;k<teachData.length;k++){
-              let couData=teachData[k].children;
-              for(let w in couData){
-                if(couData[w].key===allInfo[i]){
-                  courseInfo.push(couData[w].key)
+        console.log(this.treeData);
+        for(let i=0;i<allInfo.length;i++) {
+          console.log(allInfo[i]);
+          for (let j = 0; j < this.treeData.length; j++) {
+            if (this.treeData[j].children) {
+              let teachData = this.treeData[j].children;
+              // console.log('teacherData',teachData);
+              for (let k = 0; k < teachData.length; k++) {
+                if (teachData[k].children) {
+                  let couData = teachData[k].children;
+                  for (let w in couData) {
+                    if (couData[w].key === allInfo[i]) {
+                      courseInfo.push(couData[w].key)
+                    }
+                  }
                 }
               }
             }
@@ -336,7 +332,8 @@
           this.courseInfo.push((item || " ").split(',')[1])
         }),
                 this.gradeIds=gradeId;
-        // console.log(gradeId);
+        console.log(gradeId);
+        console.log(this.gradeIds);
         console.log(this.courseInfo);
       },
       //获取所属课程信息
@@ -386,7 +383,10 @@
         this.editVisit=false;
         let addData={};
         console.log(this.courseInfo);
-        for(let i in this.dataSource){
+        for(let i in this.gradeIds){
+          // console.log(this.dataSource[this.editText].teacherId)
+          // console.log(this.gradeIds[i])
+          // console.log(this.courseInfo)
            addData={
             teacherId:this.dataSource[this.editText].teacherId,
             gradeSubjectDtoList:[{

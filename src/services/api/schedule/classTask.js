@@ -40,18 +40,24 @@ const  classTask = {
         return axios.get(`${scheduleSyllabus}/getDataSelect.json`, {params});
     },
     //手动调课换课
-    manualClass(){
-        return axios.post(`${scheduleSyllabus}/updateSyllabus.json`, params, {
-            'Content-Type': 'multipart/form-data'
-        });
+    manualClass(params){
+        return axios.post(`${scheduleSyllabus}/updateSyllabus.json`, params);
     },
     //冲突查看(已调）
     contrastLook(params){
         return axios.get(`${scheduleConflict}/getConflictList.json`,{params});
     },
-    //学生调班（根据课程查看冲突信息）
+    //保存学生调班(已调）
+    saveClassData(params){
+        return axios.post(`${scheduleSyllabus}/updateClass.json`,params);
+    },
+    //学生调班（根据课程查看冲突信息）(已调)
     conflictInfo(params){
         return axios.get(`${scheduleSyllabus}/getConflictInfo.json`,{params});
+    },
+    //学生调班查看(已调)
+    changeStuClass(params){
+        return axios.get(`${studentSyllabus}/getClassDataByStuId.json`,{params});
     },
     //课程班级列表查询(已调）
     getCourseList(params){

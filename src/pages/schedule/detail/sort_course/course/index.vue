@@ -360,12 +360,12 @@
                     classroomType=2;
                 }
               this.chooseTimeVisit=false;
-                this.tableData[this.timesIndex].timesSetting={
+                this.tableData[this.timesIndex].timeSetting={
                     timeType:classroomType,
                     weekday:this.day,
                     period:this.timeId.toString(),
                 }
-                console.log(this.tableData[this.timesIndex].timesSetting);
+                console.log(this.tableData[this.timesIndex].timeSetting);
             },
             //取消选择时间段
             handleCancelTime(){
@@ -464,7 +464,7 @@
                         planId:this.planId,
                         lessonWeekly:this.tableData[i].lessonNum,
                         lessonMin:this.tableData[i].minNum,
-                        timesSetting:this.tableData[i].timesSetting,
+                        timeSetting:this.tableData[i].timeSetting,
                         classroomSetting:this.tableData[i].classroomSetting
                     }
                 }

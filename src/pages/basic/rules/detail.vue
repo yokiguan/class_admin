@@ -30,8 +30,7 @@
                 checkable
                 :checkedKeys="checkedKeys"
                 :tree-data="treeData"
-                @check="onCheck"
-        />
+                @check="onCheck"/>
       </template>
     </a-modal>
   </div>

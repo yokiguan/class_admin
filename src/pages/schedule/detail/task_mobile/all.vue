@@ -72,7 +72,6 @@
         <a-modal :visible="contrastModal"
                  :closable="false">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleAdd">添加</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
             <div class="title"><h3 style="color: white;padding-top: 8px;margin-left: 15px">查看学生冲突(共{{pagination.total}}名学生发生冲突)</h3></div>
@@ -251,22 +250,23 @@
             },
             //查看学生冲突接口
             async lookConflict(){
-              let {data}=await this.$api.schedule.classTask.contrastLook({planId:this.planId,scheduleTaskId:this.scheduleTaskId});
+              let {data}=await this.$api.schedule.classTask.contrastLook({rowCount: this.queryParam.size,current:this.queryParam.page,planId:this.planId,scheduleTaskId:this.scheduleTaskId});
               let addData=[];
               console.log(data);
                 addData=data.rows;
                 console.log(addData);
-                for(let i in addData){
+                for(let i=0;i<addData.length;i++){
                     let course = (addData[i].info || " ").split('---')[0];
                     // console.log(course);
                     let information = (addData[i].info || " ").split('---')[1];
                     // console.log(information);
-                    this.stuTableData[i]={
+                    let pushData={
                         id:addData[i].id,
                         studentName:addData[i].schWxUserEntity.userName,
                         course:course,
                         information:information,
                     }
+                    this.stuTableData.push(pushData);
                 }
                 console.log(this.stuTableData);
                 const pagination={...this.pagination};
@@ -282,9 +282,6 @@
                 console.log(this.pagination.current)
                 console.log(this.pagination.pageSize);
                 this.lookConflict();
-            },
-            //添加学生冲突
-            handleAdd(){
             },
             //关闭学生冲突弹框
             handleCancel(){

@@ -126,6 +126,7 @@
 </template>
 <script>
     import { TreeSelect } from 'ant-design-vue';
+    import {message} from "ant-design-vue";
     const SHOW_PARENT = TreeSelect.SHOW_PARENT;
     const columns = [
         {
@@ -276,9 +277,9 @@
             },
             //学科设置查看
             async subjectInfo(){
-                let {data}=await this.$api.schedule.adminClass. getCourseSetting({planId:this.planId,scheduleType:1});
+                let {data}=await this.$api.schedule.adminClass.getCourseSetting({planId:this.planId,scheduleType:1});
                 console.log(data)
-                this.dataSource=data.rows;
+                this.dataSource=data.result;
                 console.log(this.dataSource);
             },
             //删除行数据
@@ -344,6 +345,7 @@
             //保存添加
             async handleOkAdd(){
                 this.addCourseModal=false;
+                console.log(this.form.value);
                let addData={
                    planId:this.planId,
                    subId:this.form.value,
@@ -354,6 +356,7 @@
                 if(data&&data.success){
                     this.subjectInfo();
                 }
+                console.log(this.dataSource);
             },
             //关闭编辑上课天数
             handleCancel(){
@@ -364,10 +367,12 @@
                 this.addCourseModal=false;
             },
             async saveData(index){
+                console.log(this.dataSource[index]);
+                console.log(this.dataSource[index].id);
                 let addData={
                     id:this.dataSource[index].id,
                     planId:this.planId,
-                    subId:this.dataSource[index].subName,
+                    subId:this.dataSource[index].subId,
                     scheduleType: 1,
                     lessonWeekly:Number(this.dataSource[index].lessonWeekly),
                     type:this.dataSource[index].type,

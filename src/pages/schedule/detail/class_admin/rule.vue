@@ -26,30 +26,31 @@
             </a-row>
             <div class="table">
                 <template>
+<!--                  学科时间规则-->
                     <a-descriptions bordered>
                         <a-descriptions-item label="学科时间规则" >
-                            <a-table  :rowKey="'ids'"
+                            <a-table  :rowKey="'id'"
                                       :columns="column1"
                                       :data-source="studyTimeData"
                                       :pagination="false"
                                       :bordered="true">
-                                <a-form-item slot="subjects" slot-scope="text" >
-                                    <a-select placeholder="语文" style="width:100px" :default-value="text">
-                                        <a-select-option value="chinese">语文</a-select-option>
+                                <a-form-item slot="subjects" slot-scope="text,record,index" >
+                                    <a-select style="width:100px" :default-value="text" @change="changSubId($event,index)">
+                                        <a-select-option v-for="(subject,index) in subjectData" :value="subject.subId">{{subject.subName}}</a-select-option>
                                     </a-select>
                                 </a-form-item>
-                                <div slot="timeSetting1" slot-scope="time1,record1">
+                                <div slot="timeSetting1" slot-scope="time1,record1,index1">
                                     <span style="float: left">{{time1}}</span>
-                                    <a-icon  type="edit" @click="timeRegularSetting"  style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
+                                    <a-icon  type="edit" @click="subTimeRegularSettingEdit(index1)"  style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
-                                <div slot="action" slot-scope="text,record" >
+                                <div slot="action" slot-scope="text,record,index" >
                                     <a-popconfirm
                                             v-if="studyTimeData.length"
                                             title="确认删除?"
                                             @confirm="() => subjectTimeDelete(record.id)">
                                         <a href="javascript:;" style="color:blue;float:left">删除</a>
                                     </a-popconfirm>
-                                    <span  style="color:blue;float:right" @click="subjectTimeSave">保存</span>
+                                    <span  style="color:blue;float:right" @click="subjectTimeSave(index)">保存</span>
                                 </div>
                             </a-table>
                             <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;color: blue;"  class="editable-add-btn"  @click="addSubjectTimeRegular">
@@ -58,6 +59,7 @@
                             </div>
                         </a-descriptions-item>
                     </a-descriptions>
+<!--                    教师时间规则-->
                     <a-descriptions bordered>
                         <a-descriptions-item label="教师时间规则">
                             <a-table :rowkey="'id'"
@@ -65,22 +67,22 @@
                                       :data-source="teacherTimeData"
                                       :pagination="false"
                                       :bordered="true">
-                                <div slot="teachers" slot-scope="teacher,record1">
+                                <div slot="teachers" slot-scope="teacher,record1,index1">
                                     <span>{{teacher}}</span>
-                                    <a-icon type="edit" @click="addTeacher"  style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
+                                    <a-icon type="edit" @click="addTeacher(index1)"  style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
-                                <div slot="timeSetting1" slot-scope="time2">
+                                <div slot="timeSetting2" slot-scope="time2,record2,index2">
                                     <span style="float: left">{{time2}}</span>
-                                    <a-icon type="edit" @click="timeRegularSetting" style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
+                                    <a-icon type="edit" @click="teacherTimeRegularSettingEdit(index2)" style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
-                                <div slot="action" slot-scope="text,record">
+                                <div slot="action" slot-scope="text,record,index">
                                     <a-popconfirm
                                             v-if="teacherTimeData.length"
                                             title="确认删除?"
                                             @confirm="() => teacherTimeDelete(record.id)">
                                         <a href="javascript:;" style="color:blue;float:left">删除</a>
                                     </a-popconfirm>
-                                    <span  style="color:blue;float:right" @click="teacherTimeSave">保存</span>
+                                    <span  style="color:blue;float:right" @click="teacherTimeSave(index)">保存</span>
                                 </div>
                             </a-table>
                             <div style=" margin-top: 10px;margin-bottom: -5px; float: left; font-size: 1.0rem;color: blue;" @click="addTeacherTimeRegular">
@@ -89,134 +91,113 @@
                             </div>
                         </a-descriptions-item>
                     </a-descriptions>
+<!--                    班级时间规则-->
                     <a-descriptions bordered>
                         <a-descriptions-item label="班级时间规则">
                             <a-table  :columns="column3"
                                       :data-source="classTimeData"
                                       :pagination="false"
-                                      :rowKey="'classTimeKey'"
-                                      :bordered="true"
-                                      :cell-class-name="addClass">
-                                <a-form-item slot="class" >
-                                    <a-select v-decorator="['subject',{ rules: [{ required: true, message: 'Please select your class!' }] },]"
-                                              placeholder="高一1班"
-                                              @change="handleSelectChange"
-                                              style="width:100px">
-                                        <a-select-option value="1_class">
-                                            高一1班
-                                        </a-select-option>
-                                        <a-select-option value="2_class">
-                                            高一2班
-                                        </a-select-option>
+                                      :rowKey="'id'"
+                                      :bordered="true">
+                                <a-form-item slot="class" slot-scope="text,record,index" >
+                                    <a-select :default-value="text" @change="changeClass($event,index)" style="width:100px">
+                                        <a-select-option v-for="(className,index) in classData" :value="className.classId" >{{className.gradeClass}}</a-select-option>
                                     </a-select>
                                 </a-form-item>
-                                <div slot="timeSetting1" slot-scope="time1,record1,index1">
-                                    <span style="float: left">{{time1}}</span>
-                                    <a-icon type="edit" @click="timeRegularSetting" style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
+                                <a-form-item slot="subjects" slot-scope="subText,subRecord,subIndex">
+                                    <a-select :default-value="subText" @change="changeClassSub($event,subIndex)" style="width:250px">
+                                        <a-select-option v-for="(subject,index) in subjectData" :value="subject.subId">{{subject.subName}}</a-select-option>
+                                    </a-select>
+                                </a-form-item>
+                                <div slot="timeSetting3" slot-scope="time3,record3,index3">
+                                    <span style="float: left">{{time3}}</span>
+                                    <a-icon type="edit" @click="classTimeRegularSettingEdit(index3)" style="float: right;font-weight:bold;font-size:1.5em;color:#0099ff"/>
                                 </div>
-                                <a-form-item slot="subjects" >
-                                    <a-select v-decorator="['subject',{ rules: [{ required: true, message: 'Please select your subject' }] },]"
-                                              placeholder="语文"
-                                              @change="handleSelectChange"
-                                              style="width:250px">
-                                        <a-select-option value="chinese">
-                                            语文
-                                        </a-select-option>
-                                        <a-select-option value="math">
-                                            数学
-                                        </a-select-option>
-                                    </a-select>
-                                </a-form-item>
-                                <div slot="action">
-                                    <span  style="color:blue;float:left" @click="classTimeDelete">删除</span>
-                                    <span  style="color:blue;float:right" @click="classTimeSave">保存</span>
+                                <div slot="action" slot-scope="text,record,index">
+                                    <a-popconfirm
+                                            v-if="classTimeData.length"
+                                            title="确认删除?"
+                                            @confirm="() => classTimeDelete(record.id)">
+                                        <a href="javascript:;" style="color:blue;float:left">删除</a>
+                                    </a-popconfirm>
+                                    <span  style="color:blue;float:right" @click="classTimeSave(index)">保存</span>
                                 </div>
                             </a-table>
-                            <div style="
-                    margin-top: 10px;
-                    margin-bottom: -5px;
-                    float: left;
-                    font-size: 1.0rem;
-                    color: blue;" @click="addClassTimeRegular">
+                            <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;color: blue;" @click="addClassTimeRegular">
                                 <a-icon type="plus" />
                                 <span> 添加规则 </span>
                             </div>
                         </a-descriptions-item>
                     </a-descriptions>
+<!--                    禁止相邻规则-->
                     <a-descriptions bordered>
                         <a-descriptions-item label="禁止相邻">
-                            <a-table :rowKey="'banTimeKey'"
-                                    :columns="column4"
+                            <a-table :rowKey="'id'"
+                                     :columns="column4"
                                       :data-source="banData"
                                       :pagination="false"
                                       :bordered="true">
-                                <a-form-item slot="classTimes" >
-                                    <a-input placeholder="1" style="width: 100px"/>
+                                <a-form-item slot="continuityNum" slot-scope="continueText,record,index" >
+                                    <a-input v-model="continueText" @blur="changeSubjectNum(index,continueText,)" style="width: 100px"/>
                                 </a-form-item>
-                                <a-form-item slot="subjects" >
-                                    <a-select v-decorator="['subject',{ rules: [{ required: true, message: 'Please select your subject' }] },]"
-                                              placeholder="语文"
-                                              @change="handleSelectChange"
-                                              style="width:250px">
-                                        <a-select-option value="chinese">
-                                            语文
-                                        </a-select-option>
-                                        <a-select-option value="math">
-                                            数学
-                                        </a-select-option>
+                                <a-form-item slot="subChildNameOne" slot-scope="subOneText,oneRecord,oneIndex">
+                                    <a-select :default-value="subOneText" @change="changeOneSubject($event,oneIndex)" style="width:250px">
+                                        <a-select-option v-for="(subject,index) in subjectData" :value="subject.subId">{{subject.subName}}</a-select-option>
                                     </a-select>
                                 </a-form-item>
-                                <div slot="action">
-                                    <span  style="color:blue;float:left" @click="banTimeDelete">删除</span>
-                                    <span  style="color:blue;float:right" @click="banTimeSave">保存</span>
+                                <a-form-item slot="subChildNameTwo" slot-scope="subTwoText,twoRecord,twoIndex" >
+                                    <a-select :default-value="subTwoText" @change="changeTwoSubject($event,twoIndex)" style="width:250px">
+                                        <a-select-option v-for="(subject,index) in subjectData" :value="subject.subId">{{subject.subName}}</a-select-option>
+                                    </a-select>
+                                </a-form-item>
+                                <div slot="action" slot-scope="text,record,index">
+                                    <a-popconfirm
+                                            v-if="banData.length"
+                                            title="确认删除?"
+                                            @confirm="() => banTimeDelete(record.id)">
+                                        <a href="javascript:;" style="color:blue;float:left">删除</a>
+                                    </a-popconfirm>
+                                    <span  style="color:blue;float:right" @click="banTimeSave(index)">保存</span>
                                 </div>
                             </a-table>
-                            <div style="
-                    margin-top: 10px;
-                    margin-bottom: -5px;
-                    float: left;
-                    font-size: 1.0rem;
-                    color: blue;" @click="addBanRegular">
+                            <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;color: blue;" @click="addBanRegular">
                                 <a-icon type="plus" />
                                 <span> 添加规则 </span>
                             </div>
                         </a-descriptions-item>
                     </a-descriptions>
+<!--                    单双周课程规则-->
                     <a-descriptions bordered>
                         <a-descriptions-item label="单双周课程">
-                            <a-table :rowKey="'weekTimeKey'"
-                                    :columns="column5"
+                            <a-table :rowKey="'id'"
+                                     :columns="column5"
                                       :data-source="weekData"
                                       :pagination="false"
-                                      :bordered="true"
-                                      :cell-class-name="addClass">
-                                <a-form-item slot="weekTimes" >
-                                    <a-input placeholder="2" style="width: 100px"/>
+                                      :bordered="true">
+                                <a-form-item slot="perWeekLessonNum" slot-scope="weekLessText,record,index" >
+                                    <a-input v-model="weekLessText" style="width: 100px" @blur="changeLessonTime(index,weekLessText)"/>
                                 </a-form-item>
-                                <a-form-item slot="subjects" >
-                                    <a-select v-decorator="['subject',{ rules: [{ required: true, message: 'Please select your subject' }] },]"
-                                              placeholder="音乐"
-                                              @change="handleSelectChange"
-                                              style="width:250px">
-                                        <a-select-option value="music">
-                                            音乐
-                                        </a-select-option>
-                                        <a-select-option value="art">
-                                            美术
-                                        </a-select-option>
+                                <a-form-item slot="singleWeekSubName" slot-scope="singText,singRecord,singIndex" >
+                                    <a-select :default-value="singText" @change="changeSingSubject($event,singIndex)" style="width:250px">
+                                        <a-select-option v-for="(subject,index) in subjectData" :value="subject.subId">{{subject.subName}}</a-select-option>
                                     </a-select>
                                 </a-form-item>
-                                <div slot="action">
-                                    <span  style="color:blue;float:left" @click="weekTimeDelete">删除</span>
-                                    <span  style="color:blue;float:right" @click="weekTimeSave">保存</span>
+                                <a-form-item slot="doubleWeekSubName" slot-scope="doubleText,doubleRecord,doubleIndex">
+                                    <a-select :defaule-value="doubleText" @change="changeDoubleSubject($event,doubleIndex)" style="width:250px">
+                                        <a-select-option v-for="(subject,index) in subjectData" :value="subject.subId">{{subject.subName}}</a-select-option>
+                                    </a-select>
+                                </a-form-item>
+                                <div slot="action" slot-scope="text,record,index">
+                                    <a-popconfirm
+                                            v-if="weekData.length"
+                                            title="确认删除?"
+                                            @confirm="() => weekTimeDelete(record.id)">
+                                        <a href="javascript:;" style="color:blue;float:left">删除</a>
+                                    </a-popconfirm>
+                                    <span  style="color:blue;float:right" @click="weekTimeSave(index)">保存</span>
                                 </div>
                             </a-table>
-                            <div style="
-                    margin-top: 10px;
-                    margin-bottom: -5px;
-                    float: left;
-                    font-size: 1.0rem;
-                    color: blue;" @click="addWeekRegular">
+                            <div style="margin-top: 10px;margin-bottom: -5px;float: left;font-size: 1.0rem;color: blue;" @click="addWeekRegular">
                                 <a-icon type="plus" />
                                 <span>添加规则</span>
                             </div>
@@ -227,108 +208,77 @@
                 border-radius: 5px; width: 200px" @click="Next" >下一步</button>
             </div>
         </div>
-<!--        添加时间规则-->
-        <a-modal :visible='timeRegularVisit'
-                width="600px"
+<!--        添加学科时间规则-->
+        <a-modal :visible='subTimeRegularVisit'
                 :closable="false"
-                 title="选择时间段"
-                on-ok="handleOk">
+                 title="选择时间段">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-                    保存
-                </a-button>
-                <a-button key="back" @click="handleCancel">
-                    取消
-                </a-button>
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOkSubTime">保存</a-button>
+                <a-button key="back" @click="handleCancelSubTime">取消</a-button>
             </template>
             <div class="model1_head">
-                <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit">
-                    <a-form-item label="类型">
-                        <a-select
-                                v-decorator="[
-                                            'type',
-                                            { rules: [{ required: true, message: '不使用/优先使用/必须使用' }] }, ]"
-                                placeholder="不使用/优先使用/必须使用"
-                                @change="handleSelectChange">
-                            <a-select-option value="1">
-                                不使用
-                            </a-select-option>
-                            <a-select-option value="2">
-                                优先使用
-                            </a-select-option>
-                            <a-select-option value="3">
-                                必须使用
-                            </a-select-option>
+                <a-form-model :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
+                    <a-form-model-item label="类型">
+                        <a-select :default-value="subType" placeholder="不使用/优先使用/必须使用" @change="changeSubType">
+                            <a-select-option value="1">不使用</a-select-option>
+                            <a-select-option value="2">优先使用</a-select-option>
+                            <a-select-option value="3">必须使用</a-select-option>
                         </a-select>
-                    </a-form-item>
-                </a-form>
-                <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit2">
-                    <a-form-item label="选择天">
-                        <a-select
-                                v-decorator="[
-                                            'type',
-                                            { rules: [{ required: true, message: '星期一' }] }, ]"
-                                placeholder="星期一"
-                                @change="handleSelectChange">
-                            <a-select-option value="one">
-                                星期一
-                            </a-select-option>
-                            <a-select-option value="two">
-                                星期二
-                            </a-select-option>
-                            <a-select-option value="three">
-                                星期三
-                            </a-select-option>
-                            <a-select-option value="four">
-                                星期四
-                            </a-select-option>
-                            <a-select-option value="five">
-                                星期五
-                            </a-select-option>
-                            <a-select-option value="six">
-                                星期六
-                            </a-select-option>
-                            <a-select-option value="seven">
-                                星期日
-                            </a-select-option>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择天">
+                        <a-select placeholder="星期一" :default-value="subDay" @change="changeSubDay">
+                            <a-select-option value="1">星期一</a-select-option>
+                            <a-select-option value="2">星期二</a-select-option>
+                            <a-select-option value="3">星期三</a-select-option>
+                            <a-select-option value="4">星期四</a-select-option>
+                            <a-select-option value="5">星期五</a-select-option>
+                            <a-select-option value="6">星期六</a-select-option>
+                            <a-select-option value="7">星期日</a-select-option>
                         </a-select>
-                    </a-form-item>
-                </a-form>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择节">
+                        <a-checkbox-group @change="changeSubTime"
+                                :default-value="subTimeValue"
+                                :options="subOption"></a-checkbox-group>
+                    </a-form-model-item>
+                </a-form-model>
             </div>
-            <div class="model1_content">
-                    <a-form :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}" @submit="handleSubmit1">
-                        <a-form-item label="选择节">
-                            <a-checkbox-group @change="onChange">
-                                <a-row>
-                                    <a-col :span="6">
-                                        <a-checkbox value="A">上午1</a-checkbox>
-                                    </a-col>
-                                    <a-col :span="6">
-                                        <a-checkbox value="B">上午2</a-checkbox>
-                                    </a-col>
-                                    <a-col :span="6">
-                                        <a-checkbox value="C">上午3</a-checkbox>
-                                    </a-col>
-                                    <a-col :span="6">
-                                        <a-checkbox value="D">上午4</a-checkbox>
-                                    </a-col>
-                                    <a-col :span="6">
-                                        <a-checkbox value="E">下午1</a-checkbox>
-                                    </a-col>
-                                    <a-col :span="6">
-                                        <a-checkbox value="F">下午2</a-checkbox>
-                                    </a-col>
-                                    <a-col :span="6">
-                                        <a-checkbox value="G">下午3</a-checkbox>
-                                    </a-col>
-                                    <a-col :span="6">
-                                        <a-checkbox value="H">下午4</a-checkbox>
-                                    </a-col>
-                                </a-row>
-                            </a-checkbox-group>
-                        </a-form-item>
-                    </a-form>
-                </div>
+        </a-modal>
+<!--     添加教师时间规则-->
+        <a-modal :visible='teacherTimeRegularVisit'
+                 :closable="false"
+                 title="选择时间段">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOkTeaTime">保存</a-button>
+                <a-button key="back" @click="handleCancelTeaTime">取消</a-button>
+            </template>
+            <div class="model1_head">
+                <a-form-model :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
+                    <a-form-model-item label="类型">
+                        <a-select :default-value="teacherType" placeholder="不使用/优先使用/必须使用" @change="changeTeacherType">
+                            <a-select-option value="1">不使用</a-select-option>
+                            <a-select-option value="2">优先使用</a-select-option>
+                            <a-select-option value="3">必须使用</a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择天">
+                        <a-select placeholder="星期一" :default-value="teacherDay" @change="changeteacherDay">
+                            <a-select-option value="1">星期一</a-select-option>
+                            <a-select-option value="2">星期二</a-select-option>
+                            <a-select-option value="3">星期三</a-select-option>
+                            <a-select-option value="4">星期四</a-select-option>
+                            <a-select-option value="5">星期五</a-select-option>
+                            <a-select-option value="6">星期六</a-select-option>
+                            <a-select-option value="7">星期日</a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择节">
+                        <a-checkbox-group @change="changeteacherTime"
+                                          :default-value="teacherTimeValue"
+                                          :options="subOption"></a-checkbox-group>
+                    </a-form-model-item>
+                </a-form-model>
+            </div>
         </a-modal>
 <!--        添加老师-->
         <a-modal :visible='teacherVisit'
@@ -344,16 +294,13 @@
                     <a-row>
                         <a-col :md="6" :sm="24">
                             <a-form-model-item label="年级" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
-                                <a-select :value="this.gradeName" disabled>
-                                </a-select>
+                                <a-select :value="this.gradeName" disabled></a-select>
                             </a-form-model-item>
                         </a-col>
                         <a-col :md="6" :sm="24">
                             <a-form-model-item label="科目：" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
-                                <a-select placeholder="科目" v-model="form.subject" @change="chooseSubject">
-                                    <a-select-option v-for="(subject,index) in this.subject" :key="index" :value="subject">
-                                        {{subject}}
-                                    </a-select-option>
+                                <a-select style="width:100px" v-model="form.subject" @change="chooseSubject($event,teachIndex)">
+                                    <a-select-option v-for="(subject,index) in subjectData" :value="subject.subId">{{subject.subName}}</a-select-option>
                                 </a-select>
                             </a-form-model-item>
                         </a-col>
@@ -364,7 +311,10 @@
                         </a-col>
                     </a-row>
                     <a-row>
-                        <a-table :columns="editColumn"
+                        <a-table :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+                                :selectedRows="selectedRows"
+                                :rowKey="'teacherId'"
+                                :columns="editColumn"
                                  :data-source="editData"
                                  :pagination="false"
                                  :bordered="true" style="width: 600px;margin-left: 100px;margin-bottom: 100px">
@@ -374,9 +324,46 @@
                 </a-form-model>
             </a-card>
         </a-modal>
+<!--        添加班级时间规则-->
+        <a-modal :visible='classTimeRegularVisit'
+                 :closable="false"
+                 title="选择时间段">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOkClaTime">保存</a-button>
+                <a-button key="back" @click="handleCancelClaTime">取消</a-button>
+            </template>
+            <div class="model1_head">
+                <a-form-model :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
+                    <a-form-model-item label="类型">
+                        <a-select :default-value="classType" placeholder="不使用/优先使用/必须使用" @change="changeClassType">
+                            <a-select-option value="1">不使用</a-select-option>
+                            <a-select-option value="2">优先使用</a-select-option>
+                            <a-select-option value="3">必须使用</a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择天">
+                        <a-select placeholder="星期一" :default-value="classDay" @change="changeClassDay">
+                            <a-select-option value="1">星期一</a-select-option>
+                            <a-select-option value="2">星期二</a-select-option>
+                            <a-select-option value="3">星期三</a-select-option>
+                            <a-select-option value="4">星期四</a-select-option>
+                            <a-select-option value="5">星期五</a-select-option>
+                            <a-select-option value="6">星期六</a-select-option>
+                            <a-select-option value="7">星期日</a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                    <a-form-model-item label="选择节">
+                        <a-checkbox-group @change="changeClassTime"
+                                          :default-value="classTimeValue"
+                                          :options="subOption"></a-checkbox-group>
+                    </a-form-model-item>
+                </a-form-model>
+            </div>
+        </a-modal>
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue";
     const column1=[
         {
         title:'',
@@ -440,13 +427,13 @@
         {
             title:'时间设置',
             dataIndex:'time1',
-            scopedSlots: { customRender: 'timeSetting1' },
+            scopedSlots: { customRender: 'timeSetting2' },
             width: '71%',
             align:'center',
         },
         {
             title:'操作',
-            dataIndex:'opt1',
+            dataIndex:'opt2',
             scopedSlots: { customRender: 'action' },
             width: '12%',
             align:'center',
@@ -471,7 +458,7 @@
         },
         {
             title:'学科名称',
-            dataIndex:'subject',
+            dataIndex:'classSubjectName',
             scopedSlots: { customRender: 'subjects' },
             width: '35%',
             align:'center',
@@ -479,7 +466,7 @@
         {
             title:'时间设置',
             dataIndex:'time1',
-            scopedSlots: { customRender: 'timeSetting1' },
+            scopedSlots: { customRender: 'timeSetting3' },
             width: '36%',
             align:'center',
         },
@@ -493,92 +480,86 @@
     ]
     const column4=[
         {
+            title:'',
+            dataIndex:'id',
+            align:'center',
+            width:'5%',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            },
+        },
+        {
             title:'连堂次数',
-            key:'classTimes',
-            dataIndex:'classTimes',
-            scopedSlots: { customRender: 'classTimes' },
+            dataIndex:'continuityNum',
+            scopedSlots: { customRender: 'continuityNum' },
             width: '12%',
             align:'center',
         },
         {
             title:'科目一',
-            key:'subjectOne',
-            dataIndex:'subjectOne',
-            scopedSlots: { customRender: 'subjects' },
+            dataIndex:'subChildNameOne',
+            scopedSlots: { customRender: 'subChildNameOne' },
             width: '38%',
             align:'center',
         },
         {
             title:'科目二',
-            key:'subjectTwo',
-            dataIndex:'subjectTwo',
-            scopedSlots: { customRender: 'subjects' },
+            dataIndex:'subChildNameTwo',
+            scopedSlots: { customRender: 'subChildNameTwo' },
             width: '38%',
             align:'center',
         },
         {
             title:'操作',
-            key:'opt1',
             dataIndex:'opt1',
             scopedSlots: { customRender: 'action' },
             width: '12%',
             align:'center',
         },
     ]
-    const banData=[
-        {
-            banTimeKey:'1'
-        },
-    ]
     const column5=[
         {
+            title:'',
+            dataIndex:'id',
+            align:'center',
+            width:'5%',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            },
+        },
+        {
             title:'每周上课次数',
-            key:'weekTimes',
-            dataIndex:'weekTimes',
-            scopedSlots: { customRender: 'weekTimes' },
+            dataIndex:'perWeekLessonNum',
+            scopedSlots: { customRender: 'perWeekLessonNum' },
             width: '12%',
             align:'center',
         },
         {
             title:'单周课程',
-            key:'subjectOne',
-            dataIndex:'subjectOne',
-            scopedSlots: { customRender: 'subjects' },
+            dataIndex:'singleWeekSubName',
+            scopedSlots: { customRender: 'singleWeekSubName' },
             width: '38%',
             align:'center',
         },
         {
             title:'双周课程',
-            key:'subjectDouble',
-            dataIndex:'subjectDouble',
-            scopedSlots: { customRender: 'subjects' },
+            dataIndex:'doubleWeekSubName',
+            scopedSlots: { customRender: 'doubleWeekSubName' },
             width: '38%',
             align:'center',
         },
         {
             title:'操作',
-            key:'opt1',
             dataIndex:'opt1',
             scopedSlots: { customRender: 'action' },
             width: '12%',
             align:'center',
         },
     ]
-    const weekData=[
-        {
-            weekTimeKey:'1',
-        },
-    ]
     const editColumn=[
         {
-            title:' ',
-            dataIndex:'editblank',
-            align:'center',
-            scopedSlots:{customRender:'editCheck'},
-            width:'8%'
-        },{
             title:'序号 ',
-            dataIndex:'id',
+            dataIndex:'teacherId',
             align:'center',
             width:'15%',
             customRender: function(t, r, index) {
@@ -586,17 +567,17 @@
             }
         },{
             title:'姓名 ',
-            dataIndex:'name',
+            dataIndex:'teacherName',
             align:'center',
             width:'20%'
         },{
             title:'所教年级 ',
-            dataIndex:'senior',
+            dataIndex:'gradeName',
             align:'center',
             width:'25%'
         },{
             title:'所教学科 ',
-            dataIndex:'subject',
+            dataIndex:'subName',
             align:'center',
             width:'32%'
         },
@@ -604,29 +585,66 @@
     export default {
         data() {
             return {
+                //学科时间规则
                 column1,
                 studyTimeData:[],
+                subOption:[],
+                subTimeValue:[],
+                subEditTimeValue:[],
+                subTimeRegularVisit:false,
+                subType:"",
+                subEditType:"",
+                subDay:"",
+                subEditDay:"",
+                subjectId:"",
                 activity,
-                subjectTimeCount:3,
+                editSubIndex:-1,
+                //教师时间规则
                 column2,
                 teacherTimeData:[],
+                teacherTimeRegularVisit:false,
+                editTeacherIndex:-1,
+                teacherTimeValue:[],
+                teacherEditTimeValue:[],
+                teacherType:"",
+                teacherEditType:"",
+                teacherDay:"",
+                teacherEditDay:"",
+                teacherVisit:false,
+                teachName:"",
+                teachId:"",
+                selectedRowKeys: [], // Check here to configure the default column
+                selectedRows:[],
+
+                //班级时间规则
                 column3,
                 classTimeData:[],
+                classTimeRegularVisit:false,
+                editclassIndex:-1,
+                classTimeValue:[],
+                classEditTimeValue:[],
+                classType:"",
+                classEditType:"",
+                classDay:"",
+                classEditDay:"",
+                classData:[],
+                //禁止相邻规则
                 column4,
-                banData,
+                banData:[],
+                //单双周课程规则查看
                 column5,
-                weekData,
+                weekData:[],
                 editColumn,
                 editData:[],
-                timeRegularVisit: false,
                 loading:false,
-                teacherVisit:false,
+
                 planData:"",
                 planId:"",
                 gradeName:"",
+                gradeId:"",
+                currId:"",
                 subject:[],
                 teacherName:[],
-                treeData:[],
                 form:{},
                 subjectData:[],
             };
@@ -639,220 +657,1106 @@
                 //获取单个选课计划的信息
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name;
-                console.log(result);
+                // console.log(result);
                 this.gradeName=result.gradeName;
+                this.gradeId=result.gradeId;
+                this.currId=result.currId;
             }
             this.subjectTimeRule();
-            // this.teacherTimeRule();
-            // this.clsassTimeRule();
+            this.subjectInfo();
+            this.teacherTimeRule();
+            this.classTimeRule();
+            this.searchClassInfo();
+            this.banNearRule();
+            this.singDoubleRule();
         },
         methods:{
+            //学科时间规则
+            //=========================================================
             //学科时间规则查看
             async subjectTimeRule(){
                 //获取学科时间规则
-                let {data:{result,success}}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId:"934e3a63aadc47d398da0d395ad41420"})
-                console.log(result);
-                let timeRuleSetting=result.timeRuleSetting;
-                let list=[...timeRuleSetting];
-                list.forEach(item=>{
-                    let timeDay="";
-                    for(let i=1;i<8;i++){
-                        if(item.timeDay==i){
-                            timeDay="星期"+i;
-                        }
-                        // console.log(timeDay);
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId:this.planId})
+                // console.log(result);
+                this.studyTimeData=result;
+                this.studyTimeData.forEach(item=>{
+                    if(item.timeRuleSetting){
+                        let timeItem = item.timeRuleSetting[0];
+                        let timeDay = "";
+                        //星期转换
+                        for (let i = 1; i < 8; i++) {
+                                if (timeItem.timeDay == i) {
+                                    timeDay = "星期" + i;
+                                }
+                                // console.log(timeDay);
+                            }
+                        let time1 = [];
+                        //==================================
+                        //节次转换
+                        //     //字符串转换为数组
+                        let timeLesson = timeItem.timeLesson.split(',');
+                        // console.log(timeLesson);
+                        for (let i = 0; i < timeLesson.length; i++) {
+                                // console.log(timeLesson[i]-1);
+                                if (timeLesson[i] < 5) {
+                                    time1 = [...time1, "上午第" + timeLesson[i] + "节"];
+                                } else {
+                                    let lesson = timeLesson[i] - 4
+                                    time1 = [...time1, "下午第" + lesson + "节"];
+                                }
+                                // console.log(time1);
+                            }
+                        //=================================================
+                        let timeType = "";
+                        let type = timeItem.timeType
+                        switch (type) {
+                                case "1":timeType = "不使用";break;
+                                case "2":timeType = "优先使用";break;
+                                case "3":timeType = "必须使用";break;
+                            }
+                        item.time1=timeType+timeDay+time1;
                     }
-                    let time1=[];
-                //     //字符串转换为数组
-                    let timeLesson=item.timeLesson.split(',');
-                    // console.log(timeLesson);
-                    for(let i=0;i<timeLesson.length;i++){
-                        // console.log(timeLesson[i]-1);
-                        if(timeLesson[i]<5){
-                            time1=[...time1,"上午第"+timeLesson[i]+"节"];
-                        }else{
-                            let lesson=timeLesson[i]-4
-                            time1=[...time1,"下午第"+lesson+"节"];
-                        }
-                        // console.log(time1);
-                    }
+                })
+                // console.log(this.studyTimeData);
+            },
+            //科目信息查看
+            //学科时间规则（获取学科信息）
+            async subjectInfo() {
+                this.subjectData=[];
+                let {data} = await this.$api.schedule.adminClass.getCourseSetting({
+                    planId: this.planId,
+                    scheduleType: 1
+                });
+                console.log(data);
+                for(let i in data.result){
                     let pushData={
-                        id:item.id,
-                        subName:item.subName,
-                        time1:"必须"+timeDay+time1,
+                        subId:data.result[i].subId,
+                        subName:data.result[i].subName,
                     }
-                    this.studyTimeData.push(pushData)
+                    this.subjectData.push(pushData);
+                }
+                console.log(this.subjectData);
+            },
+            //学科设置规则删除
+            subjectTimeDelete(id){
+                this.delete(id);
+                this.subjectTimeRule();
+            },
+            //获取删除接口
+            async delete(ids){
+                let {data}=await this.$api.schedule.adminClass.deleteRule({ids:[ids]});
+                console.log(data);
+                if(data&&data.success){
+                    message.info("删除成功！");
+                }else{
+                    message.info("删除失败！");
+                }
+            },
+            //获取节次时间
+            async modalInfo() {
+                let {data} = await this.$api.basic.template.fetchTemplate({id: this.currId});
+                // console.log(data);
+                let activities=[];
+                let list=[...this.activity];
+                list.forEach(item=>{
+                    for(let i=1;i<=data.result[item.value];i++){
+                        activities.push({
+                            label: item.name+i,
+                            value:item.value+i,
+                        });
+                    }
+                });
+                this.subOption=activities;
+                console.log(this.subOption);
+                // console.log(list);
+            },
+            //学科时间规则的课时设置
+            subTimeRegularSettingEdit(index){
+                console.log(index);
+                this.editSubIndex=index;
+                this.subTimeRegularVisit = true;
+                this.modalInfo();
+               if(this.studyTimeData[index].timeRuleSetting){
+                   this.subDay=this.subEditDay=this.studyTimeData[index].timeRuleSetting[0].timeDay;
+                   let timeType=this.studyTimeData[index].timeRuleSetting[0].timeType;
+                   switch (timeType) {
+                       case "1":this.subType=this.subEditType="不使用";break;
+                       case "2":this.subType=this.subEditType="优先使用";break;
+                       case "3":this.subType=this.subEditType="必须使用";break;
+                   }
+                   //字符串转化为数组
+                   let timeLesson=this.studyTimeData[index].timeRuleSetting[0].timeLesson.split(',');
+                   console.log(timeLesson);
+                   for(let i in timeLesson){
+                       if(timeLesson[i]<5){
+                           let text="morning"+timeLesson[i];
+                           this.subTimeValue.push(text);
+                           // console.log(this.subTimeValue);
+                       }else{
+                           let text="afternoon"+timeLesson[i]-4;
+                           this.subTimeValue.push(text);
+                       }
+                   }
+                   console.log(this.subTimeValue);
+                   this.subEditTimeValue=this.subTimeValue;
+               }else{
+                   this.timeType="";
+                   this.timeDay="";
+                   this.timeLesson=[];
+               }
+            },
+            //保存学科时间设置时间规则弹框
+            handleOkSubTime(){
+                this.subTimeRegularVisit = false;
+                let list=[...this.subEditTimeValue];
+                let chooseValue=[];
+                list.forEach(item=>{
+                    // console.log(item);
+                    let num=-1;
+                    switch (item) {
+                        case "morning1":num=1;break;
+                        case "morning2":num=2;break;
+                        case "morning3":num=3;break;
+                        case "morning4":num=4;break;
+                        case "afternoon1":num=5;break;
+                        case "afternoon2":num=6;break;
+                        case "afternoon3":num=7;break;
+                        case "afternoon4":num=8;break;
+                    }
+                    chooseValue.push(num);
+                })
+                console.log(chooseValue);
+               if(this.studyTimeData[this.editSubIndex].timeRuleSetting){
+                   this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeDay=this.subEditDay;
+                   this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeType=this.subEditType;
+                   // this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeLesson=this.subType;
+                   // console.log(this.subEditTimeValue);
+                   this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeLesson=chooseValue.toString();
+                   console.log(this.studyTimeData[this.editSubIndex].timeRuleSetting[0]);
+               }else{
+                   let pushData={
+                       timeDay:this.subEditDay,
+                       timeType:this.subEditType,
+                       timeLesson:chooseValue.toString()
+                   }
+                   console.log(pushData);
+                   this.studyTimeData[this.editSubIndex].timeRuleSetting=[pushData];
+               }
+                // //星期转换
+                // let timeDay="";
+                // for(let i=1;i<8;i++){
+                //     if(this.subEditDay==i){
+                //         timeDay="星期"+i;
+                //     }
+                //     // console.log(timeDay);
+                // }
+                // let time1=[];
+                // //==================================
+                // //节次转换
+                // for(let i=0;i<chooseValue.length;i++){
+                //     // console.log(timeLesson[i]-1);
+                //     if(chooseValue[i]<5){
+                //         time1=[...time1,"上午第"+chooseValue[i]+"节"];
+                //     }else{
+                //         let lesson=chooseValue[i]-4
+                //         time1=[...time1,"下午第"+lesson+"节"];
+                //     }
+                //     // console.log(time1);
+                // }
+                // //=================================================
+                // let timeType="";
+                // let type=this.subEditType
+                // console.log(type);
+                // switch (type) {
+                //     case "0":timeType="不使用";break;
+                //     case "1":timeType="优先使用";break;
+                //     case "2":timeType="必须使用";break;
+                // }
+                // this.studyTimeData[this.editSubIndex].time1=timeType+timeDay+time1;
+                // console.log(this.studyTimeData);
+            },
+            //关闭学科时间设置时间规则弹框
+            handleCancelSubTime(){
+                this.subTimeRegularVisit = false;
+            },
+            //添加学科时间规则(添加一项）
+            addSubjectTimeRegular(){
+                this. studyTimeData.unshift({
+                    id:"",
+                    subId:"",
+                    subName:"",
+                    time1:'',
+                    timeSetting:[],
                 })
                 console.log(this.studyTimeData);
             },
+            //修改学科
+            async changSubId(info,index){
+              this.studyTimeData[index].subId=info;
+              console.log(info);
+              console.log(this.studyTimeData[index].subId);
+              let addData={};
+              if(this.studyTimeData[index].time1){
+                  addData={
+                      id:this.studyTimeData[index].id,
+                      planId:this.planId,
+                      ruleType: "1",
+                      subId:info,
+                      time1:this.studyTimeData[index].time1,
+                  }
+              }else{
+                  addData={
+                      planId:this.planId,
+                      ruleType: "1",
+                      subId:info
+                  }
+              }
+                this.saveSubTime(addData);
+                this.subjectTimeRule();
+            },
+            //改变类型
+            changeSubType(info){
+                this.subEditType=info;
+                console.log(this.subEditType)
+            },
+            //选择星期几
+            changeSubDay(info){
+                this.subEditDay=info;
+                console.log(this.subEditDay);
+            },
+            //选择节
+            changeSubTime(info){
+                console.log(info);
+                this.subEditTimeValue=info;
+                console.log(this.subEditTimeValue);
+            },
+            //保存学科时间规则设置
+            subjectTimeSave(index){
+                console.log(index);
+                console.log(this.studyTimeData[index]);
+                let addData={
+                    id:this.studyTimeData[index].id,
+                    planId:this.planId,
+                    ruleType:1,
+                    subId:this.studyTimeData[index].subId,
+                    timeRuleSetting:[{
+                        timeDay:this.studyTimeData[index].timeRuleSetting[0].timeDay,
+                        timeLesson:this.studyTimeData[index].timeRuleSetting[0].timeLesson,
+                        timeType:this.studyTimeData[index].timeRuleSetting[0].timeType,
+                    }]
+                }
+                console.log(addData);
+                this.saveSubTime(addData);
+                this.subjectTimeRule()
+            },
+            //获取保存接口
+            async saveSubTime(addData){
+                let {data}=await this.$api.schedule.adminClass.addRuleSetting(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.info("保存成功！");
+                }
+            },
+            //=======================================================
+            //教师时间规则
+            //=========================================================
             //教师时间规则查看
             async teacherTimeRule(){
+                this.teacherTimeData=[];
                 //获取教室时间规则
-                let {data:{result,success}}=await this.$api.schedule.adminClass.searchTeacherTimeRule({planId:"934e3a63aadc47d398da0d395ad41420"})
-                console.log(result);
-                let newData=[];
-                newData=result;
-                // console.log(newData);
-                let list=[...newData];
-                list.forEach(item=>{
-                    let timeDay="";
-                    for(let i=1;i<8;i++){
-                        if(item.timeDay==i){
-                            timeDay="星期"+i;
-                        }
-                        // console.log(timeDay);
-                    }
-                    let time1=[];
-                    //字符串转换为数组
-                    let timeLesson=item.timeLesson.split(',');
-                    // console.log(timeLesson);
-                    for(let i=0;i<timeLesson.length;i++){
-                        // console.log(timeLesson[i]-1);
-                        if(timeLesson[i]<5){
-                            time1=[...time1,"上午第"+timeLesson[i]+"节"];
-                        }else{
-                            let lesson=timeLesson[i]-4
-                            time1=[...time1,"下午第"+lesson+"节"];
-                        }
-                        // console.log(time1);
-                    }
-                    let pushData={
-                        id:item.id,
-                        teacherName:item.teacherName,
-                        time1:"必须"+timeDay+time1,
-                    }
-                    this.teacherTimeData.push(pushData)
-                })
-                console.log(this.teacherTimeData);
-            },
-            //编辑教室弹框的数据获取
-            async getData(){
-                let {data:{result,success}}=await this.$api.basic.teacher.AdminGradeSubTec();
-                console.log(result);
-                //获取课程树
-                for(let i=0;i<result.length;i++){
-                    //第一层(级部）
-                    let adminTree={};
-                    adminTree.title=result[i].adminName;
-                    adminTree.key=result[i].adminId;
-                    if(result[i].adminGrades.length){
-                        //第二层(年级）
-                        adminTree.children=[];
-                        for(let j=0;j<result[i].adminGrades.length;j++){
-                            let gradeItem=result[i].adminGrades[j];
-                            let childData={}
-                            childData.key=gradeItem.gradeId;
-                            childData.title=gradeItem.gradeName;
-                            if(gradeItem.subSubjectDtos.length){
-                                //第三层(主课程)
-                                childData.children=[];
-                                for(let k in gradeItem.subSubjectDtos){
-                                    let mainCourseItem=gradeItem.subSubjectDtos[k];
-                                    let mainCourse={};
-                                    mainCourse.key=mainCourseItem.subId;
-                                    mainCourse.title=mainCourseItem.subName;
-                                    if(mainCourseItem.teacherDtos){
-                                        //第四层（教师）
-                                        mainCourse.children=[];
-                                        for (let l in mainCourseItem.teacherDtos){
-                                            let teacher={};
-                                            teacher.key=result[i].adminId+gradeItem.gradeId+mainCourseItem.subId+mainCourseItem.teacherDtos[l].teacherId;
-                                            teacher.title=mainCourseItem.teacherDtos[l].teacherName;
-                                            mainCourse.children.push(teacher)
-                                        }
-                                    }
-                                    childData.children.push(mainCourse)
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchTeacherTimeRule({planId:this.planId})
+                // console.log(result);
+                this.teacherTimeData=result;
+                this.teacherTimeData.forEach(item=>{
+                    // console.log(item);
+                    if(item.timeRuleSetting){
+                        let timeItem = item.timeRuleSetting[0];
+                        let timeDay = "";
+                        //星期转换
+                        for (let i = 1; i < 8; i++) {
+                                if (timeItem.timeDay == i) {
+                                    timeDay = "星期" + i;
                                 }
+                                // console.log(timeDay);
                             }
-                            adminTree.children.push(childData);
+                        let time1 = [];
+                        //==================================
+                        //节次转换
+                        //     //字符串转换为数组
+                        let timeLesson = timeItem.timeLesson.split(',');
+                        // console.log(timeLesson);
+                        for (let i = 0; i < timeLesson.length; i++) {
+                            // console.log(timeLesson[i]-1);
+                            if (timeLesson[i] < 5) {
+                                time1 = [...time1, "上午第" + timeLesson[i] + "节"];
+                                } else {
+                                let lesson = timeLesson[i] - 4
+                                time1 = [...time1, "下午第" + lesson + "节"];
+                            }
+                            // console.log(time1);
                         }
+                        //=================================================
+                        let timeType = "";
+                        let type = timeItem.timeType
+                        // console.log(type);
+                        switch (type) {
+                            case "1":timeType = "不使用";break;
+                            case "2":timeType = "优先使用";break;
+                            case "3":timeType = "必须使用";break;
+                        }
+                        item.time1=timeType+timeDay+time1;
                     }
-                    this.treeData.push(adminTree);
-                    console.log(this.treeData);
-                }
-                this.subjectInfo();
+                })
+                // console.log(this.teacherTimeData);
             },
-            //课程数据获取
-            subjectInfo(){
-                for(let i=0;i<this.treeData.length;i++){
-                    //后期需要将下标0改为i
-                    let adminData=this.treeData[0].children;
-                    // console.log(adminData);
-                    for(let j=0;j<adminData.length;j++){
-                        // console.log(this.treeData[i].title+"序号"+"——————"+j,"年级"+adminData[j].title);
-                        // console.log(this.gradeName);
-                        if(this.gradeName===adminData[j].title){
-                            this.subjectData=adminData[j].children;
-                            console.log(this.subjectData);
-                            let subjectDataTitle=[];
-                            for(let z in this.subjectData){
-                                subjectDataTitle=[...subjectDataTitle,this.subjectData[z].title];
-                            }
-                            // console.log(subjectDataTitle);
-                            this.subject=subjectDataTitle;
-                            // console.log(this.subject);
+            //教师时间规则删除
+            teacherTimeDelete(id){
+                this.delete(id);
+                this.teacherTimeRule();
+            },
+            //编辑教师时间规则
+            teacherTimeRegularSettingEdit(index){
+                this.editTeacherIndex=index;
+                this.teacherTimeRegularVisit=true;
+                this.modalInfo();
+                console.log(this.teacherTimeData[index]);
+                if(this.teacherTimeData[index].timeRuleSetting){
+                    this.teacherDay=this.teacherEditDay=this.teacherTimeData[index].timeRuleSetting[0].timeDay;
+                    let timeType=this.teacherTimeData[index].timeRuleSetting[0].timeType;
+                    switch (timeType) {
+                        case "1":this.teacherType=this.teacherEditType= "不使用";break;
+                        case "2":this.teacherType=this.teacherEditType = "优先使用";break;
+                        case "3":this.teacherType=this.teacherEditType = "必须使用";break;
+                    }
+                    //字符串转化为数组
+                    let timeLesson=this.teacherTimeData[index].timeRuleSetting[0].timeLesson.split(',');
+                    console.log(timeLesson);
+                    for(let i in timeLesson){
+                        if(timeLesson[i]<5){
+                            let text="morning"+timeLesson[i];
+                            this.teacherTimeValue.push(text);
+                            // console.log(this.subTimeValue);
+                        }else{
+                            let text="afternoon"+timeLesson[i]-4;
+                            this.teacherTimeValue.push(text);
                         }
                     }
+                    console.log(this.teacherTimeValue);
+                    this.teacherEditTimeValue=this.teacherTimeValue;
+                }else{
+                    this.timeType="";
+                    this.timeDay="";
+                    this.timeLesson=[];
                 }
-                // console.log(this.subject);
+            },
+            //保存教师时间规则弹框
+            handleOkTeaTime(){
+                this.teacherTimeRegularVisit=false;
+                let list=[...this.teacherEditTimeValue];
+                let chooseValue=[];
+                list.forEach(item=>{
+                    // console.log(item);
+                    let num=-1;
+                    switch (item) {
+                        case "morning1":num=1;break;
+                        case "morning2":num=2;break;
+                        case "morning3":num=3;break;
+                        case "morning4":num=4;break;
+                        case "afternoon1":num=5;break;
+                        case "afternoon2":num=6;break;
+                        case "afternoon3":num=7;break;
+                        case "afternoon4":num=8;break;
+                    }
+                    chooseValue.push(num);
+                })
+                console.log(chooseValue);
+                if(this.teacherTimeData[this.editTeacherIndex].timeRuleSetting){
+                    this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeDay=this.teacherEditDay;
+                    this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeType=this.teacherEditType;
+                    this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeLesson=chooseValue.toString();
+                    console.log(this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0]);
+                }else{
+                    let pushData={
+                        timeDay:this.teacherEditDay,
+                        timeType:this.teacherEditType,
+                        timeLesson:chooseValue.toString()
+                    }
+                    console.log(pushData);
+                    this.teacherTimeData[this.editTeacherIndex].timeRuleSetting=[pushData];
+                }
+            },
+            //关闭教师时间规则弹框
+            handleCancelTeaTime(){
+                this.teacherTimeRegularVisit=false;
+            },
+            //添加教师时间规则(添加一项)
+            addTeacherTimeRegular(){
+                this. teacherTimeData.unshift({
+                    id:"",
+                    teacherId:"",
+                    teacherName:"",
+                    time1:"",
+                    timeSetting:[],
+                })
+            },
+            //编辑老师
+            addTeacher(index){
+                this.teachId=index;
+                // console.log(value);
+                // console.log(index);
+                this.teacherVisit=true;
+                let pushData={
+                    gradeId:this.gradeId,
+                }
+                this.getData(pushData);
+            },
+            //选择老师
+            onSelectChange( selectedRowKeys,selectedRows) {
+                this.selectedRowKeys = selectedRowKeys;
+                this.selectedRows=selectedRows
+                console.log(this.selectedRowKeys);
+                console.log(this.selectedRows);
+            },
+            //获取老师信息
+            async getData(pushData){
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchTeacher(pushData);
+                console.log(result);
+                let allData=result[0].gradeDtos;
+                // console.log(allData);
+                allData.forEach(item=>{
+                    let teachList=[...item.teachers];
+                    teachList.forEach(teaItem=>{
+                        let pushData={
+                            teacherId:teaItem.teacherId,
+                            teacherName:teaItem.teacherName,
+                            gradeName:item.gradeName,
+                            subChildId:item.subChildId,
+                            subName:item.subName
+                        }
+                        this.editData.push(pushData);
+                    })
+                })
+                console.log(this.editData);
+            },
+            //改变类型
+            changeTeacherType(info){
+                this.teacherEditType=info;
+                console.log(this.teacherEditType)
+            },
+            //选择星期几
+            changeteacherDay(info){
+                this.teacherEditDay=info;
+                console.log(this.teacherEditDay);
+            },
+            ////修改教师节
+            changeteacherTime(info){
+                console.log(info);
+                this.teacherEditTimeValue=info;
+                console.log(this.teacherEditTimeValue);
+            },
+            //保存教师时间规则
+            teacherTimeSave(index){
+                console.log(index);
+                this.saveSubTime(index);
+                this.teacherTimeRule();
             },
             //选择课程
             chooseSubject(){
                 console.log(this.form.subject);
-                console.log(this.subjectData);
-                let teacherNameTitle=[];
-                for(let i in this.subjectData){
-                    if(this.form.subject==this.subjectData[i].title){
-                        let teacherNameData=this.subjectData[i].children;
-                        console.log(teacherNameData);
-                        for(let j in teacherNameData){
-                            teacherNameTitle=[...teacherNameTitle,teacherNameData[j].title];
-                        }
-                    }
-                }
-                this.teacherName=teacherNameTitle;
+                // console.log(this.subjectData);
                 // console.log(this.teacherName);
+                let pushData={
+                    gradeId:this.gradeId,
+                    subChildId: this.form.subject,
+                }
+                this.getData(pushData);
             },
-            // 班级时间规则查看
-            async clsassTimeRule(){
-                //获取学科时间规则
-                let {data:{result,success}}=await this.$api.schedule.adminClass.searchSubjectTimeRule({planId:"934e3a63aadc47d398da0d395ad41420"})
-                console.log(result);
-                let list=[...result];
-                list.forEach(item=>{
-                    let timeDay="";
-                    for(let i=1;i<8;i++){
-                        if(item.timeDay==i){
-                            timeDay="星期"+i;
-                        }
-                        // console.log(timeDay);
-                    }
-                    let time1=[];
-                    //字符串转换为数组
-                    let timeLesson=item.timeLesson.split(',');
-                    // console.log(timeLesson);
-                    for(let i=0;i<timeLesson.length;i++){
-                        // console.log(timeLesson[i]-1);
-                        if(timeLesson[i]<5){
-                            time1=[...time1,"上午第"+timeLesson[i]+"节"];
-                        }else{
-                            let lesson=timeLesson[i]-4
-                            time1=[...time1,"下午第"+lesson+"节"];
-                        }
-                        // console.log(time1);
-                    }
-                    let pushData={
-                        id:item.id,
-                        subName:item.subName,
-                        time1:"必须"+timeDay+time1,
-                    }
-                    this.classTimeData.push(pushData)
-                })
-                console.log(this.classTimeData);
-            },
-
             //查询
             onSearch(){
+                console.log(this.form.teacherName);
+                let pushData={}
+                if(this.form.subject==""){
+                    pushData={
+                        gradeId:this.gradeId,
+                        teacherName:this.form.teacherName
+                    }
+                }else{
+                    pushData={
+                        gradeId:this.gradeId,
+                        subChildId:this.form.subject,
+                        teacherName:this.form.teacherName
+                    }
+                }
+                // console.log(pushData);
+                this.getData(pushData);
+            },
+            //保存编辑老师
+            handleOk(){
+                this.teacherVisit=false;
+            },
+            //关闭编辑老师弹框
+            handleCancel(){
+                this.teacherVisit=false;
+            },
+            //===========================================================
+            //班级时间规则
+            //=============================================================
+            // 班级时间规则查看
+            async classTimeRule(){
+                //获取学科时间规则
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchClassTimeRule({planId:this.planId})
+                // console.log(result);
+                this.classTimeData=result;
+                this.classTimeData.forEach(item=>{
+                    // console.log(item);
+                    if(item.timeRuleSetting){
+                        let timeItem = item.timeRuleSetting[0];
+                        let timeDay = "";
+                        //星期转换
+                        for (let i = 1; i < 8; i++) {
+                            if (timeItem.timeDay == i) {
+                                timeDay = "星期" + i;
+                            }
+                            // console.log(timeDay);
+                        }
+                        let time1 = [];
+                        //==================================
+                        //节次转换
+                        //     //字符串转换为数组
+                        let timeLesson = timeItem.timeLesson.split(',');
+                        // console.log(timeLesson);
+                        for (let i = 0; i < timeLesson.length; i++) {
+                            // console.log(timeLesson[i]-1);
+                            if (timeLesson[i] < 5) {
+                                time1 = [...time1, "上午第" + timeLesson[i] + "节"];
+                            } else {
+                                let lesson = timeLesson[i] - 4
+                                time1 = [...time1, "下午第" + lesson + "节"];
+                            }
+                            // console.log(time1);
+                        }
+                        //=================================================
+                        let timeType = "";
+                        let type = timeItem.timeType
+                        // console.log(type);
+                        switch (type) {
+                            case "1":timeType = "不使用";break;
+                            case "2":timeType = "优先使用";break;
+                            case "3":timeType = "必须使用";break;
+                        }
+                        item.time1=timeType+timeDay+time1;
+                    }
+                    item.class=item.gradeName+item.className
+                })
+                // console.log(this.classTimeData);
+            },
+            //班级时间规则删除
+            classTimeDelete(id){
+                this.delete(id);
+                this.classTimeRule();
+            },
+            //班级时间规则编辑
+            classTimeRegularSettingEdit(index){
+                this.editclassIndex=index;
+                this.classTimeRegularVisit=true;
+                this.modalInfo();
+                if(this.classTimeData[index].timeRuleSetting){
+                    this.classDay=this.classEditDay=this.classTimeData[index].timeRuleSetting[0].timeDay;
+                    let timeType=this.classTimeData[index].timeRuleSetting[0].timeType;
+                    switch (timeType) {
+                        case "1":this.classType=this.classEditType= "不使用";break;
+                        case "2":this.classType=this.classEditType = "优先使用";break;
+                        case "3":this.classType=this.classEditType = "必须使用";break;
+                    }
+                    //字符串转化为数组
+                    let timeLesson=this.classTimeData[index].timeRuleSetting[0].timeLesson.split(',');
+                    console.log(timeLesson);
+                    for(let i in timeLesson){
+                        if(timeLesson[i]<5){
+                            let text="morning"+timeLesson[i];
+                            this.classTimeValue.push(text);
+                            // console.log(this.subTimeValue);
+                        }else{
+                            let text="afternoon"+timeLesson[i]-4;
+                            this.classTimeValue.push(text);
+                        }
+                    }
+                    console.log(this.classTimeValue);
+                    this.classEditTimeValue=this.classTimeValue;
+                }else{
+                    this.timeType="";
+                    this.timeDay="";
+                    this.timeLesson=[];
+                }
+            },
+            //保存编辑时间规则弹框
+            handleOkClaTime(){
+                this.classTimeRegularVisit=false;
+                let list=[...this.classEditTimeValue];
+                let chooseValue=[];
+                list.forEach(item=>{
+                    // console.log(item);
+                    let num=-1;
+                    switch (item) {
+                        case "morning1":num=1;break;
+                        case "morning2":num=2;break;
+                        case "morning3":num=3;break;
+                        case "morning4":num=4;break;
+                        case "afternoon1":num=5;break;
+                        case "afternoon2":num=6;break;
+                        case "afternoon3":num=7;break;
+                        case "afternoon4":num=8;break;
+                    }
+                    chooseValue.push(num);
+                })
+                console.log(chooseValue);
+                if(this.classTimeData[this.editclassIndex].timeRuleSetting){
+                    this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeDay=this.classEditDay;
+                    this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeType=this.classEditType;
+                    this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeLesson=chooseValue.toString();
+                    console.log(this.classTimeData[this.editclassIndex].timeRuleSetting[0]);
+                }else{
+                    let pushData={
+                        timeDay:this.classEditDay,
+                        timeType:this.classEditType,
+                        timeLesson:chooseValue.toString()
+                    }
+                    console.log(pushData);
+                    this.classTimeData[this.editclassIndex].timeRuleSetting=[pushData];
+                }
+            },
+            //取消编辑时间规则弹框
+            handleCancelClaTime(){
+                this.classTimeRegularVisit=false;
+            },
+            //修改学科
+            changeClassSub(info,index){
+                this.classTimeData[index].classSubjectId=info;
+                console.log(info);
+                let addData={};
+                if(this.classTimeData[index].classId){
+                    addData={
+                        id:this.classTimeData[index].id,
+                        planId:this.planId,
+                        ruleType:"3",
+                        classSubjectId:info,
+                        classId:this.classTimeData[index].classId,
+                    }
+                }else{
+                    addData={
+                        planId:this.planId,
+                        ruleType:"3",
+                        classSubjectId:info,
+                    }
+                }
+                this.saveSubTime(addData);
+                this.classTimeRule();
+                console.log(addData);
+            },
+            //添加班级时间规则(添加一项）
+            addClassTimeRegular(){
+                this.classTimeData.unshift({
+                    id:"",
+                    class:"",
+                    classId:"",
+                    className:"",
+                    classSubjectId:"",
+                    classSubjectName:"",
+                    gradeId:this.gradeId,
+                    gradeName:this.gradeName,
+                    time1:"",
+                    timeRuleSetting:[],
+                })
+            },
+            //修改班级
+             changeClass(info,index){
+                // console.log(info);
+                // console.log(index);
+                this.classTimeData[index].classId=info;
+                let addData={};
+                if(this.classTimeData[index].classSubjectId){
+                    addData={
+                        id:this.classTimeData[index].id,
+                        planId:this.planId,
+                        ruleType:"3",
+                        classId:info,
+                        classSubjectId:this.classTimeData[index].classSubjectId,
+                    }
+                }else{
+                    addData={
+                        planId:this.planId,
+                        ruleType:"3",
+                        classId:info,
+                    }
+                }
+                 this.saveSubTime(addData);
+                 this.classTimeRule();
+                console.log(addData);
+            },
+            //班级信息查看
+            async searchClassInfo(){
+                let {data:{result,success}}=await this.$api.schedule.adminClass.getClassSetting({planId:this.planId,gradeId:this.gradeId});
+                // console.log(result);
+               for(let i in result){
+                   let addData={
+                       gradeClass:result[i].gradeName+result[i].className,
+                       classId:result[i].classId
+                   }
+                   this.classData.push(addData);
+               }
+                console.log(this.classData);
+            },
+            //改变类型
+            changeClassType(info){
+                this.classEditType=info;
+                console.log(this.classEditType)
+            },
+            //选择星期几
+            changeClassDay(info){
+                this.classEditDay=info;
+                console.log(this.classEditDay);
+            },
+            //修改班级课程节
+            changeClassTime(info){
+                console.log(info);
+                this.classEditTimeValue=info;
+                console.log(this.classEditTimeValue);
+            },
+            //班级时间规则保存
+            classTimeSave(index){
+                let addData={
+                    id:this.classTimeData[index].id,
+                    planId:this.planId,
+                    ruleType:3,
+                    classId:this.classTimeData[index].classId,
+                    classSubjectId:this.classTimeData[index].classSubjectId,
+                    timeRuleSetting:[{
+                        timeDay:this.classTimeData[index].timeRuleSetting[0].timeDay,
+                        timeLesson:this.classTimeData[index].timeRuleSetting[0].timeLesson,
+                        timeType:this.classTimeData[index].timeRuleSetting[0].timeType,
+                    }]
+                }
+                console.log(addData);
+                this.saveSubTime(addData);
+                this.classTimeRule();
+            },
+            //========================================================
+            //禁止相邻规则查看
+            //===========================================================
+            //禁止相邻规则查看
+            async banNearRule(){
+              let {data:{result,success}}=await this.$api.schedule.adminClass.searchBanRule({planId:this.planId});
+              console.log(result);
+              this.banData=result;
+              // console.log(this.banData);
+            },
+            //改变相邻科目数
+            changeSubjectNum(index,info){
+                console.log(index);
+                console.log(info);
+                this.banData[index].continuityNum=info;
+                let addData={};
+                if(this.banData[index].subChildIdTwo){
+                    addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                        continuityNum:info,
+                        subChildIdTwo:this.banData[index].subChildIdTwo,
+                    }
+                }else if(this.banData[index].subChildIdOne){
+                    addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                        continuityNum:info,
+                        subChildIdOne:this.banData[index].subChildIdOne,
+                    }
+                }else if(this.banData[index].subChildIdTwo && this.banData[index].subChildIdOne){
+                     addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                         continuityNum:info,
+                        subChildIdOne:this.banData[index].subChildIdOne,
+                        subChildIdTwo:this.banData[index].subChildIdTwo,
+                    }
+                }else{
+                    addData={
+                        planId:this.planId,
+                        continuityNum:info,
+                    }
+                }
+                this.saveBanData(addData);
+            },
+            //选择科目一
+            changeOneSubject(info,index){
+                console.log(info);
+                console.log(index);
+                this.banData[index].subChildIdOne=info;
+                let addData={};
+                if(this.banData[index].subChildIdTwo){
+                    addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                        subChildIdOne:info,
+                        subChildIdTwo:this.banData[index].subChildIdTwo,
+                    }
+                }else if(this.banData[index].continuityNum){
+                    addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                        continuityNum:this.banData[index].continuityNum,
+                        subChildIdOne:info
+                    }
+                }else if(this.banData[index].subChildIdTwo && this.banData[index].continuityNum){
+                    addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                        continuityNum:this.banData[index].continuityNum,
+                        subChildIdOne:info,
+                        subChildIdTwo:this.banData[index].subChildIdTwo,
+                    }
+                }else{
+                    addData={
+                        planId:this.planId,
+                        subChildIdOne:info,
+                    }
+                }
+                this.saveBanData(addData);
+            },
+            //选择科目二
+            changeTwoSubject(info,index){
+                console.log(info);
+                console.log(index);
+                this.banData[index].subChildIdTwo=info;
+                let addData={};
+                if(this.banData[index].subChildIdOne){
+                    addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                        subChildIdOne:this.banData[index].subChildIdOne,
+                        subChildIdTwo:info,
+                    }
+                }else if(this.banData[index].continuityNum){
+                    addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                        continuityNum:this.banData[index].continuityNum,
+                        subChildIdTwo:info
+                    }
+                }else if(this.banData[index].subChildIdOne && this.banData[index].continuityNum){
+                    addData={
+                        id:this.banData[index].id,
+                        planId:this.planId,
+                        continuityNum:this.banData[index].continuityNum,
+                        subChildIdTwo:info,
+                        subChildIdOne:this.banData[index].subChildIdOne,
+                    }
+                }else{
+                    addData={
+                        planId:this.planId,
+                        subChildIdTwo:info,
+                    }
+                }
+                this.saveBanData(addData);
+            },
+            //添加禁止相邻科目(添加一项)
+            addBanRegular(){
+                this.banData.unshift({
+                    continuityNum:"",
+                    subChildIdOne:"",
+                    subChildIdTwo:"",
+                })
+            },
+            //删除禁止相邻科目
+            async banTimeDelete(id){
+                console.log(id);
+               let {data}=await this.$api.schedule.adminClass.deleteBanRule({ids:[id]});
+               console.log(data);
+               if(data&&data.success){
+                   message.info("删除成功");
+                   this.banNearRule();
+               }else{
+                   message.info("删除失败");
+               }
+            },
+            //保存禁止相邻科目
+            banTimeSave(index){
+                let addData={
+                    id:this.banData[index].id,
+                    planId:this.planId,
+                    continuityNum:this.banData[index].continuityNum,
+                    subChildIdOne:this.banData[index].subChildIdOne,
+                    subChildIdTwo:this.banData[index].subChildIdTwo,
+                }
+                this.saveBanData(addData);
+            },
+            //获取保存接口
+            async saveBanData(addData){
+              let {data}=await this.$api.schedule.adminClass.addBanRule(addData);
+              console.log(data);
+              if(data&&data.success){
+                  message.info("保存成功");
+                  this.banNearRule();
+              }else{
+                  message.info("保存失败");
+              }
+            },
+            //===============================================
+            //单双周课程规则
+            //=======================================================
+            //查看单双周课程规则
+            async singDoubleRule(){
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchLessonRule({planId:"934e3a63aadc47d398da0d395ad41420"});
+                // console.log(result);
+                this.weekData=result;
+                console.log(this.weekData);
+            },
+            //修改每周上课次数
+            changeLessonTime(index,info){
+                console.log(index);
+                console.log(info);
+                let addData={};
+                if(this.weekData[index].doubleWeekSubId){
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        doubleWeekSubId:this.weekData[index].doubleWeekSubId,
+                        perWeekLessonNum:info,
+                    }
+                }else if(this.weekData[index].singleWeekSubId){
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        singleWeekSubId:this.weekData[index].singleWeekSubId,
+                        perWeekLessonNum:info,
+                    }
+                } else if(this.weekData[index].singleWeekSubId && this.weekData[index].doubleWeekSubId ) {
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        singleWeekSubId:this.weekData[index].singleWeekSubId,
+                        doubleWeekSubId:this.weekData[index].doubleWeekSubId,
+                        perWeekLessonNum:info,
+                    }
+                }else{
+                    addData={
+                        planId:this.planId,
+                        perWeekLessonNum:info,
+                    }
+                }
+                this.saveSingleDouble(addData);
+            },
+            //修改单周科目
+            changeSingSubject(info,index){
+                console.log(index);
+                console.log(info);
+                let addData={};
+                if(this.weekData[index].doubleWeekSubId){
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        singleWeekSubId:info,
+                        doubleWeekSubId:this.weekData[index].doubleWeekSubId,
+                    }
+                }else if(this.weekData[index].perWeekLessonNum){
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        singleWeekSubId:info,
+                        perWeekLessonNum:this.weekData[index].perWeekLessonNum,
+                    }
+                } else if(this.weekData[index].perWeekLessonNum && this.weekData[index].doubleWeekSubId ) {
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        singleWeekSubId:info,
+                        doubleWeekSubId:this.weekData[index].doubleWeekSubId,
+                        perWeekLessonNum:this.weekData[index].perWeekLessonNum,
+                    }
+                }else{
+                    addData={
+                        planId:this.planId,
+                        singleWeekSubId:info,
+                    }
+                }
+                this.saveSingleDouble(addData);
+            },
+            //修改双周科目
+            changeDoubleSubject(info,index){
+                console.log(index);
+                console.log(info);
+                let addData={};
+                if(this.weekData[index].doubleWeekSubId){
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        doubleWeekSubId:info,
+                        singleWeekSubId:this.weekData[index].singleWeekSubId,
+                    }
+                }else if(this.weekData[index].perWeekLessonNum){
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        doubleWeekSubId:info,
+                        perWeekLessonNum:this.weekData[index].perWeekLessonNum,
+                    }
+                } else if(this.weekData[index].perWeekLessonNum && this.weekData[index].singleWeekSubId ) {
+                    addData={
+                        id:this.weekData[index].id,
+                        planId:this.planId,
+                        doubleWeekSubId:info,
+                        singleWeekSubId:this.weekData[index].singleWeekSubId,
+                        perWeekLessonNum:this.weekData[index].perWeekLessonNum,
+                    }
+                }else{
+                    addData={
+                        planId:this.planId,
+                        doubleWeekSubId:info,
+                    }
+                }
+                this.saveSingleDouble(addData);
+            },
+            //添加单双周课程(添加一项)
+            addWeekRegular(){
+                this.weekData.unshift({
+                    perWeekLessonNum:null,
+                    singleWeekSubId:"",
+                    singleWeekSubName:"",
+                    doubleWeekSubId:"",
+                    doubleWeekSubName:"",
+                })
+            },
+            //删除单双周课程
+            async weekTimeDelete(id){
+                let {data}=await this.$api.schedule.adminClass. deleteLessonRule({ids:[id]});
+                console.log(data);
+                if(data&&data.success){
+                    message.info("删除成功");
+                    this.singDoubleRule();
+                }else{
+                    message.info("删除失败");
+                }
+            },
+            //保存单双周课程
+            weekTimeSave(index){
+                let addData={
+                    id:this.weekData[index].id,
+                    planId:this.planId,
+                    perWeekLessonNum:this.weekData[index].perWeekLessonNum,
+                    singleWeekSubId: this.weekData[index].singleWeekSubId,
+                    doubleWeekSubId: this.weekData[index].doubleWeekSubId,
+                }
+                this.singDoubleRule(addData);
+            },
+            //获取保存课程接口
+            async saveSingleDouble(addData){
+              let {data}=await this.$api.schedule.adminClass.addLessonRule(addData);
+              console.log(data);
+              if(data&&data.success){
+                  message.info("保存成功");
+                  this.singDoubleRule();
+              }else{
+                  message.info("保存失败");
+              }
             },
             //课时设置
             timesSetting(){
@@ -881,107 +1785,13 @@
             Next(){
                 this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
-            //提交
-            handleSelectChange3(){},
-            handleSelectChange2(){},
-            handleSelectChange(){},
-            handleSubmit(){},
-            handleSubmit1(){},
-            handleSubmit2(){},
-            onChange(){},
-            addClass(){},
-            timeRegularSetting() {
-                this.timeRegularVisit = true;
-            },
-            //编辑老师
-            addTeacher(){
-                this.teacherVisit=true;
-                this.getData();
 
-            },
-            //添加学科时间规则
-            addSubjectTimeRegular(){
-                this. studyTimeData.unshift({
-                    subName:"",
-                    time1:'',
-                })
-          },
-            //添加教师时间规则
-            addTeacherTimeRegular(){
-                this. teacherTimeData.unshift({
-                    id:this.teacherTimeData.length+1,
-                    teacherName:"",
-                    time1:"",
-                })
-            },
-            addClassTimeRegular(){
-                this.classTimeData.unshift({
-                    classTimeKey:'2',
-                    time1:'必须星期一下午第3节 必须星期一下午第4节',
-                })
-            },
-            addWeekRegular(){
-                this.weekData.unshift({
-                    weekTimeKey:'1',
-                })
-            },
-            addBanRegular(){
-                this.banData.unshift({
-                    banTimeKey:'1'
-                })
-            },
-            handleSelectChange(){
-            },
-            handleOk() {
-                this.loading = true;
-                setTimeout(() => {
-                    this.timeRegularVisit = false;
-                    this.teacherVisit = false;
-                    this.loading = false;
-                }, 2000);
-            },
-            handleCancel() {
-                this.timeRegularVisit = false;
-                this.teacherVisit= false;
-            },
-            subjectTimeDelete(){
-                const dataSource = [...this.studyTimeData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this. studyTimeData= dataSource
-            },
-            subjectTimeSave(){},
-            teacherTimeDelete(){
-                const dataSource = [...this.teacherTimeData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this. teacherTimeData= dataSource
-            },
-            teacherTimeSave(){},
-            classTimeDelete(){
-                const dataSource = [...this.classTimeData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this. classTimeData= dataSource
-            },
-            classTimeSave(){},
-            banTimeDelete(){
-                const dataSource = [...this.banData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this. banData= dataSource
-            },
-            banTimeSave(){},
-            weekTimeDelete(){
-                const dataSource = [...this. weekData];
-                dataSource.splice(event.target.getAttribute('dataIndex'),1);
-                this.  weekData= dataSource
-            },
-            weekTimeSave(){},
+            //返回
             back(){
                 this.$router.go(-1)
             },
-            form(){},
-            classTimeKey(){},
-            visible(){},
-        }
 
+        }
     };
 </script>
 
@@ -1006,27 +1816,12 @@
         vertical-align: top;
         border-radius: 5px;
     }
-    .result-left{
-        width: 50%;
-    }
-    .link-font-color{
-        color: #0000ff;
-    }
-    .info{
-        height: 50px;
-        width: 100%;
-        margin: 0px 0px 10px 0px;
-        padding: 10px 5px;
-        background-color: white;
-        border-radius: 5px;
-    }
     .table-bg{
         background-color: white;
         margin: 0px 0px 20px 0px;
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-        height:1600px;
         width: 100%;
     }
     .buttons{

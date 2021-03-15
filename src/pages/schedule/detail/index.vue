@@ -9,9 +9,10 @@
     <div class="operation-list">
       <a-row :gutter="[16,16]">
         <a-col v-for="item in operationList" :key="item.text" :span="6" @click="goDetail(item)">
+<!--          <div class="operation" v-if="item.showParts">-->
           <div class="operation">
             <div class="operation-icon">
-              <a-icon :type="item.icon" style="font-size:40px;line-height:80px;color:white"/>
+              <a-icon  :type="item.icon" style="font-size:40px;line-height:80px;color:white"/>
             </div>
             <h1 style="margin-top:10px">{{item.text}}</h1>
           </div>
@@ -82,7 +83,6 @@
 </template>
 <script>
   import {message} from "ant-design-vue";
-
   // import pick from "lodash.pick"
   const operationList = [
     {
@@ -126,18 +126,88 @@
       text: "课表",
     },
   ];
+  const operationListClass = [
+    {
+      icon: "edit",
+      text: "修改",
+    },
+    {
+      icon: "setting",
+      text: "选课设置",
+    },
+    {
+      icon: "cloud-upload",
+      text: "发布选课",
+    },
+    {
+      icon: "pie-chart",
+      text: "选课统计",
+    },
+    {
+      icon: "snippets",
+      text: "选课分班",
+    },
+    {
+      icon: "schedule",
+      text: "选课排课",
+    },
+    {
+      icon: "calendar",
+      text: "走班排课任务",
+    },
+    {
+      icon: "cloud-upload",
+      text: "课表",
+    },
+  ];
+  const operationListAdmin = [
+    {
+      icon: "edit",
+      text: "修改",
+    },
+    {
+      icon: "setting",
+      text: "选课设置",
+    },
+    {
+      icon: "cloud-upload",
+      text: "发布选课",
+    },
+    {
+      icon: "pie-chart",
+      text: "选课统计",
+    },
+    {
+      icon: "snippets",
+      text: "选课分班",
+    },
+    {
+      icon: "schedule",
+      text: "行政班排课",
+    },
+    {
+      icon: "calendar",
+      text: "行政班排课任务",
+    },
+    {
+      icon: "cloud-upload",
+      text: "课表",
+    },
+  ];
   const columns=[
     {
       title: '班级',
       dataIndex:'className',
       align: 'center',
     }
-  ]
+  ];
   export default {
     name: "OperationList",
     data() {
       return {
         operationList,
+        operationListClass,
+        operationListAdmin,
         editVisit:false,
         publishVisit:false,
         loading:false,
@@ -153,6 +223,8 @@
         tearmData:[],
         total:"",
         checkedValues:[],
+        showParts:true,
+        classType:-1,
         formItemLayout: {
           labelCol: {
             xs: { span: 15 },
@@ -238,7 +310,17 @@
         let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
         console.log(result);
         this.result=result;
+        this.classType=result.type;
+        console.log(this.classType);
         console.log(this.result);
+        for(let i in this.operationList){
+          if(this.classType===0) {
+            this.operationList=this.operationListClass;
+          }else if(this.classType===1){
+            this.operationList=this.operationListAdmin;
+          }
+        }
+        console.log(this.operationList)
       },
       //修改信息
       editInfo(){
@@ -365,6 +447,8 @@
     height: 80%;
     width:80%;
     padding: 30px;
+    position: relative;
+    float: left;
     .operation-icon{
       margin:0 auto;
       height: 80px;
