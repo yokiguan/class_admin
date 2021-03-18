@@ -96,6 +96,9 @@
                 // console.log(this.planId);
                 let {data}=await this.$api.schedule.arrangeClass.updateSchedule({planId:this.planId,taskName:this.form.task})
                 console.log(data);
+                if(data&&data.success){
+                    this.$router.push(`/schedule/detail/task_mobile/index?planId=${this.planId}`)
+                }
             },
         }
     };

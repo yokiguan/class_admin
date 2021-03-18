@@ -252,7 +252,7 @@
             },
             //教师课表查看
             async teacherInfo() {
-                // teacherId还没传变量
+                // 
                 let {data: {result, success}} = await this.$api.schedule.classTask.teacherLook({
                     planId: this.planId,
                     scheduleTaskId: this.scheduleTaskId,

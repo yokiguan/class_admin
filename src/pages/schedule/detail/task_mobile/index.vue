@@ -32,7 +32,7 @@
                     <a-row>
                        <span style="float:left "  @click="onClickLook(record.id)">查看</span>
                        <span style="margin-left:0px "  @click="delet(record.id)">删除</span>
-                       <span style="margin-left: 50px ">继续排课</span>
+                       <span style="margin-left: 50px " @click="conArrClass(record.id)">继续排课</span>
                        <span style="margin-left: 50px " @click="integrate">手动调整</span>
                        <span @click="changeClass" style="margin-left: 50px ">学生调班</span>
                        <span style="margin-left: 50px " @click="publishChoose(record.id)">发布结果</span>
@@ -88,6 +88,7 @@
                 loading: false,
                 planId:"",
                 planData:"",
+                classType:"",
                 pagination:{
                     total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
                     pageSize:20,    //默认每页显示的条数
@@ -110,7 +111,9 @@
             if (planId) {
                 //获取单个选课计划的信息
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
-                this.planData = result.name
+                this.planData = result.name;
+                console.log(result);
+                this.classType=result.type;
             }
             this.lookInfo();
         },
@@ -137,7 +140,11 @@
             },
             //查看
             onClickLook(id){
-                this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}&scheduleTaskId=${id}`)
+                if(this.classType===0 || this.classType===2){
+                    this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}&scheduleTaskId=${id}`);
+                }else{
+                    this.$router.push(`/schedule/detail/task_admin/class?planId=${this.planId}&scheduleTaskId=${id}`);
+                }
             },
             //删除
             async delet(id){
@@ -146,6 +153,16 @@
                 console.log(data);
                 this.lookInfo();
                 console.log(this.tableData);
+            },
+            //继续排课
+            async conArrClass(id){
+              let {data}=await this.$api.schedule.classTask.continue({planId:this.planId,id:id});
+              console.log(data);
+              if(data&&data.success){
+                  message.info("继续调课成功！");
+              }else{
+                  message.info("排课已结束，无行政班排课！");
+              }
             },
             //手动调整
             integrate(){

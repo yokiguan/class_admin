@@ -15,6 +15,10 @@ const  classTask = {
     getScheduleTask(params){
         return axios.get(`${scheduleTask}/getDataList.json`,{params});
     },
+    //继续排课(已调）
+    continue(params){
+        return axios.post(`${scheduleTask}/saveXzbData.json`,params);
+    },
     //走班排课任务 删除(已调）
     deletScheduleTask(params){
         return axios.post(`${scheduleTask}/deleteDataJoint.json`,params);

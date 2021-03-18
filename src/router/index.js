@@ -344,10 +344,6 @@ export default new Router({
                   component:BlankView,
                   children:[
                     {
-                      path: '/schedule/detail/task_admin/index',
-                      name: '行政班排课',
-                      component:() => import('@/pages/schedule/detail/task_admin/index'),
-                    },{
                       path: '/schedule/detail/task_admin/class',
                       name: '班级查看',
                       component:() => import('@/pages/schedule/detail/task_admin/class'),
@@ -355,6 +351,10 @@ export default new Router({
                       path: '/schedule/detail/task_admin/teacher',
                       name: '老师查看',
                       component:() => import('@/pages/schedule/detail/task_admin/teacher'),
+                    },{
+                      path: '/schedule/detail/task_admin/subject',
+                      name: '科目查看',
+                      component:() => import('@/pages/schedule/detail/task_admin/subject'),
                     },
                   ]
                 },

@@ -3,8 +3,8 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item>< a href="">课表查看</ a></a-breadcrumb-item>
-                <a-breadcrumb-item>< a href="">整体查看</ a></a-breadcrumb-item>
+                <a-breadcrumb-item>课表查看</a-breadcrumb-item>
+                <a-breadcrumb-item>整体查看</a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <a-card class="content">
@@ -21,7 +21,7 @@
                 </a-col>
             </a-row>
         </a-card>
-        <div class="table-bg">
+        <a-card class="table-bg">
             <a-row class="buttons">
                 <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -48,14 +48,14 @@
                         border-radius: 5px;
                         width: 110px" @click="studentLook">按学生查看</button></a-col>
             </a-row>
-            <a-table :rowKey="''"
+            <a-table :rowKey="'key'"
                      :columns="columns"
                      :data-source="tableData"
                      :pagination="false"
                      :bordered="true"
-                     style="margin-top: 20px;width:1200px;height: 700px">
+                     style="margin-top: 20px;width:1200px;white-space: pre">
             </a-table>
-        </div>
+        </a-card>
     </div>
 </template>
 <script>
@@ -64,40 +64,26 @@
             align: "center",
             title: " ",
             dataIndex: 'key',
-            width:'5%',
-            customRender: function(t, r, index) {
-                return parseInt(index) + 1
-            }
         },
         {
             title: '一',
             dataIndex: 'one',
-            key:'one',
-            width:'19%'
         },
         {
             title: '二',
             dataIndex: 'two',
-            key:'two',
-            width:'19%'
         },
         {
             title: '三',
             dataIndex: 'three',
-            key:'three',
-            width:'19%'
         },
         {
             title: '四',
             dataIndex: 'four',
-            key: 'four',
-            width:'19%'
         },
         {
             title: '五',
             dataIndex: 'five',
-            key: 'five',
-            width:'19%'
         },
     ];
     export default {
@@ -130,42 +116,64 @@
             },
             //获取整体查看数据
             async allLookInfo(){
-                let {data:{result,success}}=await this.$api.schedule.classTask.getData({planId:this.planId,scheduleTaskId:"1e86be510ab94a99801802d52740da40"})
-                console.log(result[0]);
-                this.allData=result[0].syllabus;
+                let {data:{result,success}}=await this.$api.schedule.table.allTable({planId:this.planId});
+                // console.log(result);
+                this.allData=result;
                 console.log(this.allData);
+                //创建数组
+                let dataSource=[];
                 for(let i=0;i<this.allData.length;i++){
-                    let position=this.allData[i].position
-                    console.log(this.allData);
-                    console.log(position);
-                    let positionArr=eval(position);
-                    console.log(positionArr);
-                    let row = positionArr[0]
-                    let col = positionArr[1]
-                    console.log("row",row,col)
-                    let colName = this.computedDataIndex(col)
-                    this.tableData[row - 1]  = this.tableData[row - 1] ? this.tableData[row - 1] : {}
-                    let {classNumId,subChildName,classStuNum} = this.allData[i]
-                    this.tableData[row - 1][`${colName}`] = classNumId + ',' + subChildName + ',' + classStuNum
+                    if(this.allData[i].position){
+                        let position = eval(this.allData[i].position);
+                        const getInfo=(dataItem,sourceItem={})=>{
+                            if(!sourceItem) sourceItem={}
+                            let content = dataItem.subChildName +dataItem.className+"_"+dataItem.teacherName;
+                            const column=eval(dataItem.position)[1];
+                            switch (column) {
+                                case 1:
+                                    sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                    break;
+                                case 2:
+                                    sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                    break;
+                                case 3:
+                                    sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                    break;
+                                case 4:
+                                    sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                    break;
+                                case 5:
+                                    sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                    break;
+                            }
+                            return sourceItem
+                        };
+                        dataSource[position[0]]=getInfo(this.allData[i],dataSource[position[0]]);
+                        // dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                    }
+                    }
+                // console.log(dataSource);
+                this.tableData=dataSource;
+                for(let i=0;i<this.tableData.length;i++){
+                    // console.log(i,this.tableData[i]);
+                    if(this.tableData[i]===undefined){
+                        // console.log(i);
+                        let pushData={
+                            one:"",
+                            two:"",
+                            three:"",
+                            four:"",
+                            five:"",
+                        }
+                        this.tableData[i]=pushData;
+                        // this.tableData[i].one="";
+                    }
                 }
-                this.$set(this.tableData)
-                console.log("====this.table====",this.tableData)
-            },
-            computedDataIndex(col){
-                switch(col){
-                    case 1:
-                        return 'one'
-                    case 2:
-                        return 'two'
-                    case 3:
-                        return 'three'
-                    case 4:
-                        return 'four'
-                    case 5:
-                        return 'five'
-                    default:
-                        break
+                //编号
+                for(let i=0;i<this.tableData.length;i++){
+                    this.tableData[i].key=i+1;
                 }
+                console.log(this.tableData);
             },
             //按老师查看
             teacherLook(){
@@ -216,12 +224,6 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-        height: 1000px;
         width: 100%;
-    }
-    /deep/ Table {
-        .ant-table-thead > tr > th {
-            background-color: #f4f4f4;
-        }
     }
 </style>

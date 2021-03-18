@@ -5,6 +5,8 @@ import setting from './setting'
 import plan from './plan'
 import statics from './statics'
 import sortClass from './sortClass'
+import table from './table'
+import adminTask from "./adminTask";
 const schedule = {
     arrangeClass,
     setting,
@@ -13,6 +15,8 @@ const schedule = {
     classTask,
     adminClass,
     sortClass,
+    adminTask,
+    table,
 }
 
 export default schedule

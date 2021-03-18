@@ -615,6 +615,7 @@
                 teachId:"",
                 selectedRowKeys: [], // Check here to configure the default column
                 selectedRows:[],
+                allTeacherData:[],
 
                 //班级时间规则
                 column3,
@@ -888,6 +889,12 @@
                     time1:'',
                     timeSetting:[],
                 })
+                let addData={
+                    planId:this.planId,
+                    ruleType:"1",
+                }
+                this.saveSubTime(addData);
+                this.subjectTimeRule();
                 console.log(this.studyTimeData);
             },
             //修改学科
@@ -895,24 +902,6 @@
               this.studyTimeData[index].subId=info;
               console.log(info);
               console.log(this.studyTimeData[index].subId);
-              let addData={};
-              if(this.studyTimeData[index].time1){
-                  addData={
-                      id:this.studyTimeData[index].id,
-                      planId:this.planId,
-                      ruleType: "1",
-                      subId:info,
-                      time1:this.studyTimeData[index].time1,
-                  }
-              }else{
-                  addData={
-                      planId:this.planId,
-                      ruleType: "1",
-                      subId:info
-                  }
-              }
-                this.saveSubTime(addData);
-                this.subjectTimeRule();
             },
             //改变类型
             changeSubType(info){
@@ -1091,13 +1080,19 @@
             },
             //添加教师时间规则(添加一项)
             addTeacherTimeRegular(){
-                this. teacherTimeData.unshift({
+                this.teacherTimeData.unshift({
                     id:"",
                     teacherId:"",
                     teacherName:"",
                     time1:"",
                     timeSetting:[],
                 })
+                let addData={
+                    planId:this.planId,
+                    ruleType:"2",
+                }
+                this.saveSubTime(addData);
+                this.teacherTimeRule();
             },
             //编辑老师
             addTeacher(index){
@@ -1108,22 +1103,16 @@
                 let pushData={
                     gradeId:this.gradeId,
                 }
-                this.getData(pushData);
-            },
-            //选择老师
-            onSelectChange( selectedRowKeys,selectedRows) {
-                this.selectedRowKeys = selectedRowKeys;
-                this.selectedRows=selectedRows
-                console.log(this.selectedRowKeys);
-                console.log(this.selectedRows);
+               this.getTeacherData(pushData);
             },
             //获取老师信息
-            async getData(pushData){
+            async getTeacherData(pushData){
                 let {data:{result,success}}=await this.$api.schedule.adminClass.searchTeacher(pushData);
                 console.log(result);
-                let allData=result[0].gradeDtos;
-                // console.log(allData);
-                allData.forEach(item=>{
+                this.allTeacherData=result[0].gradeDtos;
+                // console.log(this.allTeacherData);
+                let allData=[];
+                this.allTeacherData.forEach(item=>{
                     let teachList=[...item.teachers];
                     teachList.forEach(teaItem=>{
                         let pushData={
@@ -1133,10 +1122,18 @@
                             subChildId:item.subChildId,
                             subName:item.subName
                         }
-                        this.editData.push(pushData);
+                        allData.push(pushData);
                     })
                 })
+                this.editData=allData;
                 console.log(this.editData);
+            },
+            //选择老师
+            onSelectChange( selectedRowKeys,selectedRows) {
+                this.selectedRowKeys = selectedRowKeys;
+                this.selectedRows=selectedRows
+                console.log(this.selectedRowKeys);
+                console.log(this.selectedRows);
             },
             //改变类型
             changeTeacherType(info){
@@ -1157,7 +1154,21 @@
             //保存教师时间规则
             teacherTimeSave(index){
                 console.log(index);
-                this.saveSubTime(index);
+                console.log(this.teacherTimeData[index].teacherId);
+                console.log(this.teacherTimeData[index]);
+                let addData={
+                    id:this.teacherTimeData[index].id,
+                    planId:this.planId,
+                    ruleType:"2",
+                    teacherId:this.teacherTimeData[index].teacherId,
+                    timeRuleSetting:[{
+                        timeDay:this.teacherTimeData[index].timeRuleSetting[0].timeDay,
+                        timeLesson:this.teacherTimeData[index].timeRuleSetting[0].timeLesson,
+                        timeType:this.teacherTimeData[index].timeRuleSetting[0].timeType,
+                    }]
+                }
+                console.log(addData);
+                this.saveSubTime(addData);
                 this.teacherTimeRule();
             },
             //选择课程
@@ -1169,7 +1180,7 @@
                     gradeId:this.gradeId,
                     subChildId: this.form.subject,
                 }
-                this.getData(pushData);
+                this.getTeacherData(pushData);
             },
             //查询
             onSearch(){
@@ -1187,12 +1198,14 @@
                         teacherName:this.form.teacherName
                     }
                 }
-                // console.log(pushData);
-                this.getData(pushData);
+                this.getTeacherData(pushData);
             },
             //保存编辑老师
             handleOk(){
                 this.teacherVisit=false;
+                this.teacherTimeData[this.teachId].teacherName=this.selectedRows[0].teacherName;
+                this.teacherTimeData[this.teachId].teacherId=this.selectedRows[0].teacherId;
+                console.log(this.teacherTimeData[this.teachId].teacherName);
             },
             //关闭编辑老师弹框
             handleCancel(){
@@ -1333,25 +1346,6 @@
             changeClassSub(info,index){
                 this.classTimeData[index].classSubjectId=info;
                 console.log(info);
-                let addData={};
-                if(this.classTimeData[index].classId){
-                    addData={
-                        id:this.classTimeData[index].id,
-                        planId:this.planId,
-                        ruleType:"3",
-                        classSubjectId:info,
-                        classId:this.classTimeData[index].classId,
-                    }
-                }else{
-                    addData={
-                        planId:this.planId,
-                        ruleType:"3",
-                        classSubjectId:info,
-                    }
-                }
-                this.saveSubTime(addData);
-                this.classTimeRule();
-                console.log(addData);
             },
             //添加班级时间规则(添加一项）
             addClassTimeRegular(){
@@ -1367,31 +1361,18 @@
                     time1:"",
                     timeRuleSetting:[],
                 })
+                let addData={
+                    planId:this.planId,
+                    ruleType:"3",
+                }
+                this.saveSubTime(addData);
+                this.classTimeRule();
             },
             //修改班级
              changeClass(info,index){
                 // console.log(info);
                 // console.log(index);
                 this.classTimeData[index].classId=info;
-                let addData={};
-                if(this.classTimeData[index].classSubjectId){
-                    addData={
-                        id:this.classTimeData[index].id,
-                        planId:this.planId,
-                        ruleType:"3",
-                        classId:info,
-                        classSubjectId:this.classTimeData[index].classSubjectId,
-                    }
-                }else{
-                    addData={
-                        planId:this.planId,
-                        ruleType:"3",
-                        classId:info,
-                    }
-                }
-                 this.saveSubTime(addData);
-                 this.classTimeRule();
-                console.log(addData);
             },
             //班级信息查看
             async searchClassInfo(){
@@ -1455,108 +1436,18 @@
                 console.log(index);
                 console.log(info);
                 this.banData[index].continuityNum=info;
-                let addData={};
-                if(this.banData[index].subChildIdTwo){
-                    addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                        continuityNum:info,
-                        subChildIdTwo:this.banData[index].subChildIdTwo,
-                    }
-                }else if(this.banData[index].subChildIdOne){
-                    addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                        continuityNum:info,
-                        subChildIdOne:this.banData[index].subChildIdOne,
-                    }
-                }else if(this.banData[index].subChildIdTwo && this.banData[index].subChildIdOne){
-                     addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                         continuityNum:info,
-                        subChildIdOne:this.banData[index].subChildIdOne,
-                        subChildIdTwo:this.banData[index].subChildIdTwo,
-                    }
-                }else{
-                    addData={
-                        planId:this.planId,
-                        continuityNum:info,
-                    }
-                }
-                this.saveBanData(addData);
             },
             //选择科目一
             changeOneSubject(info,index){
                 console.log(info);
                 console.log(index);
                 this.banData[index].subChildIdOne=info;
-                let addData={};
-                if(this.banData[index].subChildIdTwo){
-                    addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                        subChildIdOne:info,
-                        subChildIdTwo:this.banData[index].subChildIdTwo,
-                    }
-                }else if(this.banData[index].continuityNum){
-                    addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                        continuityNum:this.banData[index].continuityNum,
-                        subChildIdOne:info
-                    }
-                }else if(this.banData[index].subChildIdTwo && this.banData[index].continuityNum){
-                    addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                        continuityNum:this.banData[index].continuityNum,
-                        subChildIdOne:info,
-                        subChildIdTwo:this.banData[index].subChildIdTwo,
-                    }
-                }else{
-                    addData={
-                        planId:this.planId,
-                        subChildIdOne:info,
-                    }
-                }
-                this.saveBanData(addData);
             },
             //选择科目二
             changeTwoSubject(info,index){
                 console.log(info);
                 console.log(index);
                 this.banData[index].subChildIdTwo=info;
-                let addData={};
-                if(this.banData[index].subChildIdOne){
-                    addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                        subChildIdOne:this.banData[index].subChildIdOne,
-                        subChildIdTwo:info,
-                    }
-                }else if(this.banData[index].continuityNum){
-                    addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                        continuityNum:this.banData[index].continuityNum,
-                        subChildIdTwo:info
-                    }
-                }else if(this.banData[index].subChildIdOne && this.banData[index].continuityNum){
-                    addData={
-                        id:this.banData[index].id,
-                        planId:this.planId,
-                        continuityNum:this.banData[index].continuityNum,
-                        subChildIdTwo:info,
-                        subChildIdOne:this.banData[index].subChildIdOne,
-                    }
-                }else{
-                    addData={
-                        planId:this.planId,
-                        subChildIdTwo:info,
-                    }
-                }
-                this.saveBanData(addData);
             },
             //添加禁止相邻科目(添加一项)
             addBanRegular(){
@@ -1565,6 +1456,10 @@
                     subChildIdOne:"",
                     subChildIdTwo:"",
                 })
+                let addData={
+                    planId:this.planId,
+                }
+                this.saveBanData(addData);
             },
             //删除禁止相邻科目
             async banTimeDelete(id){
@@ -1612,108 +1507,21 @@
             },
             //修改每周上课次数
             changeLessonTime(index,info){
+                this.weekData[index].perWeekLessonNum=info;
                 console.log(index);
                 console.log(info);
-                let addData={};
-                if(this.weekData[index].doubleWeekSubId){
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        doubleWeekSubId:this.weekData[index].doubleWeekSubId,
-                        perWeekLessonNum:info,
-                    }
-                }else if(this.weekData[index].singleWeekSubId){
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        singleWeekSubId:this.weekData[index].singleWeekSubId,
-                        perWeekLessonNum:info,
-                    }
-                } else if(this.weekData[index].singleWeekSubId && this.weekData[index].doubleWeekSubId ) {
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        singleWeekSubId:this.weekData[index].singleWeekSubId,
-                        doubleWeekSubId:this.weekData[index].doubleWeekSubId,
-                        perWeekLessonNum:info,
-                    }
-                }else{
-                    addData={
-                        planId:this.planId,
-                        perWeekLessonNum:info,
-                    }
-                }
-                this.saveSingleDouble(addData);
             },
             //修改单周科目
             changeSingSubject(info,index){
+                this.weekData[index].singleWeekSubId=info;
                 console.log(index);
                 console.log(info);
-                let addData={};
-                if(this.weekData[index].doubleWeekSubId){
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        singleWeekSubId:info,
-                        doubleWeekSubId:this.weekData[index].doubleWeekSubId,
-                    }
-                }else if(this.weekData[index].perWeekLessonNum){
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        singleWeekSubId:info,
-                        perWeekLessonNum:this.weekData[index].perWeekLessonNum,
-                    }
-                } else if(this.weekData[index].perWeekLessonNum && this.weekData[index].doubleWeekSubId ) {
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        singleWeekSubId:info,
-                        doubleWeekSubId:this.weekData[index].doubleWeekSubId,
-                        perWeekLessonNum:this.weekData[index].perWeekLessonNum,
-                    }
-                }else{
-                    addData={
-                        planId:this.planId,
-                        singleWeekSubId:info,
-                    }
-                }
-                this.saveSingleDouble(addData);
             },
             //修改双周科目
             changeDoubleSubject(info,index){
+                this.weekData[index].doubleWeekSubId=info;
                 console.log(index);
                 console.log(info);
-                let addData={};
-                if(this.weekData[index].doubleWeekSubId){
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        doubleWeekSubId:info,
-                        singleWeekSubId:this.weekData[index].singleWeekSubId,
-                    }
-                }else if(this.weekData[index].perWeekLessonNum){
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        doubleWeekSubId:info,
-                        perWeekLessonNum:this.weekData[index].perWeekLessonNum,
-                    }
-                } else if(this.weekData[index].perWeekLessonNum && this.weekData[index].singleWeekSubId ) {
-                    addData={
-                        id:this.weekData[index].id,
-                        planId:this.planId,
-                        doubleWeekSubId:info,
-                        singleWeekSubId:this.weekData[index].singleWeekSubId,
-                        perWeekLessonNum:this.weekData[index].perWeekLessonNum,
-                    }
-                }else{
-                    addData={
-                        planId:this.planId,
-                        doubleWeekSubId:info,
-                    }
-                }
-                this.saveSingleDouble(addData);
             },
             //添加单双周课程(添加一项)
             addWeekRegular(){
@@ -1724,6 +1532,10 @@
                     doubleWeekSubId:"",
                     doubleWeekSubName:"",
                 })
+                let addData={
+                    planId:this.planId,
+                }
+                this.saveSingleDouble(addData);
             },
             //删除单双周课程
             async weekTimeDelete(id){
@@ -1745,7 +1557,8 @@
                     singleWeekSubId: this.weekData[index].singleWeekSubId,
                     doubleWeekSubId: this.weekData[index].doubleWeekSubId,
                 }
-                this.singDoubleRule(addData);
+                this.saveSingleDouble(addData);
+                this.singDoubleRule();
             },
             //获取保存课程接口
             async saveSingleDouble(addData){

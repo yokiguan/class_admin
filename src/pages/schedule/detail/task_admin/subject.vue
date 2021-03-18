@@ -4,7 +4,7 @@
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">班级课表</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">科目课表</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="box">
@@ -65,11 +65,11 @@
                         width: 110px" @click="classLook">按班级查看</button></a-col>
                     </a-row>
                     <a-table :rowKey="'key'"
-                            :columns="columns"
-                            :data-source="tableData"
-                            :pagination="false"
-                            :bordered="true"
-                            style="margin-top: 20px;height:100%;white-space: pre">
+                             :columns="columns"
+                             :data-source="tableData"
+                             :pagination="false"
+                             :bordered="true"
+                             style="margin-top: 20px;height:100%;white-space: pre">
                     </a-table>
                 </a-card>
             </div>
@@ -141,37 +141,37 @@
                 this.planData = result.name;
                 this.gradeName=result.gradeName;
             }
-            this.treeClass();
+            this.treeTeacher();
         },
         methods: {
             onCheck(checkedKeys) {
                 console.log('onCheck', checkedKeys);
                 this.checkedKeys=checkedKeys;
                 this.showTable=true;
-                this.classInfo();
+                this.subjectInfo();
             },
             //获取左侧的教室树
-            async treeClass(){
+            async treeTeacher(){
                 //根据年级信息调用接口
-                let {data:{result,success}}=await this.$api.schedule.adminTask.lookClassList({planId:this.planId});
+                let {data:{result,success}}=await this.$api.schedule.adminTask.lookCourseList({planId:this.planId});
                 console.log(result);
-                // this.treeData=[];
+                // console.log(data.rows);
+                this.treeData=[];
                 for(let i=0;i<result.length;i++){
                     let numberTree={};
-                    numberTree.title=this.gradeName+result[i].departName;
-                    numberTree.key=result[i].id;
+                    numberTree.title=result[i].subName;
+                    numberTree.key=result[i].subId;
                     this.treeData.push(numberTree);
                 }
             },
-            //班级课表查看
-            async classInfo() {
-                // teacherId还没传变量
-                let {data: {result, success}} = await this.$api.schedule.adminTask.classTable({
+            //教师课表查看
+            async subjectInfo() {
+                let {data: {result, success}} = await this.$api.schedule.adminTask.courseTable({
                     planId: this.planId,
-                    scheduleTaskId:this.scheduleTaskId,
-                    classId: this.checkedKeys.toString(),
+                    scheduleTaskId: this.scheduleTaskId,
+                    subId: this.checkedKeys.toString(),
                 });
-                // console.log(result);
+                console.log(result);
                 this.allData=result;
                 console.log(this.allData);
                 let dataSource=[];
@@ -179,7 +179,7 @@
                     let position=eval(this.allData[i].position);
                     const getInfo=(dataItem,sourceItem={})=>{
                         if(!sourceItem) sourceItem={};
-                        let content = this.gradeName+dataItem.subName+"————"+dataItem.teacherName;
+                        let content = dataItem.teacherName +"——"+this.gradeName+dataItem.className;
                         const column=eval(dataItem.position)[1];
                         switch (column) {
                             case 1:
@@ -204,7 +204,7 @@
                 }
                 // console.log(dataSource);
                 this.tableData=dataSource;
-                // console.log(this.tableData);
+                console.log(this.tableData);
                 for(let i=0;i<this.tableData.length;i++){
                     // console.log(i,this.tableData[i]);
                     if(this.tableData[i]===undefined){
@@ -239,6 +239,10 @@
             classLook(){
                 this.$router.push(`/schedule/detail/task_admin/class?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
             },
+            //返回
+            back(){
+                this.$router.go(-1)
+            },
             //删除已发布课表
             async deletPublic(){
                 let {data}=await this.$api.schedule.classTask.reBack({planId:this.planId,scheduleTaskId:this.scheduleTaskId});
@@ -248,10 +252,6 @@
                 }else{
                     message.info("删除已发布课表失败");
                 }
-            },
-            //返回
-            back(){
-                this.$router.go(-1)
             },
         },
     };

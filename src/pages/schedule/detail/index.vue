@@ -302,7 +302,7 @@
         }else if(item.text==='课表'){
           this.$router.push(`/schedule/detail/curriculum/index?planId=${this.planId}`)
         }else if(item.text==='行政班排课任务'){
-          this.$router.push(`/schedule/detail/task_admin/index?planId=${this.planId}`)
+          this.$router.push(`/schedule/detail/task_mobile/index?planId=${this.planId}`)
         }  },
       //指定排课计划信息查看
       async lookInfo(){

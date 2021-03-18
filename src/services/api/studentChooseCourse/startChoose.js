@@ -13,11 +13,11 @@ const startChoose = {
     },
     //开始选课修改（已测）(已调）
     alterCourseSelect(params){
-        return axios.post(`${schedulePlan}/saveCourseSelectPhone.json`,params);
+        return axios.post(`${schedulePlan}/saveCourseSelectPC.json`,params);
     },
     //开始选课查看（已测）(已调）
     getCourseSelect(params){
-        return axios.get(`${schedulePlan}/getCourseSelectPhone.json`,params);
+        return axios.get(`${schedulePlan}/getCourseSelectPC.json`,params);
     },
     //添加课程/修改课程的查看接口（已测）(已调)
     getCourseStatus(params){
@@ -25,7 +25,7 @@ const startChoose = {
     },
     //规则说明查看（已测）(已调）
     getTips(params){
-        return axios.get(`${schedulePlan}/getTipsPhone.json`,{params});
+        return axios.get(`${schedulePlan}/getTipsPC.json`,{params});
     }
 }
 export default startChoose;
