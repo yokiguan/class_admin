@@ -1,32 +1,40 @@
 <template>
-  <a-card>
-    <div>
-      <div class="operator">
-        <a-button @click="gotoNew" type="primary">新建</a-button>
-      </div>
-      <a-table
-        :rowKey="'id'"
-        :columns="columns"
-        :dataSource="dataSource"
-        subPath="/basic/template/detail"
-      >
+  <div>
+    <div class="result">
+      <a-breadcrumb>
+        <a-breadcrumb-item>首页</a-breadcrumb-item>
+        <a-breadcrumb-item>基础设置</a-breadcrumb-item>
+        <a-breadcrumb-item><router-link to="#">课表模板管理</router-link></a-breadcrumb-item>
+      </a-breadcrumb>
+    </div>
+    <a-card>
+      <div>
+        <div class="operator">
+          <a-button @click="gotoNew" type="primary">新建</a-button>
+        </div>
+        <a-table
+                :rowKey="'id'"
+                :columns="columns"
+                :dataSource="dataSource"
+                subPath="/basic/template/detail"
+        >
       <span slot="operation" slot-scope="text, record">
         <a @click="edit(record.id)">编辑</a>
         |
         <a-popconfirm v-if="dataSource.length"
-                   title="确认删除?"
-                   cancelText="取消"
-                   okText="确定"
-                   @confirm="() => deleteItem(record.id)">
+                      title="确认删除?"
+                      cancelText="取消"
+                      okText="确定"
+                      @confirm="() => deleteItem(record.id)">
           <a href="javascript:;">删除</a>
         </a-popconfirm>
     </span></a-table>
-    </div>
-  </a-card>
+      </div>
+    </a-card>
+  </div>
 </template>
 <script>
 import{message} from 'ant-design-vue'
-// import {success} from  '@/'
 const columns = [
   {
     title: "模板编号",
@@ -95,21 +103,21 @@ export default {
   },
 };
 </script>
-
 <style lang="less" scoped>
-    .search {
-        margin-bottom: 54px;
-    }
-    .fold {
-        width: calc(100% - 216px);
-        display: inline-block;
-    }
+  .result{
+    width: 100%;
+    background-color: white;
+    height:50px;
+    margin: 20px 0px 10px 0px;
+    padding-left: 25px;
+    padding-top: 15px;
+    vertical-align: top;
+    border-radius: 5px;
+  }
     .operator {
         margin-bottom: 18px;
     }
     @media screen and (max-width: 900px) {
-        .fold {
-            width: 100%;
-        }
+
     }
 </style>

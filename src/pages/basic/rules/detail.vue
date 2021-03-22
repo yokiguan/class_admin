@@ -4,6 +4,7 @@
       <a-breadcrumb>
         <a-breadcrumb-item>首页</a-breadcrumb-item>
         <a-breadcrumb-item>选课规则</a-breadcrumb-item>
+        <a-breadcrumb-item><router-link to="#">规则设计</router-link></a-breadcrumb-item>
       </a-breadcrumb>
     </div>
     <div class="detailRule" style="background-color: white">

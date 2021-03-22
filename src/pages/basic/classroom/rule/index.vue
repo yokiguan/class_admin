@@ -1,12 +1,13 @@
 <template>
     <div id="wrapper" style="width: 100%">
         <div class="result">
-                <a-breadcrumb>
-                    <a-breadcrumb-item>首页</a-breadcrumb-item>
-                    <a-breadcrumb-item>基础数据</a-breadcrumb-item>
-                    <a-breadcrumb-item>教学场地排课规则</a-breadcrumb-item>
-                </a-breadcrumb>
-            </div>
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item>基础设置</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/basic/classroom/admin">教室管理</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="#">规则设置</router-link></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
         <div class="box">
                 <a-card class="left">
                     <a-row style="width:100%">

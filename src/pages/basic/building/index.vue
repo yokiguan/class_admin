@@ -238,5 +238,8 @@
     margin-bottom: 18px;
   }
   @media screen and (max-width: 900px) {
+    .fold {
+      width: 100%;
+    }
   }
 </style>

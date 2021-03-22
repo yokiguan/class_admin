@@ -1,5 +1,13 @@
 <template>
-  <a-card>
+  <div>
+    <div class="result">
+      <a-breadcrumb>
+        <a-breadcrumb-item>首页</a-breadcrumb-item>
+        <a-breadcrumb-item>基础设置</a-breadcrumb-item>
+        <a-breadcrumb-item><router-link to="#">年级</router-link></a-breadcrumb-item>
+      </a-breadcrumb>
+    </div>
+    <a-card>
     <div>
       <a-table
         :rowKey="'gradeId'"
@@ -12,6 +20,7 @@
       </a-table>
     </div>
   </a-card>
+  </div>
 </template>
 <script>
 const columns = [
@@ -69,19 +78,17 @@ export default {
 };
 </script>
 <style lang="less" scoped>
-.search {
-  margin-bottom: 54px;
-}
-.fold {
-  width: calc(100% - 216px);
-  display: inline-block;
-}
-.operator {
-  margin-bottom: 18px;
-}
-@media screen and (max-width: 900px) {
-  .fold {
+  .result{
     width: 100%;
+    background-color: white;
+    height:50px;
+    margin: 20px 0px 10px 0px;
+    padding-left: 25px;
+    padding-top: 15px;
+    vertical-align: top;
+    border-radius: 5px;
   }
+@media screen and (max-width: 900px) {
+
 }
 </style>

@@ -3,8 +3,9 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">基础数据</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">教师排课规则</a></a-breadcrumb-item>
+                <a-breadcrumb-item>基础设置</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/basic/teacher/admin">教师</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="#">规则设置</router-link></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="box">
@@ -624,14 +625,14 @@
         border-radius: 5px;
         width: 79%;
     }
-    .title{
-        width: 100%;
-        background-color: #fff;
-        height: 170px;
-        padding: 20px 25px;
-        border-radius: 10px;
-        margin-bottom: 50px;
-    }
+    /*.title{*/
+    /*    width: 100%;*/
+    /*    background-color: #fff;*/
+    /*    height: 170px;*/
+    /*    padding: 20px 25px;*/
+    /*    border-radius: 10px;*/
+    /*    margin-bottom: 50px;*/
+    /*}*/
     .class_content{
         height:190px;
         background-color: white;
@@ -658,11 +659,11 @@
         width: 100%;
         min-height: 800px;
     }
-    .buttons{
-        margin:0px 5px 20px 5px;
-        padding:2px 4px;
-        margin-left: 30px;
-    }
+    /*.buttons{*/
+    /*    margin:0px 5px 20px 5px;*/
+    /*    padding:2px 4px;*/
+    /*    margin-left: 30px;*/
+    /*}*/
     .buttons button{
         width: 110px;
         height: 45px;

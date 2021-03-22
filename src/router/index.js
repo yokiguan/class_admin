@@ -30,7 +30,7 @@ export default new Router({
               redirect: '/basic/template/admin',
               children: [
                   {
-                path: '/basic/template/admin',
+                  path: '/basic/template/admin',
                   name: '课表模板管理',
                 component: () => import('@/pages/basic/templet/index'),
               },
@@ -64,7 +64,6 @@ export default new Router({
                 }
               ]
             },
-
             {
               path: '/basic/subject',
               name: '课程',

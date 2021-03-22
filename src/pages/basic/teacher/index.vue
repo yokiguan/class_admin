@@ -1,11 +1,19 @@
 <template>
-  <a-card>
+  <div>
+    <div class="result">
+      <a-breadcrumb>
+        <a-breadcrumb-item>首页</a-breadcrumb-item>
+        <a-breadcrumb-item>基础设置</a-breadcrumb-item>
+        <a-breadcrumb-item><router-link to="#">教师</router-link></a-breadcrumb-item>
+      </a-breadcrumb>
+    </div>
+    <a-card>
     <a-form-model layout="horizontal" :form="form" >
       <a-row>
         <a-col :md="7" :sm="24">
           <a-form-model-item label="级部" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
             <a-select placeholder="请选择"  v-model="form.adminId" @change="handleAdminChange">
-              <a-select-option>--请选择--</a-select-option>
+<!--              <a-select-option>&#45;&#45;请选择&#45;&#45;</a-select-option>-->
               <a-select-option v-for="(admin,index) in this.adminData" :key="index">
                 {{admin.adminName}}
               </a-select-option>
@@ -15,7 +23,7 @@
         <a-col :md="7" :sm="24">
           <a-form-model-item label="年级" :labelCol="{ span: 3}" :wrapperCol="{ span: 15, offset: 1 }">
             <a-select placeholder="请选择" v-model="form.gradeId" @change="handleGradeChange">
-              <a-select-option>--请选择--</a-select-option>
+<!--              <a-select-option>&#45;&#45;请选择&#45;&#45;</a-select-option>-->
               <a-select-option v-for="(grade,index) in this.gradeData" :key="index">
                 {{grade.gradeName}}
               </a-select-option>
@@ -72,6 +80,7 @@
       </a-form-model>
     </a-modal>
   </a-card>
+  </div>
 </template>
 <script>
   import { TreeSelect } from 'ant-design-vue';
@@ -414,19 +423,17 @@
 </script>
 
 <style lang="less" scoped>
-  .search{
-    margin-bottom: 54px;
-  }
-  .fold{
-    width: calc(100% - 216px);
-    display: inline-block
-  }
-  .operator{
-    margin-bottom: 18px;
+  .result{
+    width: 100%;
+    background-color: white;
+    height:50px;
+    margin: 20px 0px 10px 0px;
+    padding-left: 25px;
+    padding-top: 15px;
+    vertical-align: top;
+    border-radius: 5px;
   }
   @media screen and (max-width: 900px) {
-    .fold {
-      width: 100%;
-    }
+
   }
 </style>

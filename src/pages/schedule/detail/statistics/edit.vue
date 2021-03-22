@@ -3,8 +3,10 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">修改选课结果</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/detail/statistics">选课统计</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="#">修改选课结果</router-link></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -181,39 +183,40 @@
             };
         },
     async created(){
-        let queryString=(window.location.hash||" ").split('?')[1]
-        let planId=(queryString || " ").split('=')[1]
-        this.planId=planId;
-        if(planId){
-            //获取单个选课计划的信息
-            let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId})
-            this.planData=result.name
-            console.log(this.planData);
-        }
-         //选课结果详情查看
-        let {data}=await this.$api.schedule.statics.getResult({planId});
-        console.log(data.result)
-        // this.dataSource=data.result.splice(1,data.result.length - 1);
-        this.dataSource=data.result;
-        console.log(this.dataSource);
-        for(var i=0;i<this.dataSource.length;i++){
-            this.tags.push(this.dataSource[i].studentInfoDtoList)
-        }
-        console.log(this.tags);
-        //统计选课人数以及课程被选情况
-        let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId:this.planId});
-        this.chooseCourseData=chooseCourse.result;
-        console.log(this.chooseCourseData);
         this.lookInfo();
+        this.chooseCourseInfo();
+        this.staticResult();
     },
         methods: {
             //指定排课计划信息查看
             async lookInfo(){
                 this.planId = window.location.href.split('?')[1].split('=')[1];
-                let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
-                console.log(result);
-                this.result=result;
-                console.log(this.result);
+                if(this.planId) {
+                    let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId: this.planId});
+                    console.log(result);
+                    this.result = result;
+                    this.planData = result.name
+                    console.log(this.result);
+                }
+            },
+            //选课结果详细信息查看
+            async chooseCourseInfo(){
+                //选课结果详情查看
+                let {data}=await this.$api.schedule.statics.getResult({planId:this.planId});
+                console.log(data.result)
+                this.dataSource=data.result;
+                console.log(this.dataSource);
+                for(var i=0;i<this.dataSource.length;i++){
+                    this.tags.push(this.dataSource[i].studentInfoDtoList)
+                }
+                console.log(this.tags);
+            },
+            //统计选课结果
+            async staticResult(){
+                //统计选课人数以及课程被选情况
+                let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId:this.planId});
+                this.chooseCourseData=chooseCourse.result;
+                console.log(this.chooseCourseData);
             },
             onChange(checkedValues) {
                 console.log('checked = ', checkedValues);
@@ -270,13 +273,7 @@
                 this.addVisit = false;
                 //刷新界面
                 // //选课结果详情查看
-                let {data}=await this.$api.schedule.statics.getResult({planId});
-                console.log(data.result)
-                // this.dataSource=data.result.splice(1,data.result.length - 1);
-                this.dataSource=data.result;
-                console.log(this.dataSource);
-                this.dataSource=data.result.splice(1,data.result.length - 1);
-                console.log(this.dataSource);
+               this.chooseCourseInfo();
             },
             handleCancel() {
                 this.addVisit = false;
@@ -293,7 +290,8 @@
                let mineIds = []
                 mineIds.push(removedTag.id)
                 console.log(mineIds)
-                let {data} = await this.$api.schedule.statics.delResult({ids:mineIds})
+                let {data} = await this.$api.schedule.statics.delResult({ids:mineIds});
+               this.chooseCourseInfo();
             },
         }
     };

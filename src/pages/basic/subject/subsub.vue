@@ -1,5 +1,14 @@
 <template>
-  <a-card>
+  <div>
+    <div class="result">
+      <a-breadcrumb>
+        <a-breadcrumb-item>首页</a-breadcrumb-item>
+        <a-breadcrumb-item>基础设置</a-breadcrumb-item>
+        <a-breadcrumb-item><router-link to="/basic/subject/admin">主课程</router-link></a-breadcrumb-item>
+        <a-breadcrumb-item><router-link to="#">子课程</router-link></a-breadcrumb-item>
+      </a-breadcrumb>
+    </div>
+    <a-card>
     <div>
       <div class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
@@ -9,8 +18,8 @@
               :rowKey="'subChildId'"
               :columns="columns"
               :dataSource="dataSource">
-        <span slot="operation" slot-scope="text, record">
-          <a @click="edit(record.subChildId)">编辑</a>|
+        <span slot="operation" slot-scope="text, record,index">
+          <a @click="edit(index)">编辑</a>|
           <a-popconfirm v-if="dataSource.length"
                         title="确认删除?"
                         cancelText="取消"
@@ -57,6 +66,7 @@
       </a-form-model>
     </a-modal>
   </a-card>
+  </div>
 </template>
 <script>
   import { TreeSelect } from 'ant-design-vue';
@@ -105,7 +115,6 @@
     }
   ]
   export default {
-    name: 'subsubject',
     data () {
       return {
         columns: columns,
@@ -116,7 +125,6 @@
         addClassVisit:false,
         loading:false,
         changeTitle:'新增子课程',
-        editText:-1,
         form:{
           name:"",
           gradeIds:[],
@@ -195,22 +203,29 @@
       },
       async edit(editId){
         this.grade();
-        this.form.gradeIds = []
+        this.form.gradeIds = [];
         this.changeTitle='编辑子课程';
         this.checkedKeys=[];
-        console.log('selectData',this.treeData,this.dataSource);
-        let selectData = this.dataSource.filter(item => item.subChildId === editId)
+        console.log('treeData',this.treeData);
+        let selectData = this.dataSource[editId].childSubjectGrade;
         console.log('selectData',selectData);
-        selectData[0].childSubjectGrade.forEach((item)=>{
-          this.form.gradeIds.push(item.gradeId)
-        })
+        for(let i in this.treeData){
+          for(let j in selectData){
+            if(this.treeData[i].childSubjectGrade!=selectData[j].gradeId){
+              this.form.gradeIds.push(selectData[j].gradeId);
+            }else{
+              let children=this.treeData[i].children;
+              for(let k in children){
+                this.form.gradeIds.push(children[k].key);
+              }
+            }
+          }
+        }
+        console.log(this.form.gradeIds);
         this.addClassVisit=true;
-        this.editText=this.dataSource.findIndex(item=>item.subChildId==editId);
-        this.form.name=this.dataSource[this.editText].name;
-        this.form.type=this.dataSource[this.editText].type==1?'行政班课':'走班课'
-        console.log(this.dataSource[this.editText].subChildId)
+        this.form.name=this.dataSource[editId].name;
+        this.form.type=this.dataSource[editId].type==1?'行政班课':'走班课';
       },
-
       async handleOk() {
         if(this.changeTitle=='新增子课程'){
           let formData={
@@ -277,19 +292,17 @@
 </script>
 
 <style lang="less" scoped>
-  .search{
-    margin-bottom: 54px;
-  }
-  .fold{
-    width: calc(100% - 216px);
-    display: inline-block
-  }
-  .operator{
-    margin-bottom: 18px;
+  .result{
+    width: 100%;
+    background-color: white;
+    height:50px;
+    margin: 20px 0px 10px 0px;
+    padding-left: 25px;
+    padding-top: 15px;
+    vertical-align: top;
+    border-radius: 5px;
   }
   @media screen and (max-width: 900px) {
-    .fold {
-      width: 100%;
-    }
+
   }
 </style>

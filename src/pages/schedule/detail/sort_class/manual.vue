@@ -3,9 +3,10 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">选课分班</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">手动分班</a></a-breadcrumb-item>
+                <a-breadcrumb-item>排课计划</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/detail/sort_class">选课分班</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="#">手动分班</router-link></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">

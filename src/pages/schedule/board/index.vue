@@ -3,7 +3,7 @@
     <div class="result">
       <a-breadcrumb>
         <a-breadcrumb-item>首页</a-breadcrumb-item>
-        <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+        <a-breadcrumb-item><router-link to="#">排课计划</router-link></a-breadcrumb-item>
       </a-breadcrumb>
     </div>
     <div class="card-list">

@@ -1,81 +1,91 @@
 <template>
-    <div>
-        <div class="result">
-            <a-row>
-                <a-col :span="12">
-                        <span style="font-size:1.5em">{{this.planData}}</span>
-                        <br>
-                        <span class="link-font-color" style="margin-left:2em">选课时间：{{this.result.timeLimit}}</span>
-                        <span class="link-font-color" style="margin-left:2em">选课中</span>
-                </a-col>
-                <a-col :span="12">
-                    <a-row>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changeTime">修改选课时间</a-button></a-col>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changResult">修改选课结果</a-button></a-col>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="clearTable">清空</a-button></a-col>
-                        <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
-                    </a-row>
-                </a-col>
-            </a-row>
-        </div>
-<!--        修改选课时间弹框-->
-        <a-modal
-                 title="修改选课时间"
-                :visible="changeChooseTimeModal"
-                :closable="false">
-            <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
-                <a-button key="back" @click="handleCancel">取消</a-button>
-            </template>
-            <div class="chooseData">
-                <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules"
-                    :label-col="{span:6}" :wrapper-col="{span:15}">
-                    <a-form-model-item label="选课开始时间：" prop="startChooseTime" ref="startChooseTime">
-                        <a-date-picker v-model="form.startChooseTime"
-                                       :disabled-date="disabledStartDate"
-                                       show-time
-                                       format="YYYY-MM-DD"
-                                       placeholder="设置开始选课时间"
-                                       @openChange="handleStartOpenChange"
-                                       valueFormat="YYYY-MM-DD"/>
-                    </a-form-model-item>
-                    <a-form-model-item label="选课结束时间：" prop="endChooseTime" ref="endChooseTime">
-                        <a-date-picker v-model="form.endChooseTime"
-                                       :disabled-date="disabledEndDate"
-                                       show-time
-                                       format="YYYY-MM-DD"
-                                       placeholder="设置选课结束时间"
-                                       :open="endOpen"
-                                       @openChange="handleEndOpenChange"
-                                       valueFormat="YYYY-MM-DD"/>
-                    </a-form-model-item>
-                </a-form-model>
+  <div>
+      <div class="result1">
+          <a-breadcrumb>
+              <a-breadcrumb-item>首页</a-breadcrumb-item>
+              <a-breadcrumb-item>排课计划</a-breadcrumb-item>
+              <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
+              <a-breadcrumb-item><router-link to="#">选课统计</router-link></a-breadcrumb-item>
+          </a-breadcrumb>
+      </div>
+      <div>
+          <div class="result">
+              <a-row>
+                  <a-col :span="12">
+                      <span style="font-size:1.5em">{{this.planData}}</span>
+                      <br>
+                      <span class="link-font-color" style="margin-left:2em">选课时间：{{this.result.timeLimit}}</span>
+                      <span class="link-font-color" style="margin-left:2em">选课中</span>
+                  </a-col>
+                  <a-col :span="12">
+                      <a-row>
+                          <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changeTime">修改选课时间</a-button></a-col>
+                          <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changResult">修改选课结果</a-button></a-col>
+                          <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="clearTable">清空</a-button></a-col>
+                          <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
+                      </a-row>
+                  </a-col>
+              </a-row>
+          </div>
+          <!--        修改选课时间弹框-->
+          <a-modal
+                  title="修改选课时间"
+                  :visible="changeChooseTimeModal"
+                  :closable="false">
+              <template slot="footer">
+                  <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+                  <a-button key="back" @click="handleCancel">取消</a-button>
+              </template>
+              <div class="chooseData">
+                  <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules"
+                                :label-col="{span:6}" :wrapper-col="{span:15}">
+                      <a-form-model-item label="选课开始时间：" prop="startChooseTime" ref="startChooseTime">
+                          <a-date-picker v-model="form.startChooseTime"
+                                         :disabled-date="disabledStartDate"
+                                         show-time
+                                         format="YYYY-MM-DD"
+                                         placeholder="设置开始选课时间"
+                                         @openChange="handleStartOpenChange"
+                                         valueFormat="YYYY-MM-DD"/>
+                      </a-form-model-item>
+                      <a-form-model-item label="选课结束时间：" prop="endChooseTime" ref="endChooseTime">
+                          <a-date-picker v-model="form.endChooseTime"
+                                         :disabled-date="disabledEndDate"
+                                         show-time
+                                         format="YYYY-MM-DD"
+                                         placeholder="设置选课结束时间"
+                                         :open="endOpen"
+                                         @openChange="handleEndOpenChange"
+                                         valueFormat="YYYY-MM-DD"/>
+                      </a-form-model-item>
+                  </a-form-model>
 
-            </div>
-        </a-modal>
-        <div class="info link-font-color" style="padding-left: 30px" >
-            已有{{this.chooseCourseData.isChoosen}}人选课 （共{{this.chooseCourseData.total}}人）<font style="color:red">{{this.chooseCourseData.notChoosen}}人未选</font></div>
-        <div class="table-bg">
-            <!-- table -->
-            <a-table
-                    :columns="columns"
-                    :data-source="dataSource"
-                    :bordered = "true"
-                    :pagination = "false"
-            >
-            </a-table>
-            <!-- charts -->
-            <div style="margin-top:50px">
-                <a-row type="flex" justify="space-between" align="bottom">
-                    <div id="barChart" style="width: 60%;height: 400px;"></div>
-                </a-row>
-                <a-row>
-                    <div id="pieChart" style="width: 50%;height: 400px;" ></div>
-                </a-row>
-            </div>
-            <!-- charts -->
-        </div>
-    </div>
+              </div>
+          </a-modal>
+          <div class="info link-font-color" style="padding-left: 30px" >
+              已有{{this.chooseCourseData.isChoosen}}人选课 （共{{this.chooseCourseData.total}}人）<font style="color:red">{{this.chooseCourseData.notChoosen}}人未选</font></div>
+          <div class="table-bg">
+              <!-- table -->
+              <a-table
+                      :columns="columns"
+                      :data-source="dataSource"
+                      :bordered = "true"
+                      :pagination = "false"
+              >
+              </a-table>
+              <!-- charts -->
+              <div style="margin-top:50px">
+                  <a-row type="flex" justify="space-between" align="bottom">
+                      <div id="barChart" style="width: 60%;height: 400px;"></div>
+                  </a-row>
+                  <a-row>
+                      <div id="pieChart" style="width: 50%;height: 400px;" ></div>
+                  </a-row>
+              </div>
+              <!-- charts -->
+          </div>
+      </div>
+  </div>
 </template>
 <script>
     import echarts from 'echarts'
@@ -327,6 +337,16 @@
 </script>
 
 <style lang="less" scoped>
+    .result1{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
     .result{
         width: 100%;
         height: 300px;
@@ -336,9 +356,6 @@
         padding: 20px 25px;
         vertical-align: top;
         border-radius: 5px;
-    }
-    .result-left{
-        width: 50%;
     }
     .link-font-color{
         color: #0000ff;
