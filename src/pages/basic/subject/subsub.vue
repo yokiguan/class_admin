@@ -72,48 +72,7 @@
   import { TreeSelect } from 'ant-design-vue';
   import { message } from 'ant-design-vue';
   const SHOW_PARENT = TreeSelect.SHOW_PARENT;
-  const columns = [
-    {
-      title: '子课程编号',
-      dataIndex: 'subChildId',
-      align:'center',
-      customRender: function(t, r, index) {
-        return parseInt(index) + 1
-      }
-    },
-    {
-      title: '名称',
-      dataIndex: 'name',
-      align:'center',
-    },
-    {
-      title: '年级',
-      dataIndex: 'childSubjectGrade',
-      align:'center',
-      customRender:(text,index,i)=>{
-        let grade="";
-        for(var j=0;j<text.length;j++){
-          if(grade==""){
-            grade=text[j].gradeName
-          }else{
-            grade=grade+"+"+text[j].gradeName;
-          }
-        }
-        return  grade
-      }
-    },
-    {
-      title: '类型',
-      dataIndex: 'type',
-      align:'center',
-      customRender:(text)=>text==1?'行政班课':'走班课'
-    },{
-      title:"操作",
-      key:"operation",
-      align:'center',
-      scopedSlots:{customRender:"operation"}
-    }
-  ]
+ 
   export default {
     data () {
       return {
