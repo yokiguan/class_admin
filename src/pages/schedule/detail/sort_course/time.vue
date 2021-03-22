@@ -239,19 +239,23 @@
             let {data:{result,success}}=await this.$api.schedule.arrangeClass.getLesson({planId})
             console.log(result);
             this.modalId=result.currId;
-            this.tableData4=result.lessonMax;
-            console.log(this.tableData4);
-            // for(let i=0;i<this.tableData4.length;i++){
-            //     this.tableData4[i].id=i;
-            //     this.selectUseMax[i]=this.tableData4[i].useMax;
-            // }
-            this.tableData4.forEach((item,i)=>{
-                item.id=i
-            })
-            // console.log(this.tableData4);
-            this.count=this.tableData4.length
-            this.settingLessonInfo=result.settingLessonInfo;
-            console.log(this.settingLessonInfo.disable);
+            if(result.lessonMax){
+                this.tableData4=result.lessonMax;
+                console.log(this.tableData4);
+                // for(let i=0;i<this.tableData4.length;i++){
+                //     this.tableData4[i].id=i;
+                //     this.selectUseMax[i]=this.tableData4[i].useMax;
+                // }
+                this.tableData4.forEach((item,i)=>{
+                    item.id=i
+                })
+                // console.log(this.tableData4);
+                this.count=this.tableData4.length
+            }
+            if(result.settingLessonInfo){
+                this.settingLessonInfo=result.settingLessonInfo;
+                console.log(this.settingLessonInfo.disable);
+            }
             this.modalInfo();
         },
         methods: {

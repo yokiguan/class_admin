@@ -39,7 +39,6 @@
                         color: white;
                         height: 40px;
                         border: none;
-                        margin-left: 200px;
                         border-radius: 5px;
                         width: 150px">查看学生冲突</button>
                         <button style="background-color: #19b294;margin-left: 30px;
@@ -55,9 +54,8 @@
                         border-radius: 5px;
                         width: 150px" @click="changClass">学生调班</button>
                     </a-row>
-                    <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
                 </div>
-                <a-card class="table-bg" v-if="showTable">
+                <a-card class="table-bg">
                     <a-row class="buttons">
                         <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -78,7 +76,7 @@
                         border-radius: 5px;
                         width: 110px" @click="subjectLook">按科目查看</button></a-col>
                     </a-row>
-                    <a-table
+                    <a-table v-if="showTable"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
@@ -290,50 +288,54 @@
                 }
                 this.classroomInfo();
                 // console.log( this.classroom)
-                this.showTable=true;
             },
             //教室设置查看
             async classroomInfo(){
-              let {data:{result,success}}=await this.$api.schedule.classTask.getClassroomList({planId:this.planId,scheduleTaskId:this.scheduleTaskId,classroomId:this.checkedKeys.toString()});
-              this.allData=result.classroomCurriDtos;
-              console.log(this.allData);
-              let dataSource=[];
-              for(let i=0;i<this.allData.length;i++){
-                  let position=eval(this.allData[i].position);
-                  const getInfo=(dataItem,sourceItem={})=>{
-                      if(!sourceItem) sourceItem={};
-                      // let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classroomName + ')';
-                      let content = dataItem.subChildName +dataItem.classNumId+"_"+dataItem.teacherName+'(' +  this.classroom + ')'+"共"+dataItem.classStuNum+"人";
-                      const column=eval(dataItem.position)[1];
-                      switch (column) {
-                          case 1:
-                              sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
-                              break;
-                          case 2:
-                              sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
-                              break;
-                          case 3:
-                              sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
-                              break;
-                          case 4:
-                              sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
-                              break;
-                          case 5:
-                              sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
-                              break;
-                      }
-                      return sourceItem
-                  };
-                  dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+              let {data}=await this.$api.schedule.classTask.getClassroomList({planId:this.planId,scheduleTaskId:this.scheduleTaskId,classroomId:this.checkedKeys.toString()});
+              if(data.success==false){
+                  message.info(data.message);
+              }else{
+                  this.showTable=true;
+                  this.allData=data.result.classroomCurriDtos;
+                  console.log(this.allData);
+                  let dataSource=[];
+                  for(let i=0;i<this.allData.length;i++){
+                      let position=eval(this.allData[i].position);
+                      const getInfo=(dataItem,sourceItem={})=>{
+                          if(!sourceItem) sourceItem={};
+                          // let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classroomName + ')';
+                          let content = dataItem.subChildName +dataItem.classNumId+"_"+dataItem.teacherName+'(' +  this.classroom + ')'+"共"+dataItem.classStuNum+"人";
+                          const column=eval(dataItem.position)[1];
+                          switch (column) {
+                              case 1:
+                                  sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                  break;
+                              case 2:
+                                  sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                  break;
+                              case 3:
+                                  sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                  break;
+                              case 4:
+                                  sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                  break;
+                              case 5:
+                                  sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                  break;
+                          }
+                          return sourceItem
+                      };
+                      dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                  }
+                  console.log(dataSource);
+                  this.tableData=dataSource;
+                  console.log(this.tableData);
+                  //编号
+                  for(let i=0;i<this.tableData.length;i++){
+                      this.tableData[i].key=i+1;
+                  }
+                  console.log(this.tableData);
               }
-                console.log(dataSource);
-                this.tableData=dataSource;
-                console.log(this.tableData);
-                //编号
-                for(let i=0;i<this.tableData.length;i++){
-                    this.tableData[i].key=i+1;
-                }
-                console.log(this.tableData);
             },
             //查看学生冲突
             studentContrast(){
@@ -444,7 +446,7 @@
     }
     .title{
         background-color: #fff;
-        height: 170px;
+        height: 140px;
         padding: 20px 25px;
         border-radius: 10px;
         margin-top: 35px;
@@ -458,6 +460,7 @@
         margin-top: -35px;
         width: 100%;
         background-color: #fff;
+        min-height: 670px;
     }
     .class_title{
         height: 40px;

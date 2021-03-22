@@ -48,7 +48,6 @@
                         color: white;
                         height: 40px;
                         border: none;
-                        margin-left: 200px;
                         border-radius: 5px;
                         width: 150px">查看学生冲突</button>
                         <button style="background-color: #19b294;margin-left: 30px;
@@ -64,9 +63,8 @@
                         border-radius: 5px;
                         width: 150px" @click="changClass">学生调班</button>
                     </a-row>
-                    <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
                 </div>
-                <a-card class="table-bg" v-if="showTable">
+                <a-card class="table-bg" >
                     <a-row class="buttons">
                         <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -87,7 +85,8 @@
                         border-radius: 5px;
                         width: 110px" @click="subjectLook">按科目查看</button></a-col>
                     </a-row>
-                    <a-table :columns="columns"
+                    <a-table v-if="showTable"
+                            :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
                             :bordered="true"
@@ -127,26 +126,31 @@
             title: '一',
             dataIndex: 'one',
             align: "center",
+            width:"19%",
         },
         {
             title: '二',
             dataIndex: 'two',
             align: "center",
+            width:"19%",
         },
         {
             title: '三',
             dataIndex: 'three',
             align: "center",
+            width:"19%",
         },
         {
             title: '四',
             dataIndex: 'four',
             align: "center",
+            width:"19%",
         },
         {
             title: '五',
             dataIndex: 'five',
             align: "center",
+            width:"19%",
         },
     ];
     const stuColumns=[
@@ -233,7 +237,6 @@
             onCheck(checkedKeys) {
                 console.log('onCheck', checkedKeys);
                 this.checkedKeys=checkedKeys;
-                this.showTable=true;
                 this.teacherInfo();
             },
             //获取左侧的教室树
@@ -252,51 +255,72 @@
             },
             //教师课表查看
             async teacherInfo() {
-                // 
-                let {data: {result, success}} = await this.$api.schedule.classTask.teacherLook({
+                //
+                let {data} = await this.$api.schedule.classTask.teacherLook({
                     planId: this.planId,
                     scheduleTaskId: this.scheduleTaskId,
                     teacherId: this.checkedKeys.toString()
                 });
-                // console.log(result);
-                this.allData=result.teacherCurriDtos;
-                // console.log(this.allData);
-                let dataSource=[];
-                for(let i=0;i<this.allData.length;i++){
-                    let position=eval(this.allData[i].position);
-                    const getInfo=(dataItem,sourceItem={})=>{
-                        if(!sourceItem) sourceItem={};
-                let content = dataItem.subChildName +dataItem.classNumId+"_"+result.teacherName+'(' +  dataItem.classroomName + ')'+"共"+dataItem.classStuNum+"人";;
-                const column=eval(dataItem.position)[1];
-                switch (column) {
-                    case 1:
-                        sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
-                        break;
-                    case 2:
-                        sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
-                        break;
-                    case 3:
-                        sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
-                        break;
-                    case 4:
-                        sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
-                        break;
-                    case 5:
-                        sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
-                        break;
+                console.log(data);
+                console.log(data.success);
+                if(data.success==false){
+                    message.info(data.message);
+                }else{
+                    this.showTable=true;
+                    this.allData=data.result.teacherCurriDtos;
+                    console.log(this.allData);
+                    let dataSource=[];
+                    for(let i=0;i<this.allData.length;i++){
+                        let position=eval(this.allData[i].position);
+                        const getInfo=(dataItem,sourceItem={})=>{
+                            if(!sourceItem) sourceItem={};
+                            let content = dataItem.subChildName +dataItem.classNumId+"_"+data.result.teacherName+'(' +  dataItem.classroomName + ')'+"共"+dataItem.classStuNum+"人";;
+                            const column=eval(dataItem.position)[1];
+                            switch (column) {
+                                case 1:
+                                    sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                    break;
+                                case 2:
+                                    sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                    break;
+                                case 3:
+                                    sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                    break;
+                                case 4:
+                                    sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                    break;
+                                case 5:
+                                    sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                    break;
+                            }
+                            return sourceItem
+                        };
+                        dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                    }
+                    // console.log(dataSource);
+                    this.tableData=dataSource;
+                    // console.log(this.tableData);
+                    for(let i=0;i<this.tableData.length;i++){
+                        // console.log(i,this.tableData[i]);
+                        if(this.tableData[i]===undefined){
+                            // console.log(i);
+                            let pushData={
+                                one:"",
+                                two:"",
+                                three:"",
+                                four:"",
+                                five:"",
+                            }
+                            this.tableData[i]=pushData;
+                            // this.tableData[i].one="";
+                        }
+                    }
+                    // 编号
+                    for(let i=0;i<this.tableData.length;i++){
+                        this.tableData[i].key=i+1;
+                    }
+                    console.log(this.tableData);
                 }
-                return sourceItem
-                };
-                dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
-                }
-                // console.log(dataSource);
-                this.tableData=dataSource;
-                // console.log(this.tableData);
-                // 编号
-                for(let i=0;i<this.tableData.length;i++){
-                    this.tableData[i].key=i+1;
-                }
-                console.log(this.tableData);
             },
             //查看学生冲突
             studentContrast(){
@@ -411,7 +435,7 @@
     .title{
         width: 100%;
         background-color: #fff;
-        height: 170px;
+        height: 140px;
         padding: 20px 25px;
         border-radius: 10px;
         margin-bottom: 50px;

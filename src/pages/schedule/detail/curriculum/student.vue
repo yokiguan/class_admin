@@ -4,7 +4,7 @@
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">课表查看</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">学生课表</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">学生课表</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="box">
@@ -16,54 +16,26 @@
                     <a-col><span style="font-size: 1.2em">全部展开</span></a-col>
                 </a-row>
                 <a-row>
-                    <a-input-search placeholder="请输入老师姓名"  v-model="studentName" @search="onSearch" style="margin-top: 20px"/>
+                    <a-input-search placeholder="请输入学生姓名"  v-model="studentName" @search="onSearch" style="margin-top: 20px"/>
                 </a-row>
                 <div style="width: 100%; height: 1px;
             margin-top: 10px;
-            border-top: solid black 1px;"></div>
-                <div>
-                    <a-tree v-model="checkedKeys"
-                            :tree-data="treeData"
-                            checkable
-                            @check="onCheck"
-                            style="font-size: 1.3em;"/>
-                </div>
+            border-top: solid black 1px;"/>
+                <a-tree v-model="checkedKeys"
+                        :tree-data="treeData"
+                        checkable
+                        @check="onCheck"
+                        style="font-size: 1.3em;"/>
             </a-card>
             <div class="right">
                 <div class="title">
                     <a-row>
                         <a-col :span="15"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
-                        <a-col :span="5"><button style="background-color: #19b294;color: white;height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px">删除已发布课表</button></a-col>
-                        <button style="background-color: #19b294;color: white;height: 40px;border: none;
+                        <button style="background-color: #19b294;color: white;height: 40px;border: none;margin-left: 100px;
                         border-radius: 5px;width: 150px" @click="back">返回</button>
                     </a-row>
-                    <a-row style="margin-top: 20px">
-                        <a-col :span="7"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
-                        <button @click="maxTime" style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px">查看学生冲突</button>
-                        <button style="background-color: #19b294;margin-left: 30px;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px" @click="changeCourse">手动调课</button>
-                        <button style="background-color: #19b294;margin-left: 30px;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px" @click="changClass">学生调班</button>
-                    </a-row>
-                    <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
                 </div>
-                <a-card class="table-bg" v-if="showTable">
+                <a-card class="table-bg" >
                     <a-row class="buttons">
                         <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -90,50 +62,56 @@
                         border-radius: 5px;
                         width: 110px" @click="subjectLook">按科目查看</button></a-col>
                     </a-row>
-                    <a-table
+                    <a-table v-if="showTable"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
                             :bordered="true"
-                            style="margin-top: 20px;height:100% ">
+                            style="margin-top: 20px;white-space: pre">
                     </a-table>
                 </a-card>
             </div>
         </div>
     </div>
-
 </template>
 <script>
+    import {message} from "ant-design-vue"
     const columns = [
         {
             align: "center",
             title: " ",
             dataIndex: 'key',
+            width:"5%",
         },
         {
             title: '一',
             dataIndex: 'one',
-            align: 'center'
+            align: 'center',
+            width:"19%"
         },
         {
             title: '二',
             dataIndex: 'two',
-            align: 'center'
+            align: 'center',
+            width:"19%"
         },
         {
             title: '三',
             dataIndex: 'three',
-            align: 'center'
+            align: 'center',
+            width:"19%"
         },
         {
             title: '四',
             dataIndex: 'four',
-            align: 'center'
+            align: 'center',
+            width:"19%"
         },
         {
             title: '五',
             dataIndex: 'five',
-            align: 'center'
+            align: 'center',
+            width:"19%"
         },
     ];
     export default {
@@ -148,6 +126,7 @@
                 showTable:true,
                 studentName:"",
                 checkedKeys:[],
+                allData:[],
             };
         },
         created() {
@@ -177,7 +156,7 @@
             //学生树查询
             async treeInfo(){
               let {data}=await this.$api.schedule.classTask.getStudentList({planId:this.planId});
-              console.log(data.result);
+              // console.log(data.result);
                 this.treeData = [];
                 for (let i in data.result) {
                     // 第一层
@@ -185,44 +164,107 @@
                     //将Object转换为数组
                     let arr=Object.values(data.result[i].schWxUserEntity);
                     // let item = ;
-                    console.log(arr);
+                    // console.log(arr);
                     numberTree.title = arr[1];
                     numberTree.key = arr[2];
                     this.treeData.push(numberTree)
                 }
-                console.log(this.treeData);
+                // console.log(this.treeData);
             },
             //根据学生姓名查询
             onSearch(value){
                 console.log(value);
                 this.nameInfo([value]);
+                this.showTable=true;
             },
             //根据姓名查信息接口
             async nameInfo(value){
-                 let {data:{result,success}}=await this.$api.schedule.classTask.getStudent({planId:this.planId,name:value.toString()});
-                 console.log(result);
-                 let subId=result[0].schWxUserEntity.wxUid;
-                 console.log(subId);
-                 this.stuInfo(subId);
+                 let {data}=await this.$api.schedule.classTask.getStudent({
+                     planId:this.planId,
+                     name:value.toString()});
+                 console.log(data);
+                if(data.success==true){
+                    let subId=data.result[0].schWxUserEntity.wxUid;
+                    console.log(subId);
+                    this.checkedKeys=subId.split();
+                    this.onCheck();
+                }else{
+                    message.info(data.message);
+                }
             },
             //选择学生
-            onCheck(checkedKeys) {
-                console.log('onCheck', checkedKeys);
-                let stuId=checkedKeys.toString();
-                this.stuInfo(stuId)
+            onCheck() {
+                // console.log('onCheck', checkedKeys);
+                let stuId=this.checkedKeys.toString();
+                console.log(stuId);
+                this.stuInfo(stuId);
+                this.showTable=true;
             },
             //课表查看接口
             async stuInfo(stuId){
-                let {data}=await this.$api.schedule.classTask.getStudent({planId:this.planId,scheduleTaskId:this.scheduleTaskId,stuId:stuId})
+                let {data}=await this.$api.schedule.table.studentTable({
+                    planId:this.planId,
+                    stuId:stuId})
                 console.log(data);
-            },
-            //手动调课
-            changeCourse(){
-                this.$router.push(`/schedule/detail/task_mobile/integrate?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
-            },
-            //学生调班
-            changClass(){
-                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+               if(data.success=false){
+                   message.info(data.message);
+               }else{
+                   this.allData=data.result.syllabus;
+                   console.log(this.allData);
+                   this.showTable=true;
+                   let dataSource=[];
+                   for(let i=0;i<this.allData.length;i++){
+                       let position=eval(this.allData[i].position);
+                       const getInfo=(dataItem,sourceItem={})=>{
+                           if(!sourceItem) sourceItem={};
+                           // let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classroomName + ')';
+                           let content = dataItem.subChildName +dataItem.classNumId+"_"+dataItem.teacherName+'(' +  dataItem.classroomName + ')';
+                           const column=eval(dataItem.position)[1];
+                           switch (column) {
+                               case 1:
+                                   sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                   break;
+                               case 2:
+                                   sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                   break;
+                               case 3:
+                                   sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                   break;
+                               case 4:
+                                   sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                   break;
+                               case 5:
+                                   sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                   break;
+                           }
+                           return sourceItem
+                       };
+                       dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                   }
+                   console.log(dataSource);
+                   this.tableData=dataSource;
+                   console.log(this.tableData);
+                   for(let i=0;i<this.tableData.length;i++){
+                       // console.log(i,this.tableData[i]);
+                       if(this.tableData[i]===undefined){
+                           // console.log(i);
+                           let pushData={
+                               one:"",
+                               two:"",
+                               three:"",
+                               four:"",
+                               five:"",
+                           }
+                           this.tableData[i]=pushData;
+                           // this.tableData[i].one="";
+                       }
+                   }
+                   //编号
+                   for(let i=0;i<this.tableData.length;i++){
+                       this.tableData[i].key=i+1;
+                   }
+                   console.log(this.tableData);
+               }
             },
             //按老师查看
             teacherLook(){
@@ -243,8 +285,6 @@
             back(){
                 this.$router.go(-1)
             },
-            maxTime(){},
-
         },
     };
 </script>
@@ -267,31 +307,32 @@
         flex-direction:row;
     }
     .left{
-        width: 22%;
+        width: 19%;
         background-color: white;
         border-radius: 10px;
         display: flex;
         justify-content: space-between;
+        padding: 10px;
     }
     .right{
         border-radius: 5px;
-        width: 77%;
-        margin-top: -35px;
-
+        width: 80%;
     }
     .title{
+        width: 100%;
         background-color: #fff;
-        height: 170px;
+        height: 120px;
         padding: 20px 25px;
         border-radius: 10px;
-        margin-top: 35px;
         margin-bottom: 50px;
     }
     .table-bg{
         padding: 20px 25px;
         border-radius: 10px;
         text-align: center;
+        min-height: 670px;
         margin-top: -35px;
+        width: 100%;
         background-color: #fff;
     }
 </style>

@@ -52,7 +52,7 @@
                         </a-col>
                     </a-row>
                 </div>
-                <div class="table-bg" v-if="showTable">
+                <div class="table-bg">
                     <a-row class="buttons">
                         <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -78,14 +78,9 @@
                         border: none;
                         border-radius: 5px;
                         width: 110px" @click="subjectLook">按科目查看</button> </a-col>
-                        <a-col :span="3"><button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 110px"  @click="studentLook">按学生查看</button></a-col>
                     </a-row>
-                    <a-table :rowKey="'classId'"
+                    <a-table  v-if="showTable"
+                             :rowKey="'classId'"
                              :columns="columns"
                              :data-source="tableData"
                              :pagination="false"
@@ -116,10 +111,11 @@
                      style="">
             </a-table>
         </a-modal>
+<!--        冲突查看-->
         <a-modal :visible="contrastModal"
                  :closable="false">
             <template slot="footer">
-                <a-button key="back" @click="handleCancel">取消</a-button>
+                <a-button key="back" @click="handleCancelContr">取消</a-button>
             </template>
             <div class="right_title"><h3 style="color: white;padding-top: 8px;margin-left: 15px">查看学生冲突(共{{pagination.total}}名学生发生冲突)</h3></div>
             <a-table :rowKey="'id'"
@@ -323,14 +319,24 @@
                     scheduleTaskId:this.scheduleTaskId,
                     stuId:this.stuId})
                 console.log(result);
+                console.log(result[1].classId);
+                let pushData={};
                 for(let i in result){
-                    let pushData={
-                        subChildId:result[i].subChildId,
-                        subChildName: result[i].subChildName,
-                        classId:result[i].classId,
-                        class:result[i].subChildName+result[i].classNumId+"_"+result[i].teacherName+"("+result[i].classroomName+")",
+                    if(result[i].classId !==undefined){
+                        pushData={
+                            subChildId:result[i].subChildId,
+                            subChildName: result[i].subChildName,
+                            classId:result[i].classId,
+                            class:result[i].subChildName+result[i].classNumId+"_"+result[i].teacherName+"("+result[i].classroomName+")",
+                        }
+                        // console.log(pushData)
+                    }else{
+                        pushData={
+                            subChildId:result[i].subChildId,
+                            subChildName:result[i].subChildName,
+                            class:result[i].subChildName+"(无班级)",
+                        }
                     }
-                    // console.log(pushData);
                     this.tableData.push(pushData);
                 }
                 console.log(this.tableData);
@@ -369,7 +375,7 @@
             },
             //关闭调课弹框
             handleCancel () {
-                this.visible = false;
+                this.visible= false;
                 this.loading = false;
             },
             //获取保存接口
@@ -454,7 +460,7 @@
                 this.lookConflict();
             },
             //关闭学生冲突弹框
-            handleCancel(){
+            handleCancelContr(){
                 this.contrastModal=false;
             },
             //返回
@@ -506,6 +512,7 @@
         text-align: center;
         margin-top: -35px;
         background-color: #fff;
+        min-height: 670px;
     }
     .right_title{
         height: 40px;

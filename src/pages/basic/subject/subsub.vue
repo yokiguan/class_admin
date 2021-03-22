@@ -210,6 +210,7 @@
         this.form.type=this.dataSource[this.editText].type==1?'行政班课':'走班课'
         console.log(this.dataSource[this.editText].subChildId)
       },
+
       async handleOk() {
         if(this.changeTitle=='新增子课程'){
           let formData={
@@ -225,11 +226,18 @@
           this.subCourseInfo();
           this.$refs.ruleForm.resetFields();
         }else{
+          let gradeId="";
+          for(let i in this.treeData){
+            if(this.form.gradeIds.toString()==this.treeData[i].key){
+                gradeId=this.treeData[i].children[0].key;
+            }
+          }
+          console.log(this.form.gradeIds);
           let formData={
             subChildId:this.dataSource[this.editText].subChildId,
             name: this.form.name,
-            gradeIds: this.form.gradeIds,
-            type: this.form.type?1:0,
+            gradeIds: [gradeId],
+            type: Number(this.form.type),
             subFatherId: this.$router.history.current.query.id
           };
           let addData={...formData};

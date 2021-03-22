@@ -43,7 +43,7 @@
                         width: 150px" @click="back">返回</button></a-col>
                     </a-row>
                 </div>
-                <a-card class="table-bg" v-if="showTable">
+                <a-card class="table-bg">
                     <a-row class="buttons">
                         <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -64,7 +64,8 @@
                         border-radius: 5px;
                         width: 110px" @click="classLook">按班级查看</button></a-col>
                     </a-row>
-                    <a-table :rowKey="'key'"
+                    <a-table v-if="showTable"
+                            :rowKey="'key'"
                              :columns="columns"
                              :data-source="tableData"
                              :pagination="false"
@@ -147,7 +148,6 @@
             onCheck(checkedKeys) {
                 console.log('onCheck', checkedKeys);
                 this.checkedKeys=checkedKeys;
-                this.showTable=true;
                 this.subjectInfo();
             },
             //获取左侧的教室树
@@ -166,66 +166,71 @@
             },
             //教师课表查看
             async subjectInfo() {
-                let {data: {result, success}} = await this.$api.schedule.adminTask.courseTable({
+                let {data} = await this.$api.schedule.adminTask.courseTable({
                     planId: this.planId,
                     scheduleTaskId: this.scheduleTaskId,
                     subId: this.checkedKeys.toString(),
                 });
-                console.log(result);
-                this.allData=result;
-                console.log(this.allData);
-                let dataSource=[];
-                for(let i=0;i<this.allData.length;i++){
-                    let position=eval(this.allData[i].position);
-                    const getInfo=(dataItem,sourceItem={})=>{
-                        if(!sourceItem) sourceItem={};
-                        let content = dataItem.teacherName +"——"+this.gradeName+dataItem.className;
-                        const column=eval(dataItem.position)[1];
-                        switch (column) {
-                            case 1:
-                                sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
-                                break;
-                            case 2:
-                                sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
-                                break;
-                            case 3:
-                                sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
-                                break;
-                            case 4:
-                                sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
-                                break;
-                            case 5:
-                                sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
-                                break;
-                        }
-                        return sourceItem
-                    };
-                    dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
-                }
-                // console.log(dataSource);
-                this.tableData=dataSource;
-                console.log(this.tableData);
-                for(let i=0;i<this.tableData.length;i++){
-                    // console.log(i,this.tableData[i]);
-                    if(this.tableData[i]===undefined){
-                        // console.log(i);
-                        let pushData={
-                            one:"",
-                            two:"",
-                            three:"",
-                            four:"",
-                            five:"",
-                        }
-                        this.tableData[i]=pushData;
-                        // this.tableData[i].one="";
-                    }
-                }
-                console.log(this.tableData)
-                // 编号
-                for(let i=0;i<this.tableData.length;i++){
-                    this.tableData[i].key=i+1;
-                }
-                console.log(this.tableData);
+                console.log(data.result);
+               if(data.success==false){
+                   message.info(data.message);
+               }else{
+                   this.allData=data.result;
+                   console.log(this.allData);
+                   let dataSource=[];
+                   this.showTable=true;
+                   for(let i=0;i<this.allData.length;i++){
+                       let position=eval(this.allData[i].position);
+                       const getInfo=(dataItem,sourceItem={})=>{
+                           if(!sourceItem) sourceItem={};
+                           let content = dataItem.teacherName +"——"+this.gradeName+dataItem.className;
+                           const column=eval(dataItem.position)[1];
+                           switch (column) {
+                               case 1:
+                                   sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                   break;
+                               case 2:
+                                   sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                   break;
+                               case 3:
+                                   sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                   break;
+                               case 4:
+                                   sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                   break;
+                               case 5:
+                                   sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                   break;
+                           }
+                           return sourceItem
+                       };
+                       dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                   }
+                   // console.log(dataSource);
+                   this.tableData=dataSource;
+                   console.log(this.tableData);
+                   for(let i=0;i<this.tableData.length;i++){
+                       // console.log(i,this.tableData[i]);
+                       if(this.tableData[i]===undefined){
+                           // console.log(i);
+                           let pushData={
+                               one:"",
+                               two:"",
+                               three:"",
+                               four:"",
+                               five:"",
+                           }
+                           this.tableData[i]=pushData;
+                           // this.tableData[i].one="";
+                       }
+                   }
+                   console.log(this.tableData)
+                   // 编号
+                   for(let i=0;i<this.tableData.length;i++){
+                       this.tableData[i].key=i+1;
+                   }
+                   console.log(this.tableData);
+               }
             },
             //按老师查看
             teacherLook(){
@@ -302,6 +307,7 @@
         margin-top: -35px;
         width: 100%;
         background-color: #fff;
+        min-height: 670px;
     }
 </style>
 

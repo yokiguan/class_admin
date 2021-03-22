@@ -10,9 +10,18 @@ const xzbRuleBanAdjacent = base.root + '/a/xzbRuleBanAdjacent'
 const xzbRuleSingleDoubleLesson = base.root + '/a/xzbRuleSingleDoubleLesson'
 const schedulePlan=base.root+'/a/schedulePlan/'
 const basicSettingQuery=base.root+'/a/basicSettingQuery/'
+const scheduleSyllabus=base.root+'/a/scheduleSyllabus'
 const adminClass = {
     //行政班排课查看
     //行政班排课修改
+    //课节设置修改
+    saveTime(params){
+        return axios.post(`${schedulePlan}/saveXZBSelectLessonData.json`, params);
+    },
+    //走班课位置查看
+    searchLocation(params){
+        return axios.get(`${scheduleSyllabus}/getZouBanPosition.json`, {params});
+    },
    //课节设置查看(已调）
     getLesson(params) {
         return axios.get(`${schedulePlan}/getDataInfo.json`, {params});

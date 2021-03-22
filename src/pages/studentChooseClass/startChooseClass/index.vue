@@ -91,38 +91,41 @@
         methods: {
             //开始选课查看
             async chooseCourseInfo() {
-                let {data: {result, success}} = await this.$api.studentChooseCourse.startChoose.getCourseSelect();
-                console.log(result);
-                if (result.stuName === null) {
-                    this.stuName = "无学生姓名"
-                } else {
-                    this.stuName = result.stuName;
-                }
-                this.termName = result.termName;
-                this.allData = result.courseSelectDtos;
-                this.planId=result.courseSelectDtos[0].planId;
-                console.log(this.allData);
-                let list=[...this.allData];
-                // console.log(list);
-                list.forEach(item=>{
-                    let listSub=[...item.subChildIds];
-                    // console.log(listSub);
-                    item.mustSubject="";
-                    listSub.forEach(itemSub=>{
-                        if(itemSub.isable===1){
-                            if(item.mustSubject===""){
-                                item.mustSubject=itemSub.subChildName;
-                            }else{
-                                item.mustSubject=item.mustSubject+","+itemSub.subChildName;
-                            }
-                        }else{
-                            item.mustSubject="无"
-                        }
-                    })
-                })
-                console.log(this.allData);
-
-                this.getInfo(this.planId);
+                let {data} = await this.$api.studentChooseCourse.startChoose.getCourseSelect();
+                console.log(data);
+               if(data.success==false){
+                   message.info(data.message);
+               }else{
+                   if (data.result.stuName === null) {
+                       this.stuName = "无学生姓名"
+                   } else {
+                       this.stuName =data.result.stuName;
+                   }
+                   this.termName = data.result.termName;
+                   this.allData = data.result.courseSelectDtos;
+                   this.planId=data.result.courseSelectDtos[0].planId;
+                   console.log(this.allData);
+                   let list=[...this.allData];
+                   // console.log(list);
+                   list.forEach(item=>{
+                       let listSub=[...item.subChildIds];
+                       // console.log(listSub);
+                       item.mustSubject="";
+                       listSub.forEach(itemSub=>{
+                           if(itemSub.isable===1){
+                               if(item.mustSubject===""){
+                                   item.mustSubject=itemSub.subChildName;
+                               }else{
+                                   item.mustSubject=item.mustSubject+","+itemSub.subChildName;
+                               }
+                           }else{
+                               item.mustSubject="无"
+                           }
+                       })
+                   })
+                   console.log(this.allData);
+                   this.getInfo(this.planId);
+               }
             },
             //规则查看
             async getInfo(planId) {

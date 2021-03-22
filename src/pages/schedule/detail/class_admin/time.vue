@@ -3,9 +3,9 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/detail/class_admin">排课计划</router-link></a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">课节设置</a></a-breadcrumb-item></a-breadcrumb>
+                <a-breadcrumb-item><a href="#">课节设置</a></a-breadcrumb-item></a-breadcrumb>
         </div>
         <div class="content">
             <a-row>
@@ -101,7 +101,6 @@
                 disable:[],
                 priority:[],
                 classData:[],
-                zouBan:[],
                 tableData:[],
                 tableHeader: ['星期一','星期二','星期三','星期四','星期五','星期六','星期天'],
                 planData:"",
@@ -111,36 +110,68 @@
                 activity,
                 timeData:[],
                 modalId:"",
-                count:0,
+                currId:"",
+                scheduleTaskId:"",
+                getZouBanData:[],
             };
         },
         async created() {
-            let queryString = (window.location.hash || " ").split('?')[1]
-            let planId = (queryString || " ").split('=')[1]
-            this.planId = planId;
-            if (planId) {
-                //获取单个选课计划的信息
-                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
-                this.planData = result.name
-            }
+            this.chooseCourseInfo();
             //课节设置查看
-            let {data:{result,success}}=await this.$api.schedule.adminClass.getLesson({planId})
+            let {data:{result,success}}=await this.$api.schedule.adminClass.getLesson({planId:this.planId})
             console.log(result);
-            this.modalId=result.currId;
-            // console.log(result.lessonMax)
+            this.currId=result.currId;
             this.settingLessonInfo=result.xzbSettingLessonInfo;
-            // console.log(this.settingLessonInfo);
-            // console.log(this.settingLessonInfo.disable);
-            // console.log(this.settingLessonInfo.priority);
-            // console.log(this.settingLessonInfo.zouBan);
-            this.modalInfo();
+            console.log(this.settingLessonInfo);
+            this.modalInfo(this.currId);
+            // console.log(result.type);
+            if(result.type==2){
+            }
+            if(this.settingLessonInfo==undefined){
+                //走班课数据获取
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchLocation({
+                    planId:this.planId,
+                    scheduleTaskId:this.scheduleTaskId,
+                })
+                // console.log(result);
+                this.getZouBanData=eval(result.zouBan);
+                this.zouBanInfoShow();
+            }else{
+                this.getZouBanData=eval(this.settingLessonInfo.zouBan);
+                //字符串转化为数组
+                this.priority=eval(this.settingLessonInfo.priority);
+                this.disable=eval(this.settingLessonInfo.disable);
+                // console.log(this.priority);
+                // console.log(this.priority.length);
+                // console.log(this.disable);
+                // console.log(this.disable.length);
+            }
+            console.log(this.getZouBanData);
         },
         methods: {
+            //获取单个选课计划信息
+            async chooseCourseInfo(){
+                //获取planId
+                let queryString = (window.location.hash || " ").split(/[?&]/)[1];
+                let planId = (queryString || " ").split('=')[1];
+                // console.log(planId);
+                this.planId = planId;
+                //获取scheduleTaskId
+                let queryTaskString = (window.location.hash || " ").split(/[?&]/)[2];
+                let scheduleTaskId = (queryTaskString || " ").split('=')[1];
+                this.scheduleTaskId= scheduleTaskId;
+                // console.log( this.scheduleTaskId);
+                if (planId) {
+                    //获取单个选课计划的信息
+                    let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                    this.planData = result.name
+                }
+            },
             //获取课表模板相关信息
-            async modalInfo() {
-                let {data}=await this.$api.basic.template.fetchTemplate({id:this.modalId})
+            async modalInfo(currId) {
+                // console.log(currId);
+                let {data}=await this.$api.basic.template.fetchTemplate({id:currId})
                 console.log(data.result);
-                this.currId=this.modalId;
                 // console.log(this.currId);
                 let activities = [];
                 let timeDatas = [];
@@ -174,6 +205,24 @@
                 this.timeData = timeDatas;
                 this.settingInfo();
             },
+            //走班课程显示
+            zouBanInfoShow(){
+                console.log(this.getZouBanData);
+                let getBRow=0;
+                let getBColumn=0;
+                for (let j in this.getZouBanData){
+                    // console.log(this.getZouBanData[j]);
+                    getBRow=this.getZouBanData[j][0];
+                    getBColumn=this.getZouBanData[j][1];
+                    // console.log(getBRow);
+                    // console.log(getBColumn);
+                    this.tableData[getBRow-1].rowList[getBColumn-1].defaultCheck = 4;
+                }
+                // this.zouBanData.push([getBRow,getBColumn]);
+                this.zouBanData=this.getZouBanData;
+                console.log(this.zouBanData);
+                this.$set(this.tableData);
+            },
             //数据刷新
             setStore (data) {
                 let newData = JSON.parse(JSON.stringify(data))
@@ -181,6 +230,8 @@
             },
             //获取表格的行和列
             getColumnRow(row,column){
+                console.log(row);
+                console.log(column);
                 //某一单元格被选中
                 this.tableData[row].rowList[column].defaultCheck = 0
                 this.defaultRow = row;
@@ -279,24 +330,15 @@
             //settingInfo显示
             async settingInfo(){
                 // console.log(this.tableData)
-                //字符串转化为数组
-                this.priority=eval(this.settingLessonInfo.priority);
-                this.disable=eval(this.settingLessonInfo.disable);
-                this.zouBan=eval(this.settingLessonInfo.zouBan);
-                console.log(this.zouBan);
-                console.log(this.priority);
-                // console.log(this.priority.length);
-                console.log(this.disable);
-                // console.log(this.disable.length);
                 //后端获取数据的显示
                 let getRRow=0;
                 let getRColumn=0;
                 for (let i in this.disable){
                     getRRow=this.disable[i][0];
                     getRColumn=this.disable[i][1];
-                    this.tableData[getRRow].rowList[getRColumn].defaultCheck = 1;
+                    this.tableData[getRRow-1].rowList[getRColumn-1].defaultCheck = 1;
+                    this.disableData.push([getRRow,getRColumn]);
                 }
-                this.disableData.push([getRRow,getRColumn]);
                 console.log(this.disableData);
                 let getGRow=0;
                 let getGColumn=0;
@@ -305,21 +347,24 @@
                     getGColumn=this.priority[j][1];
                     // console.log(getGRow);
                     // console.log(getGColumn);
-                    this.tableData[getGRow].rowList[getGColumn].defaultCheck = 3;
+                    this.tableData[getGRow-1].rowList[getGColumn-1].defaultCheck = 3;
+                    this.priorityData.push([getGRow,getGColumn]);
                 }
-                this.priorityData.push([getGRow,getGColumn]);
                 console.log(this.priorityData);
                 let getBRow=0;
                 let getBColumn=0;
-                for (let j in this.zouBan){
-                    getBRow=this.zouBan[j][0];
-                    getBColumn=this.zouBan[j][1];
-                    // console.log(getGRow);
-                    // console.log(getGColumn);
-                    this.tableData[getBRow].rowList[getBColumn].defaultCheck = 4;
+                for (let j in this.getZouBanData){
+                    // console.log(this.getZouBanData[j]);
+                    getBRow=this.getZouBanData[j][0];
+                    getBColumn=this.getZouBanData[j][1];
+                    // console.log(getBRow);
+                    // console.log(getBColumn);
+                    this.tableData[getBRow-1].rowList[getBColumn-1].defaultCheck = 4;
                 }
-                this.zouBanData.push([getBRow,getBColumn]);
+                // this.zouBanData.push([getBRow,getBColumn]);
+                this.zouBanData=this.getZouBanData;
                 console.log(this.zouBanData);
+
             },
             //课时设置
             timesSetting(){
@@ -354,14 +399,14 @@
             async saveInfo(){
                 let addData={
                     planId:this.planId,
-                    currId:this.currId,
-                    settingLessonInfo:{
+                    xzbSettingLessonInfo:{
                         disable: JSON.stringify(this.disableData),
                         priority:JSON.stringify(this.priorityData),
-                        // class:JSON.stringify(this.classData),
+                        zouBan:JSON.stringify(this.zouBanData),
                     },
                 }
-                let {data}=await this.$api.schedule.arrangeClass.saveLesson(addData);
+                console.log(addData);
+                let {data}=await this.$api.schedule.adminClass.saveTime(addData);
                 console.log(data);
             },
             //返回

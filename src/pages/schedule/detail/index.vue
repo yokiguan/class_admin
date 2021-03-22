@@ -61,8 +61,7 @@
     <a-modal
             :visible='publishVisit'
             width="700px"
-            :closable="false"
-            on-ok="handleOk">
+            :closable="false">
       <template slot="footer">
         <a-button key="Save" type="primary" :loading="loading" @click="handlePublic">确定</a-button>
         <a-button key="back" @click="handleCancel">取消</a-button>
@@ -112,10 +111,6 @@
     {
       icon: "calendar",
       text: "走班排课任务",
-    },
-    {
-      icon: "schedule",
-      text: "行政班排课",
     },
     {
       icon: "calendar",
@@ -302,7 +297,7 @@
         }else if(item.text==='课表'){
           this.$router.push(`/schedule/detail/curriculum/index?planId=${this.planId}`)
         }else if(item.text==='行政班排课任务'){
-          this.$router.push(`/schedule/detail/task_mobile/index?planId=${this.planId}`)
+          this.$router.push(`/schedule/detail/task_admin/index?planId=${this.planId}`)
         }  },
       //指定排课计划信息查看
       async lookInfo(){
@@ -366,12 +361,6 @@
           };
           let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
           console.log(data);
-          if(data&&data.success){
-            message.info("发布选课成功！");
-            this.publishVisit=false;
-          }else{
-            message.info("发布选课失败！");
-          }
           this.editVisit=false;
         }
       },
@@ -382,8 +371,14 @@
           select[i]=this.selectedRows[i].classId;
         }
         console.log(select);
-        let {data:savdPublish} =  await this.$api.schedule.plan.schedulesaveQua({planId:this.planId,stringList: select})
-        console.log(savdPublish)
+        let {data} =  await this.$api.schedule.plan.schedulesaveQua({planId:this.planId,stringList: select})
+        console.log(data);
+        if(data&&data.success){
+          message.info("发布选课成功！");
+          this.publishVisit=false;
+        }else{
+          message.info("发布选课失败！");
+        }
       },
       //取消
       handleCancel() {

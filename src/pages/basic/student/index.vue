@@ -5,6 +5,7 @@
           <a-col :md="5" :sm="20">
             <a-form-model-item label="级部" :labelCol="{ span: 5 }" :wrapperCol="{ span: 18, offset: 1 }">
               <a-select placeholder="请选择"  v-model="form.adminId" @change="handleAdminChange">
+                <a-select-option>--请选择--</a-select-option>
                 <a-select-option v-for="(admin,index) in this.adminData" :key="index">
                   {{admin.departName}}
                 </a-select-option>
@@ -14,6 +15,7 @@
           <a-col :md="5" :sm="20">
             <a-form-model-item label="年级" :labelCol="{ span: 5 }" :wrapperCol="{ span: 18, offset: 1 }">
               <a-select placeholder="请选择" v-model="form.gradeId" @change="handleGradeChange">
+                <a-select-option>--请选择--</a-select-option>
                 <a-select-option v-for="(grade,index) in this.gradeData" :key="index">
                   {{grade.gradeName}}
                 </a-select-option>
@@ -23,6 +25,7 @@
           <a-col :md="5" :sm="20">
             <a-form-model-item label="班级" :labelCol="{ span: 5 }" :wrapperCol="{ span: 18, offset: 1 }">
               <a-select placeholder="请选择" v-model="form.classId" @change="handleClassChange">
+                <a-select-option>--请选择--</a-select-option>
                 <a-select-option v-for="(className,index) in this.classData" :key="index">
                   {{className.className}}
                 </a-select-option>
@@ -31,7 +34,7 @@
           </a-col>
           <a-col :md="9" :sm="20">
             <a-form-model-item label="按姓名查找" :labelCol="{ span: 5 }" :wrapperCol="{ span: 15, offset: 1 }">
-              <a-input-search placeholder="请输入老师姓名"  v-model="form.studentName" @search="onSearch"/>
+              <a-input-search placeholder="请输入学生姓名"  v-model="form.studentName" @search="onSearch"/>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -48,6 +51,7 @@
   </a-card>
 </template>
 <script>
+  import TagSelectOption from "../../../components/tool/TagSelectOption";
   const columns = [
     {
       title:'序号',
@@ -80,6 +84,7 @@
   ]
   export default {
     name: 'student',
+    components: {TagSelectOption},
     data () {
       return {
         columns: columns,
@@ -155,6 +160,7 @@
       },
       // //选择级部
       async handleAdminChange(){
+        // console.log(this.form.adminId);
         for (let i=0;i<this.adminData.length;i++){
           if(i==this.form.adminId){
             //获取年级
@@ -206,18 +212,28 @@
       },
       //根据姓名查找学生
       async onSearch(value) {
+        console.log(this.form.studentName);
         if(this.form.adminId==undefined||this.form.gradeId==undefined||this.form.classId){
           // //只根据姓名查找学生信息
-          let {data:allTeacherData}=await this.$api.basic.student.fetchList({rowCount: this.queryParam.size,current:this.queryParam.page,userName:this.form.studentName});
-          console.log(allTeacherData);
-          this.dataSource=allTeacherData.rows;
-          console.log(this.dataSource)
-          const pagination={...this.pagination};
-          pagination.total=allTeacherData.total;
-          this.pagination=pagination;
-        }else {
+          let {data:allTeacherData}=await this.$api.basic.student.fetchList({
+              rowCount: this.queryParam.size,
+              current:this.queryParam.page,
+              userName:this.form.studentName});
+            console.log(allTeacherData);
+            this.dataSource=allTeacherData.rows;
+            console.log(this.dataSource)
+            const pagination={...this.pagination};
+            pagination.total=allTeacherData.total;
+            this.pagination=pagination;
+         }else if(this.form.adminId!=undefined||this.form.gradeId!=undefined||this.form.classId!=undefined){
           //根据四个条件查找教师
-          let {data}=await this.$api.basic.student.fetchList({rowCount: this.queryParam.size,current:this.queryParam.page,id: this.adminData[this.form.adminId].id,gradeId: this.gradeData[this.form.gradeId].gradeId,classId:this.classData[this.form.classId].classId,userName: this.form.studentName})
+          let {data}=await this.$api.basic.student.fetchList({
+            rowCount: this.queryParam.size,
+            current:this.queryParam.page,
+            id: this.adminData[this.form.adminId].id,
+            gradeId: this.gradeData[this.form.gradeId].gradeId,
+            classId:this.classData[this.form.classId].classId,
+            userName: this.form.studentName})
           console.log(data)
           this.dataSource=data.rows;
           console.log(this.dataSource)

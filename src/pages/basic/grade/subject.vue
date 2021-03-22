@@ -13,8 +13,7 @@
                             title="确认删除?"
                             cancelText="取消"
                             okText="确定"
-                            @confirm="() => deleteItem(record.subChildId)">
-                <a>删除</a>
+                            @confirm="() => deleteItem(record.subChildId)">删除
               </a-popconfirm>
           </span>
         </a-table>
@@ -78,6 +77,7 @@
                 treeExpandedKeys: [],
                 checkedKeys:[],
                 subject:[],
+                allSubjectId:[],
                 form:{
                 },
                 rules:{
@@ -93,6 +93,7 @@
         },
         async created(){
             this.gainBaseInfo();
+            this.courseInfo();
         }  ,
         methods: {
             //获取课程基本信息
@@ -104,10 +105,13 @@
                     console.log(result.subjectEntities);
                     this.dataSource=result.subjectEntities;
                 }
+                console.log(this.dataSource);
+                for(let i in this.dataSource){
+                    this.allSubjectId.push(this.dataSource[i].subChildId);
+                }
+                console.log(this.allSubjectId);
             },
-            async addNew() {
-                this.showSubject=true;
-                //获取课程信息
+            async courseInfo(){
                 this.treeData = []
                 let {data:{result,success}}=await this.$api.basic.subject.fetchSubjectList();
                 console.log(result);
@@ -130,6 +134,11 @@
                     this.treeData.push(mainCourseData);
                 }
                 console.log('ths.reee',this.treeData)
+            },
+             addNew() {
+                this.showSubject=true;
+                //获取课程信息
+                this.checkedKeys=this.allSubjectId;
             },
             //取消
             handleCancel(){

@@ -103,7 +103,14 @@
 <script>
     import CreateModal from "../../../../components/modal/CreateModal";
     import moment from "moment";
-    const columns = [
+    const columns = [{
+        title: '',
+        dataIndex: 'subChildId',
+        align:'center',
+        customRender: function(t, r, index) {
+            return parseInt(index) + 1
+        }
+    },
         {
             title: '课程',
             dataIndex: 'subName',
@@ -187,7 +194,7 @@
         let {data}=await this.$api.schedule.statics.getResult({planId});
         console.log(data.result)
         // this.dataSource=data.result.splice(1,data.result.length - 1);
-        this.dataSouce=data.result;
+        this.dataSource=data.result;
         console.log(this.dataSource);
         for(var i=0;i<this.dataSource.length;i++){
             this.tags.push(this.dataSource[i].studentInfoDtoList)
@@ -263,8 +270,11 @@
                 this.addVisit = false;
                 //刷新界面
                 // //选课结果详情查看
-                let {data}=await this.$api.schedule.statics.getResult({planId:this.planId});
+                let {data}=await this.$api.schedule.statics.getResult({planId});
                 console.log(data.result)
+                // this.dataSource=data.result.splice(1,data.result.length - 1);
+                this.dataSource=data.result;
+                console.log(this.dataSource);
                 this.dataSource=data.result.splice(1,data.result.length - 1);
                 console.log(this.dataSource);
             },

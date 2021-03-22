@@ -15,13 +15,11 @@
                     <span style="font-size: 1.2em;margin-left: 10px;float: right">全部展开</span>
                 </a-row>
                 <div style="margin-top: 10px;height:1px;border-top: solid black 1px;"/>
-                <div>
                     <a-tree v-model="checkedKeys"
                             :tree-data="treeData"
                             @check="onCheck"
                             checkable
                             style="font-size: 1.3em;"/>
-                </div>
             </a-card>
             <div class="right">
                 <div class="title">
@@ -43,7 +41,7 @@
                         width: 150px" @click="back">返回</button></a-col>
                     </a-row>
                 </div>
-                <a-card class="table-bg" v-if="showTable">
+                <a-card class="table-bg">
                     <a-row class="buttons">
                         <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -64,7 +62,8 @@
                         border-radius: 5px;
                         width: 110px" @click="classLook">按班级查看</button></a-col>
                     </a-row>
-                    <a-table :rowKey="'key'"
+                    <a-table v-if="showTable"
+                             :rowKey="'key'"
                              :columns="columns"
                              :data-source="tableData"
                              :pagination="false"
@@ -91,26 +90,31 @@
             title: '一',
             dataIndex: 'one',
             align: "center",
+            width:"19%",
         },
         {
             title: '二',
             dataIndex: 'two',
             align: "center",
+            width:"19%",
         },
         {
             title: '三',
             dataIndex: 'three',
             align: "center",
+            width:"19%",
         },
         {
             title: '四',
             dataIndex: 'four',
             align: "center",
+            width:"19%",
         },
         {
             title: '五',
             dataIndex: 'five',
             align: "center",
+            width:"19%",
         },
     ];
     export default {
@@ -154,7 +158,7 @@
             onCheck(checkedKeys) {
                 console.log('onCheck', checkedKeys);
                 this.checkedKeys=checkedKeys;
-                this.showTable=true;
+
                 this.teacherInfo();
             },
             //获取左侧的教室树
@@ -173,67 +177,73 @@
             },
             //教师课表查看
             async teacherInfo() {
-                let {data: {result, success}} = await this.$api.schedule.adminTask.teacherTable({
+                let {data} = await this.$api.schedule.adminTask.teacherTable({
                     planId: this.planId,
                     scheduleTaskId: this.scheduleTaskId,
                     teacherId: this.checkedKeys.toString(),
                 });
-                console.log(result);
-                this.allData=result.teacherCurriDtos;
                 // console.log(this.allData);
-                let dataSource=[];
-                for(let i=0;i<this.allData.length;i++){
-                    let position=eval(this.allData[i].position);
-                    const getInfo=(dataItem,sourceItem={})=>{
-                        if(!sourceItem) sourceItem={};
-                        let content =this.gradeName+dataItem.subChildName +"____"+this.gradeName+dataItem.className;
-                        const column=eval(dataItem.position)[1];
-                        switch (column) {
-                            case 1:
-                                sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
-                                break;
-                            case 2:
-                                sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
-                                break;
-                            case 3:
-                                sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
-                                break;
-                            case 4:
-                                sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
-                                break;
-                            case 5:
-                                sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
-                                break;
-                        }
-                        return sourceItem
-                    };
-                    dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
-                }
-                // console.log(dataSource);
-                this.tableData=dataSource;
-                console.log(this.tableData);
-                for(let i=0;i<this.tableData.length;i++){
-                    // console.log(i,this.tableData[i]);
-                    if(this.tableData[i]===undefined){
-                        // console.log(i);
-                        let pushData={
-                            one:"",
-                            two:"",
-                            three:"",
-                            four:"",
-                            five:"",
-                        }
-                        this.tableData[i]=pushData;
-                        // this.tableData[i].one="";
-                    }
-                }
-                console.log(this.tableData)
-                // // // 编号
-                for(let i=0;i<this.tableData.length;i++){
-                    console.log(this.tableData[i]);
-                    this.tableData[i].key=i+1;
-                }
-                console.log(this.tableData);
+                console.log(data.success);
+              if(data.success==false){
+                  message.info(data.code);
+              }else{
+                  console.log(data.result);
+                  this.allData=data.result.teacherCurriDtos;
+                  let dataSource=[];
+                  this.showTable=true;
+                  for(let i=0;i<this.allData.length;i++){
+                      let position=eval(this.allData[i].position);
+                      const getInfo=(dataItem,sourceItem={})=>{
+                          if(!sourceItem) sourceItem={};
+                          let content =this.gradeName+dataItem.subChildName +"____"+this.gradeName+dataItem.className;
+                          const column=eval(dataItem.position)[1];
+                          switch (column) {
+                              case 1:
+                                  sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                  break;
+                              case 2:
+                                  sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                  break;
+                              case 3:
+                                  sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                  break;
+                              case 4:
+                                  sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                  break;
+                              case 5:
+                                  sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                  break;
+                          }
+                          return sourceItem
+                      };
+                      dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                  }
+                  // console.log(dataSource);
+                  this.tableData=dataSource;
+                  console.log(this.tableData);
+                  for(let i=0;i<this.tableData.length;i++){
+                      // console.log(i,this.tableData[i]);
+                      if(this.tableData[i]===undefined){
+                          // console.log(i);
+                          let pushData={
+                              one:"",
+                              two:"",
+                              three:"",
+                              four:"",
+                              five:"",
+                          }
+                          this.tableData[i]=pushData;
+                          // this.tableData[i].one="";
+                      }
+                  }
+                  console.log(this.tableData)
+                  // // // 编号
+                  for(let i=0;i<this.tableData.length;i++){
+                      console.log(this.tableData[i]);
+                      this.tableData[i].key=i+1;
+                  }
+                  console.log(this.tableData);
+              }
             },
             //按老师查看
             teacherLook(){
@@ -309,6 +319,7 @@
         text-align: center;
         margin-top: -35px;
         background-color: #fff;
+        min-height: 670px;
     }
 </style>
 

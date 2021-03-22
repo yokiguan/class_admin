@@ -40,7 +40,6 @@
                         color: white;
                         height: 40px;
                         border: none;
-                         margin-left: 200px;
                         border-radius: 5px;
                         width: 150px">查看学生冲突</button>
                         <button style="background-color: #19b294;margin-left: 30px;
@@ -56,9 +55,8 @@
                         border-radius: 5px;
                         width: 150px" @click="changClass">学生调班</button>
                     </a-row>
-                    <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
                 </div>
-                <a-card class="table-bg" v-if="showTable">
+                <a-card class="table-bg" >
                     <a-row class="buttons">
                         <a-col :span="3"><button style="background-color: #19b294;
                         color: white;
@@ -79,7 +77,7 @@
                         border-radius: 5px;
                         width: 110px"  @click="placeLook">按场地查看</button></a-col>
                     </a-row>
-                    <a-table
+                    <a-table v-if="showTable"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
@@ -117,26 +115,31 @@
             title: '一',
             dataIndex: 'one',
             align: "center",
+            width:"19%",
         },
         {
             title: '二',
             dataIndex: 'two',
             align: "center",
+            width:"19%",
         },
         {
             title: '三',
             dataIndex: 'three',
             align: "center",
+            width:"19%",
         },
         {
             title: '四',
             dataIndex: 'four',
             align: "center",
+            width:"19%",
         },
         {
             title: '五',
             dataIndex: 'five',
             align: "center",
+            width:"19%",
         },
     ];
     const stuColumns=[
@@ -285,6 +288,21 @@
                 console.log(dataSource);
                 this.tableData=dataSource;
                 console.log(this.tableData);
+                for(let i=0;i<this.tableData.length;i++){
+                    // console.log(i,this.tableData[i]);
+                    if(this.tableData[i]===undefined){
+                        // console.log(i);
+                        let pushData={
+                            one:"",
+                            two:"",
+                            three:"",
+                            four:"",
+                            five:"",
+                        }
+                        this.tableData[i]=pushData;
+                        // this.tableData[i].one="";
+                    }
+                }
                 //编号
                 for(let i=0;i<this.tableData.length;i++){
                     this.tableData[i].key=i+1;
@@ -396,6 +414,7 @@
         display: flex;
         justify-content: space-between;
         padding: 10px;
+        min-height: 670px;
     }
     .right{
         border-radius: 5px;
@@ -415,6 +434,7 @@
         text-align: center;
         margin-top: -35px;
         background-color: #fff;
+        min-height: 670px;
     }
     .class_title{
         height: 40px;

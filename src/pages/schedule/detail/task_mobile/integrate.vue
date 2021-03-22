@@ -19,12 +19,12 @@
                         float: right;
                         width: 150px" @click="back">返回</button></a-col>
             </a-row>
-            <a-row style="margin-top: 10px"><button style="background-color: #19b294;
-                        color: white;
-                        height: 35px;
-                        border: none;
-                        border-radius: 3px;
-                        width: 150px">查看调课记录</button></a-row>
+<!--            <a-row style="margin-top: 10px"><button style="background-color: #19b294;-->
+<!--                        color: white;-->
+<!--                        height: 35px;-->
+<!--                        border: none;-->
+<!--                        border-radius: 3px;-->
+<!--                        width: 150px">查看调课记录</button></a-row>-->
         </div>
         <a-card class="table-bg">
             <div class="class-table">

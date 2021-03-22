@@ -39,7 +39,6 @@
                         border-radius: 5px;
                         width: 150px" type="primary" @click="changClass">学生调班</button>
             </a-row>
-            <a-row><a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col></a-row>
         </div>
         <a-card class="table-bg">
             <a-row class="buttons">

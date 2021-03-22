@@ -5,6 +5,7 @@
         <a-col :md="7" :sm="24">
           <a-form-model-item label="级部" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
             <a-select placeholder="请选择"  v-model="form.adminId" @change="handleAdminChange">
+              <a-select-option>--请选择--</a-select-option>
               <a-select-option v-for="(admin,index) in this.adminData" :key="index">
                 {{admin.adminName}}
               </a-select-option>
@@ -14,6 +15,7 @@
         <a-col :md="7" :sm="24">
           <a-form-model-item label="年级" :labelCol="{ span: 3}" :wrapperCol="{ span: 15, offset: 1 }">
             <a-select placeholder="请选择" v-model="form.gradeId" @change="handleGradeChange">
+              <a-select-option>--请选择--</a-select-option>
               <a-select-option v-for="(grade,index) in this.gradeData" :key="index">
                 {{grade.gradeName}}
               </a-select-option>

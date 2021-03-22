@@ -1,15 +1,23 @@
 <template>
-  <a-card>
-    <div>
-      <div class="operator">
-        <a-button @click="showModal" type="primary">新建</a-button>
-      </div>
-      <a-table
-              :rowKey="'buildingId'"
-              :columns="columns"
-              :dataSource="dataSource"
-              :selectedRows="selectedRows"
-              @change="onchange">
+ <div>
+   <div class="result">
+     <a-breadcrumb>
+       <a-breadcrumb-item>首页</a-breadcrumb-item>
+       <a-breadcrumb-item>基础设置</a-breadcrumb-item>
+       <a-breadcrumb-item><router-link to="#">教学楼</router-link></a-breadcrumb-item>
+     </a-breadcrumb>
+   </div>
+   <a-card>
+     <div>
+       <div class="operator">
+         <a-button @click="showModal" type="primary">新建</a-button>
+       </div>
+       <a-table
+               :rowKey="'buildingId'"
+               :columns="columns"
+               :dataSource="dataSource"
+               :selectedRows="selectedRows"
+               @change="onchange">
       <span slot="operation" slot-scope="text,record">
         <a @click="edit(record.buildingId)">编辑</a>
         <a-popconfirm v-if="dataSource.length"
@@ -20,31 +28,32 @@
           <a href=" " style="margin-left: 50px" >删除</a>
         </a-popconfirm>
     </span>
-      </a-table>
-    </div>
-    <a-modal
-            :title="changeTitle"
-            :visible="show"
-            :closable="false">
-      <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
-        <a-button key="back" @click="handleCancel">取消</a-button>
-      </template>
-      <a-form-model ref="ruleForm" :model="form" :rules="rules">
-        <a-form-model-item label="教学楼名称" prop="name" ref="name">
-          <a-input v-model.trim="form.name" placeholder="请输入你想要新增的教学楼名称"></a-input>
-        </a-form-model-item>
-        <a-form-model-item label="教学楼层数" prop="floor" ref="floor">
-          <a-input v-model.number="form.floor"
-                   placeholder="请输入你想要新增的层数">
-          </a-input>
-        </a-form-model-item>
-        <a-form-model-item label="是否启用" >
-          <a-switch v-model="form.status"/>
-        </a-form-model-item>
-      </a-form-model>
-    </a-modal>
-  </a-card>
+       </a-table>
+     </div>
+     <a-modal
+             :title="changeTitle"
+             :visible="show"
+             :closable="false">
+       <template slot="footer">
+         <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+         <a-button key="back" @click="handleCancel">取消</a-button>
+       </template>
+       <a-form-model ref="ruleForm" :model="form" :rules="rules">
+         <a-form-model-item label="教学楼名称" prop="name" ref="name">
+           <a-input v-model.trim="form.name" placeholder="请输入你想要新增的教学楼名称"></a-input>
+         </a-form-model-item>
+         <a-form-model-item label="教学楼层数" prop="floor" ref="floor">
+           <a-input v-model.number="form.floor"
+                    placeholder="请输入你想要新增的层数">
+           </a-input>
+         </a-form-model-item>
+         <a-form-model-item label="是否启用" >
+           <a-switch v-model="form.status"/>
+         </a-form-model-item>
+       </a-form-model>
+     </a-modal>
+   </a-card>
+ </div>
 </template>
 <script>
   import {message} from 'ant-design-vue'
@@ -215,19 +224,19 @@
 </script>
 
 <style lang="less" scoped>
-  .search{
-    margin-bottom: 54px;
-  }
-  .fold{
-    width: calc(100% - 216px);
-    display: inline-block
+  .result{
+    width: 100%;
+    background-color: white;
+    height:50px;
+    margin: 20px 0px 10px 0px;
+    padding-left: 25px;
+    padding-top: 15px;
+    vertical-align: top;
+    border-radius: 5px;
   }
   .operator{
     margin-bottom: 18px;
   }
   @media screen and (max-width: 900px) {
-    .fold {
-      width: 100%;
-    }
   }
 </style>

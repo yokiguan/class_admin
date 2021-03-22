@@ -4,7 +4,7 @@
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="">行政班排课任务</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -32,10 +32,7 @@
                     <a-row>
                        <span style="float:left "  @click="onClickLook(record.id)">查看</span>
                        <span style="margin-left:0px "  @click="delet(record.id)">删除</span>
-                       <span style="margin-left: 50px " @click="integrate">手动调整</span>
-                       <span @click="changeClass" style="margin-left: 50px ">学生调班</span>
                        <span style="margin-left: 50px " @click="publishChoose(record.id)">发布结果</span>
-                        <span style="margin-left: 50px " @click="conArrClass(record.id)">继续排课</span>
                     </a-row>
                 </div>
             </a-table>
@@ -140,7 +137,7 @@
             },
             //查看
             onClickLook(id){
-                this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}&scheduleTaskId=${id}`);
+                this.$router.push(`/schedule/detail/task_admin/class?planId=${this.planId}&scheduleTaskId=${id}`);
             },
             //删除
             async delet(id){
@@ -155,18 +152,10 @@
               let {data}=await this.$api.schedule.classTask.continue({planId:this.planId,id:id});
               console.log(data);
               if(data&&data.success){
-                  this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${id}`);
+                  message.info("继续调课成功！");
               }else{
                   message.info("排课已结束，无行政班排课！");
               }
-            },
-            //手动调整
-            integrate(){
-                this.$router.push(`/schedule/detail/task_mobile/integrate?planId=${this.planId}`)
-            },
-            //学生调班
-            changeClass(){
-                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}`)
             },
             //发布选课
             async publishChoose(id){

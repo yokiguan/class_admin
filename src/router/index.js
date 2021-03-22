@@ -344,6 +344,11 @@ export default new Router({
                   component:BlankView,
                   children:[
                     {
+                      path: '/schedule/detail/task_admin/index',
+                      name: '行政班排课任务',
+                      component:() => import('@/pages/schedule/detail/task_admin/index'),
+                    },
+                    {
                       path: '/schedule/detail/task_admin/class',
                       name: '班级查看',
                       component:() => import('@/pages/schedule/detail/task_admin/class'),

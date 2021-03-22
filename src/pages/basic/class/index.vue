@@ -1,64 +1,72 @@
 <template>
-  <a-card>
-    <a-form layout="horizontal">
-      <a-row>
-        <a-col :md="8" :sm="24">
-          <a-form-model-item
-                  label="年级"
-                  :labelCol="{ span: 5 }"
-                  :wrapperCol="{ span: 18, offset: 1 }" prop="gradeData">
-            <a-select placeholder="请选择" v-model="form.gradeData">
-              <a-select-option value="高一">高一</a-select-option>
-              <a-select-option value="高二">高二</a-select-option>
-            </a-select>
-          </a-form-model-item>
-        </a-col>
-        <a-col :md="8" :sm="24">
-          <a-form-item
-                  label="年级"
-                  :labelCol="{ span: 5 }"
-                  :wrapperCol="{ span: 18, offset: 1 }" prop="classData">
-            <a-select placeholder="请选择" v-model="form.classData">
-              <a-select-option value="高一1班">高一1班</a-select-option>
-              <a-select-option value="高二1班">高二1班</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-    </a-form>
-    <div>
-      <admin-table
-              :rowKey="'no'"
-              :columns="columns"
-              :dataSource="dataSource"
-              :selectedRows="selectedRows"
-              @change="onchange"
-      />
+  <div>
+    <div class="result">
+      <a-breadcrumb>
+        <a-breadcrumb-item>首页</a-breadcrumb-item>
+        <a-breadcrumb-item>基础设置</a-breadcrumb-item>
+        <a-breadcrumb-item>教室</a-breadcrumb-item>
+        <a-breadcrumb-item><router-link to="#">教室管理</router-link></a-breadcrumb-item>
+      </a-breadcrumb>
     </div>
-    <a-modal
-            :visible='addClassVisit'
-            width="600px"
-            :closable="false">
-      <template slot="footer">
-        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
-          保存
-        </a-button>
-        <a-button key="back" @click="handleCancel">
-          取消
-        </a-button>
-      </template>
-      <a-form-model ref="ruleForm" :model="form" :rules="rules"
-              :label-col="{span:5}" :wrapper-col="{span:12}" style="margin-left: 70px">
-        <a-form-model-item label="人数" prop="name" ref="name">
-          <a-input placeholder="1班" v-model="form.name"/>
-        </a-form-model-item>
-      </a-form-model>
-    </a-modal>
-  </a-card>
+    <a-card>
+      <a-form layout="horizontal">
+        <a-row>
+          <a-col :md="8" :sm="24">
+            <a-form-model-item
+                    label="年级"
+                    :labelCol="{ span: 5 }"
+                    :wrapperCol="{ span: 18, offset: 1 }" prop="gradeData">
+              <a-select placeholder="请选择" v-model="form.gradeData">
+                <a-select-option value="高一">高一</a-select-option>
+                <a-select-option value="高二">高二</a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+          <a-col :md="8" :sm="24">
+            <a-form-item
+                    label="年级"
+                    :labelCol="{ span: 5 }"
+                    :wrapperCol="{ span: 18, offset: 1 }" prop="classData">
+              <a-select placeholder="请选择" v-model="form.classData">
+                <a-select-option value="高一1班">高一1班</a-select-option>
+                <a-select-option value="高二1班">高二1班</a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+        </a-row>
+      </a-form>
+      <div>
+        <admin-table
+                :rowKey="'no'"
+                :columns="columns"
+                :dataSource="dataSource"
+                :selectedRows="selectedRows"
+                @change="onchange"
+        />
+      </div>
+      <a-modal
+              :visible='addClassVisit'
+              width="600px"
+              :closable="false">
+        <template slot="footer">
+          <a-button key="Save" type="primary" :loading="loading" @click="handleOk">
+            保存
+          </a-button>
+          <a-button key="back" @click="handleCancel">
+            取消
+          </a-button>
+        </template>
+        <a-form-model ref="ruleForm" :model="form" :rules="rules"
+                      :label-col="{span:5}" :wrapper-col="{span:12}" style="margin-left: 70px">
+          <a-form-model-item label="人数" prop="name" ref="name">
+            <a-input placeholder="1班" v-model="form.name"/>
+          </a-form-model-item>
+        </a-form-model>
+      </a-modal>
+    </a-card>
+  </div>
 </template>
-
 <script>
-import AdminTable from "../../../components/table/AdminTable";
 const columns = [
   {
     title: "班级序号",
@@ -85,7 +93,6 @@ const columns = [
 
 export default {
   name: "class",
-  components: {AdminTable},
   data() {
     return {
       columns: columns,
@@ -187,19 +194,17 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.search {
-  margin-bottom: 54px;
-}
-.fold {
-  width: calc(100% - 216px);
-  display: inline-block;
-}
-.operator {
-  margin-bottom: 18px;
-}
-@media screen and (max-width: 900px) {
-  .fold {
+  .result{
     width: 100%;
+    background-color: white;
+    height:50px;
+    margin: 20px 0px 10px 0px;
+    padding-left: 25px;
+    padding-top: 15px;
+    vertical-align: top;
+    border-radius: 5px;
   }
+@media screen and (max-width: 900px) {
+
 }
 </style>

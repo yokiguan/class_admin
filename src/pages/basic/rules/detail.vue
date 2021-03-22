@@ -126,7 +126,7 @@
             }
           }
           this.treeData.push(mainCourseTree);
-          console.log(data.result[i]);
+          // console.log(data.result[i]);
         }
         this.editText=this.dataSource.findIndex(item=>item.id==editId);
         console.log(this.editText);
@@ -151,7 +151,20 @@
             subChildIds.push(item)
           }
         })
-        this.checkedKeys= subChildIds
+        for(let i=0;i<subChildIds.length-1;i++){
+          for(let j=i+1;j<subChildIds.length;j++){
+            console.log(subChildIds[i]);
+            console.log(subChildIds[j]);
+
+            if(subChildIds[i]==subChildIds[j]){
+              subChildIds[j]=subChildIds[j+1];
+              subChildIds.length=subChildIds.length-1
+            }
+          }
+        }
+        console.log(subChildIds);
+        this.checkedKeys= subChildIds;
+        console.log(this.checkedKeys);
         this.editVisit=false;
         let {data}=await this.$api.basic.rule.saveRuleItem({ id:this.dataSource[this.editText].id,subChildId:this.checkedKeys.join(',')})
         if(data.success){
