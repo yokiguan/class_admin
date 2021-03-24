@@ -4,7 +4,7 @@
            <a-breadcrumb>
                <a-breadcrumb-item>首页</a-breadcrumb-item>
                <a-breadcrumb-item>排课计划</a-breadcrumb-item>
-               <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
+               <a-breadcrumb-item><router-link to="/schedule/detail/index">排课详情</router-link></a-breadcrumb-item>
                <a-breadcrumb-item><router-link to="#">选课分班</router-link></a-breadcrumb-item>
            </a-breadcrumb>
        </div>
@@ -74,8 +74,7 @@
    </div>
 </template>
 <script>
-    import CreateModal from "@/components/modal/CreateModal";
-    import TagSelectOption from "../../../../components/tool/TagSelectOption";
+    import {message} from 'ant-design-vue'
     const columns = [
         {   title: '课程名称',
             dataIndex: 'subjectChildEntity.name',
@@ -188,9 +187,10 @@
                 console.log(formData);
                 let {data}=await this.$api.schedule.sortClass.classAlter(formData);
                 if(data&&data.success){
-                    alert("修改成功");
+                    message.info("修改成功");
+                    this.classLookInfo();
                 }else{
-                    alert("修改失败");
+                    message.info("修改失败");
                 }
                 this.chooseSortClass=false;
             },
@@ -198,6 +198,7 @@
             handleCancel(){
                 this.chooseSortClass=false;
             },
+            //返回
             back(){
                 this.$router.go(-1)
             },

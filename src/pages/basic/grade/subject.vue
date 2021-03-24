@@ -22,7 +22,7 @@
                             title="确认删除?"
                             cancelText="取消"
                             okText="确定"
-                            @confirm="() => deleteItem(record.subChildId)">删除
+                            @confirm="() => deleteItem(record.subChildId)"><a>删除</a>
               </a-popconfirm>
           </span>
         </a-table>
@@ -35,13 +35,13 @@
             </template>
             <a-form-model :model="form" :rules="rules":label-col="{span:5}" :wrapper-col="{span:12}">
                 <a-form-model-item label='课程名' prop="addsub" ref="addsub">
-                    <a-tree-select v-model="form.addSub"
+                    <a-tree-select :default-value="form.addSub"
                                    placeholder="请选择课程"
                                    style="width: 275px"
                                    :checkedKeys="checkedKeys"
                                    :tree-data="treeData"
-                                   checkStrictly="true"
                                    tree-checkable
+                                   @change="changeCourse"
                                    :show-checked-strategy="SHOW_PARENT">
                     </a-tree-select>
                 </a-form-model-item>
@@ -88,6 +88,7 @@
                 checkedKeys:[],
                 subject:[],
                 allSubjectId:[],
+                checkCourseInfo:[],
                 form:{
                 },
                 rules:{
@@ -112,19 +113,20 @@
                 let id=(querystring || " ").split('=')[1];
                 if(id){
                     let {data:{result,success}}=await this.$api.basic.grade.fetchGrade({gradeId:id});
-                    console.log(result.subjectEntities);
+                    // console.log(result.subjectEntities);
                     this.dataSource=result.subjectEntities;
                 }
-                console.log(this.dataSource);
+                // console.log(this.dataSource);
                 for(let i in this.dataSource){
                     this.allSubjectId.push(this.dataSource[i].subChildId);
                 }
-                console.log(this.allSubjectId);
+                // console.log(this.allSubjectId);
             },
+            //获取班级树
             async courseInfo(){
                 this.treeData = []
                 let {data:{result,success}}=await this.$api.basic.subject.fetchSubjectList();
-                console.log(result);
+                // console.log(result);
                 for(let i in result){
                     //第一层（级部）
                     let mainCourseData={};
@@ -143,12 +145,51 @@
                     }
                     this.treeData.push(mainCourseData);
                 }
-                console.log('ths.reee',this.treeData)
+                // console.log('ths.reee',this.treeData)
             },
-             addNew() {
+            //新建
+            addNew() {
                 this.showSubject=true;
                 //获取课程信息
-                this.checkedKeys=this.allSubjectId;
+                console.log(this.treeData);
+                this.form.addSub=this.allSubjectId;
+                console.log(this.form.addSub);
+            },
+            //选择课程
+            changeCourse(info){
+                console.log(info);
+                // this.checkCourseInfo=info;
+                let list=[...this.treeData];
+                list.forEach(item=>{
+                    console.log(item);
+                    let infoList=[...info];
+                    infoList.forEach(itemInfo=>{
+                        console.log(itemInfo);
+                        if(itemInfo==item.key){
+                            let children=item.children;
+                            for(let i=0;i<children.length;i++){
+                                this.checkCourseInfo.push(children[i].key)
+                            }
+                        }else{
+                            this.checkCourseInfo.push(itemInfo);
+                        }
+                    })
+                })
+                console.log(this.checkCourseInfo);
+                //去除重复
+                let course=[];
+                for(let i=0;i<this.checkCourseInfo.length;i++){
+                    for(let j=i+1;j<this.checkCourseInfo.length;j++){
+                        if(this.checkCourseInfo[i]===this.checkCourseInfo[j]) {
+                            for(let temp=j;temp<this.checkCourseInfo.length;temp++){
+                                this.checkCourseInfo[temp] = this.checkCourseInfo[temp + 1];
+                            }
+                            j--;
+                            this.checkCourseInfo.length = this.checkCourseInfo.length - 1;
+                        }
+                    }
+                }
+                console.log(this.checkCourseInfo);
             },
             //取消
             handleCancel(){
@@ -156,23 +197,10 @@
             },
             //保存
             async handleOk(){
-                console.log(this.form.addSub);
-                let subChildIds = []
-                this.form.addSub.forEach((item,index) =>{
-                    let parentNode = this.treeData.filter(child => child.key === item)
-                    console.log(parentNode);
-                    if(parentNode.length > 0 && Object.prototype.hasOwnProperty.call(parentNode[0],'children')){
-                        parentNode[0].children.forEach(chr=>{
-                            console.log(chr.key);
-                            subChildIds.push(chr.key)
-                        });
-                    }else{
-                        console.log(item);
-                        subChildIds.push(item)
-                    }
-                })
-                this.form.addSub = subChildIds
-                let {data}=await this.$api.basic.grade.saveGrade({gradeId:this.$router.history.current.query.id,gradeSubChildIds:this.form.addSub});
+                console.log(this.checkCourseInfo);
+                let {data}=await this.$api.basic.grade.saveGrade({
+                    gradeId:this.$router.history.current.query.id,
+                    gradeSubChildIds:this.checkCourseInfo});
                 console.log(data);
                 this.showSubject=false;
                 this.gainBaseInfo();
@@ -181,6 +209,7 @@
             backGrade(){
                 this.$router.go(-1);
             },
+            //删除
             async deleteItem(id){
                 let {data}=await this.$api.basic.grade.deleteGradeSubject({gradeId:this.$router.history.current.query.id,gradeSubChildIds:[id]});
                 console.log(data);

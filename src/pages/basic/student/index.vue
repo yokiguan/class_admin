@@ -13,7 +13,6 @@
           <a-col :md="5" :sm="20">
             <a-form-model-item label="级部" :labelCol="{ span: 5 }" :wrapperCol="{ span: 18, offset: 1 }">
               <a-select placeholder="请选择"  v-model="form.adminId" @change="handleAdminChange">
-<!--                <a-select-option>&#45;&#45;请选择&#45;&#45;</a-select-option>-->
                 <a-select-option v-for="(admin,index) in this.adminData" :key="index">
                   {{admin.departName}}
                 </a-select-option>
@@ -23,7 +22,6 @@
           <a-col :md="5" :sm="20">
             <a-form-model-item label="年级" :labelCol="{ span: 5 }" :wrapperCol="{ span: 18, offset: 1 }">
               <a-select placeholder="请选择" v-model="form.gradeId" @change="handleGradeChange">
-<!--                <a-select-option>&#45;&#45;请选择&#45;&#45;</a-select-option>-->
                 <a-select-option v-for="(grade,index) in this.gradeData" :key="index">
                   {{grade.gradeName}}
                 </a-select-option>
@@ -60,7 +58,6 @@
   </div>
 </template>
 <script>
-  import TagSelectOption from "../../../components/tool/TagSelectOption";
   const columns = [
     {
       title:'序号',
@@ -92,8 +89,6 @@
     },
   ]
   export default {
-    name: 'student',
-    components: {TagSelectOption},
     data () {
       return {
         columns: columns,
@@ -142,10 +137,9 @@
         this.queryParam.size=pagination.pageSize;
         console.log(this.pagination.current);
         console.log(this.pagination.pageSize);
-        this.searchStudentInfo();
-        if(this.form.adminId!=undefined) {
-          if (this.form.gradeId != undefined) {
-            if (this.form.classId != undefined) {
+        if(this.form.adminId!==undefined) {
+          if (this.form.gradeId !== undefined) {
+            if (this.form.classId !== undefined) {
               this.handleClassChange();
             } else{
               this.handleGradeChange();
@@ -176,7 +170,10 @@
             this.gradeData=this.adminData[i].trees,
             console.log(this.gradeData)
             //查询某一级部的全学生
-            let {data:adminAllStudent}=await this.$api.basic.student.fetchList({rowCount: this.queryParam.size,current:this.queryParam.page,id:this.adminData[i].id});
+            let {data:adminAllStudent}=await this.$api.basic.student.fetchList({
+                rowCount: this.queryParam.size,
+                current:this.queryParam.page,
+                id:this.adminData[i].id});
             console.log(adminAllStudent);
             this.dataSource=adminAllStudent.rows;
             const pagination={...this.pagination};
@@ -194,7 +191,11 @@
             // console.log(this.classData)
             // console.log(this.gradeData[i].gradeId);
             //根据年级和级部查询学生信息
-            let {data:gradeAllStudent}=await this.$api.basic.student.fetchList({rowCount: this.queryParam.size,current:this.queryParam.page,id:this.adminData[this.form.adminId].id,gradeId:this.gradeData[i].gradeId});
+            let {data:gradeAllStudent}=await this.$api.basic.student.fetchList({
+                rowCount: this.queryParam.size,
+                current:this.queryParam.page,
+                id:this.adminData[this.form.adminId].id,
+                gradeId:this.gradeData[i].gradeId});
             console.log(gradeAllStudent);
             this.dataSource=gradeAllStudent.rows;
             console.log(this.dataSource);

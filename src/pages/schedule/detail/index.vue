@@ -9,7 +9,6 @@
     <div class="operation-list">
       <a-row :gutter="[16,16]">
         <a-col v-for="item in operationList" :key="item.text" :span="6" @click="goDetail(item)">
-<!--          <div class="operation" v-if="item.showParts">-->
           <div class="operation">
             <div class="operation-icon">
               <a-icon  :type="item.icon" style="font-size:40px;line-height:80px;color:white"/>
@@ -318,19 +317,15 @@
         console.log(this.operationList)
       },
       //修改信息
-      editInfo(){
-        // //重置表单数据
-        // this.form.resetField();
-        // this.model=Object.assign({},this.result);
-        // this.$nextTick(()=>{
-        //   //设置初始值
-        //   this.form.setFieldsValue(pick(this.model,['name']))
-        // })
-        this.form.name=this.result.name;
-        this.form.term=this.result.term;
-        this.form.gradeId=this.result.gradeName;
-        console.log(this.result.type);
-        this.form.type=this.result.type==0?['走班排课']:this.result.type==1?['行政班课']:['走班排课','行政班课'];
+      async editInfo(){
+        this.planId = window.location.href.split('?')[1].split('=')[1];
+        let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
+        console.log(result);
+        this.form.name=result.name;
+        this.form.term=result.term;
+        this.form.gradeId=result.gradeName;
+        console.log(result.type);
+        this.form.type=result.type==0?['走班排课']:result.type==1?['行政班课']:['走班排课','行政班课'];
       },
       //查看发布选课学生
       async lookPublicStudent(){
@@ -361,7 +356,12 @@
           };
           let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
           console.log(data);
-          this.editVisit=false;
+          if(data&&data.success){
+            message.info("保存成功！");
+            this.editVisit=false;
+          }else{
+            message.info("请检查修改信息是否有空！");
+          }
         }
       },
       //发布选课保存
@@ -409,7 +409,6 @@
           this.treeData.push(adminData);
         }
       },
-      //选择课程类型
       //选择课程类型
       onChange(checkedValues) {
         console.log('checked = ',checkedValues);

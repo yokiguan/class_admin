@@ -11,6 +11,7 @@ const xzbRuleSingleDoubleLesson = base.root + '/a/xzbRuleSingleDoubleLesson'
 const schedulePlan=base.root+'/a/schedulePlan/'
 const basicSettingQuery=base.root+'/a/basicSettingQuery/'
 const scheduleSyllabus=base.root+'/a/scheduleSyllabus'
+const scheduleTask=base.root+'/a/scheduleTask'
 const adminClass = {
     //行政班排课查看
     //行政班排课修改
@@ -97,6 +98,10 @@ const adminClass = {
     //单双周课程规则删除(已调)
     deleteLessonRule(params) {
         return axios.post(`${xzbRuleSingleDoubleLesson}/deleteData.json`, params);
+    },
+    //保存之后设置行政班排课算法
+    continueClass(params){
+        return axios.get(`${scheduleTask}/saveXzbAlgorithm.json`, {params});
     }
 }
 export default adminClass;

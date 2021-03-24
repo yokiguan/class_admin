@@ -22,7 +22,6 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <div class="table">
                 <template>
@@ -205,7 +204,7 @@
                     </a-descriptions>
                 </template>
                 <button style="background-color: #00ccff;margin-top:100px; color: white;height: 40px;border: none;
-                border-radius: 5px; width: 200px" @click="Next" >下一步</button>
+                border-radius: 5px; width: 200px" @click="Next" >保存</button>
             </div>
         </div>
 <!--        添加学科时间规则-->
@@ -644,6 +643,7 @@
                 gradeName:"",
                 gradeId:"",
                 currId:"",
+                classType:"",
                 subject:[],
                 teacherName:[],
                 form:{},
@@ -651,18 +651,7 @@
             };
         },
         async created() {
-            let queryString = (window.location.hash || " ").split('?')[1]
-            let planId = (queryString || " ").split('=')[1]
-            this.planId = planId;
-            if (planId) {
-                //获取单个选课计划的信息
-                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
-                this.planData = result.name;
-                // console.log(result);
-                this.gradeName=result.gradeName;
-                this.gradeId=result.gradeId;
-                this.currId=result.currId;
-            }
+            this.chooseCourseInfo();
             this.subjectTimeRule();
             this.subjectInfo();
             this.teacherTimeRule();
@@ -672,6 +661,29 @@
             this.singDoubleRule();
         },
         methods:{
+            //获取单个选课计划信息
+            async chooseCourseInfo(){
+                //获取planId
+                let queryString = (window.location.hash || " ").split(/[?&]/)[1];
+                let planId = (queryString || " ").split('=')[1];
+                // console.log(planId);
+                this.planId = planId;
+                //获取scheduleTaskId
+                let queryTaskString = (window.location.hash || " ").split(/[?&]/)[2];
+                let scheduleTaskId = (queryTaskString || " ").split('=')[1];
+                this.scheduleTaskId= scheduleTaskId;
+                console.log( this.scheduleTaskId);
+                if (planId) {
+                    //获取单个选课计划的信息
+                    let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                    this.planData=result.planData;
+                    this.gradeName=result.gradeName;
+                    this.gradeId=result.gradeId;
+                    this.currId=result.currId;
+                    this.classType=result.type;
+                    console.log(this.classType);
+                }
+            },
             //学科时间规则
             //=========================================================
             //学科时间规则查看
@@ -1573,32 +1585,63 @@
             },
             //课时设置
             timesSetting(){
-                this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                }
             },
             //课节设置
             oncesSetting(){
-                this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                }
             },
             //学科设置
             subjectSetting(){
-                this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`)
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`);
+                }
             },
             //班级设置
             classSetting(){
-                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`)
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`);
+                }
             },
             //规则设置
             ruleSetting(){
-                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`)
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
+                }
             },
-            //开始排课
-            startArray(){
-                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
-            },
+            //下一步
             Next(){
-                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
+               this.aloClass();
             },
-
+            async aloClass(){
+                let addData={
+                    id:this.scheduleTaskId,
+                    planId:this.planId,
+                    gradeId:this.gradeId,
+                };
+                console.log(addData);
+              let {data}=await this.$api.schedule.adminClass.continueClass(addData);
+              console.log(data);
+              if(data&&data.success){
+                  this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
+              }else{
+                  message.info("行政班排课失败！");
+              }
+            },
             //返回
             back(){
                 this.$router.go(-1)
@@ -1644,12 +1687,6 @@
     .buttons button{
         background-color:#e4e4e4;
         color:black;
-    }
-    .time1{
-        width: 100%;
-        height: 30px;
-        padding-top:5px;
-        background-color: #d9d9d9;
     }
     .table{
         width: 95%;

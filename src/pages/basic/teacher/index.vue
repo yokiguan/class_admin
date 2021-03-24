@@ -13,7 +13,6 @@
         <a-col :md="7" :sm="24">
           <a-form-model-item label="级部" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
             <a-select placeholder="请选择"  v-model="form.adminId" @change="handleAdminChange">
-<!--              <a-select-option>&#45;&#45;请选择&#45;&#45;</a-select-option>-->
               <a-select-option v-for="(admin,index) in this.adminData" :key="index">
                 {{admin.adminName}}
               </a-select-option>
@@ -23,7 +22,6 @@
         <a-col :md="7" :sm="24">
           <a-form-model-item label="年级" :labelCol="{ span: 3}" :wrapperCol="{ span: 15, offset: 1 }">
             <a-select placeholder="请选择" v-model="form.gradeId" @change="handleGradeChange">
-<!--              <a-select-option>&#45;&#45;请选择&#45;&#45;</a-select-option>-->
               <a-select-option v-for="(grade,index) in this.gradeData" :key="index">
                 {{grade.gradeName}}
               </a-select-option>
@@ -43,7 +41,7 @@
               :dataSource="dataSource"
               @change="handleTableChange">
         <div slot="operation" slot-scope="text,record,index">
-          <span @click="edit(index)">编辑</span>|
+          <span @click="edit(record.teacherId)">编辑</span>|
           <span @click="settingRule">规则设置</span>
         </div>
       </a-table>
@@ -54,26 +52,24 @@
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
         <a-button key="back" @click="handleCancel">取消</a-button>
       </template>
-      <a-form-model :form="form" :label-col="{span:5}" :wrapper-col="{span:12}" style="margin-left: 70px">
-        <a-form-model-item label="老师姓名">
+      <a-form-model :model="form" ref="ruleForm" :label-col="{span:5}" :wrapper-col="{span:12}" style="margin-left: 70px">
+        <a-form-model-item label="老师姓名" ref="teaName" prop="teaName">
           <a-input style="width: 300px" disabled="disabled" v-model="form.teaName"/>
         </a-form-model-item>
-        <a-form-model-item label="联系电话">
+        <a-form-model-item label="联系电话" ref="tel" prop="tel">
           <a-input style="width: 300px" disabled="disabled" v-model="form.tel"/>
         </a-form-model-item>
-        <a-form-model-item label="是否是班主任" style="margin-left: 30px">
+        <a-form-model-item label="是否是班主任" style="margin-left: 30px" ref="type" prop="type">
           <a-input v-model="form.type" disabled="disabled" style="width: 270px"/>
         </a-form-model-item>
-        <a-form-model-item label="所授课程">
-<!--          :checkedKeys="checkedKeys"-->
+        <a-form-model-item label="所授课程" ref="course" prop="course">
           <a-tree-select v-model="form.course"
                          placeholder="请选择所授课程"
                          style="width: 275px"
                          @change="selectCourse"
                          tree-checkable
                          :tree-data="treeData"
-                         :checkStrictly="true"
-                         :defaultCheckedKeys="checkedKeys"
+                         :checkedKeys="checkedKeys"
                          :show-checked-strategy="SHOW_PARENT">
           </a-tree-select>
         </a-form-model-item>
@@ -170,6 +166,7 @@
         courseInfo:[],
         SHOW_PARENT,
         gradeIds:[],
+        chooseCourse:[],
         pagination:{
           total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
           pageSize:20,    //默认每页显示的条数
@@ -187,6 +184,7 @@
         editText:-1,
         form:{
           teaName:"",
+          course:[],
         },
       }
     },
@@ -208,7 +206,6 @@
         this.queryParam.size=pagination.pageSize;
         console.log(this.pagination.current)
         console.log(this.pagination.pageSize);
-        this.allTeacher();
         if(this.form.adminId!=undefined){
           if(this.form.gradeId!=undefined){
             this.handleGradeChange();
@@ -285,78 +282,16 @@
           this.pagination=pagination;
         }
       },
-      //获取课程信息
-      async edit(editId){
-        console.log(editId);
-        console.log(this.dataSource[editId]);
-        this.treeData=[];
-        this.checkedKeys=[];
-        this.getCourseInfo();
-        this.editVisit=true;
-        this.editText=editId,
-        console.log(this.dataSource);
-        this.form.teaName=this.dataSource[editId].teacherName;
-        this.form.tel=this.dataSource[editId].tel;
-        this.dataSource[editId].teacherRoleDtos.length===0?this.form.type='否':this.form.type='是';
-        let pushData=[]
-        console.log(this.gradeIds)
-        let list=[...this.dataSource[editId].subjectTeacherDtos];
-        list.forEach(item=>{
-          console.log(item);
-          pushData.push(item.subName);
-          this.gradeIds=item.gradeId;
-          console.log(this.gradeIds);
-          // console.log(pushData);
-        })
-        this.value=pushData.toString();
-        console.log(this.value);
-      },
-      //选择课程信息
-      selectCourse(allInfo){
-        console.log(this.checkedKeys);
-        let courseInfo=[];
-        console.log(this.treeData);
-        for(let i=0;i<allInfo.length;i++) {
-          console.log(allInfo[i]);
-          for (let j = 0; j < this.treeData.length; j++) {
-            if (this.treeData[j].children) {
-              let teachData = this.treeData[j].children;
-              // console.log('teacherData',teachData);
-              for (let k = 0; k < teachData.length; k++) {
-                if (teachData[k].children) {
-                  let couData = teachData[k].children;
-                  for (let w in couData) {
-                    if (couData[w].key === allInfo[i]) {
-                      courseInfo.push(couData[w].key)
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        console.log(courseInfo);
-        let gradeId=[];
-        console.log(courseInfo);
-        courseInfo.forEach(item=>{
-          gradeId.push((item || " ").split(',')[0])
-          this.courseInfo.push((item || " ").split(',')[1])
-        }),
-                this.gradeIds=gradeId;
-        console.log(gradeId);
-        console.log(this.gradeIds);
-        console.log(this.courseInfo);
-      },
       //获取所属课程信息
       async getCourseInfo(editId){
         //获取级部、年级、课程树
         let {data:{result,success}}=await this.$api.basic.rule.fetcheAdminGradeCourseList()
-        console.log(result);
+        // console.log(result);
         for(let i in result){
           //第一层(级部）
           let adminTree={};
-          adminTree.title=adminTree.value=result[i].adminName;
-          adminTree.key=result[i].adminId;
+          adminTree.title=result[i].adminName;
+          adminTree.key=adminTree.value=result[i].adminId;
           // console.log(result[i].adminGrades)
           if(result[i].adminGrades.length){
             //第二层(年级）
@@ -372,7 +307,7 @@
                 childData.children=[];
                 for(let k in gradeItem.subjectEntities){
                   let mainCourse={};
-                  mainCourse.key=mainCourse.value=gradeItem.gradeId+','+gradeItem.subjectEntities[k].subChildId;
+                  mainCourse.key=mainCourse.value=gradeItem.subjectEntities[k].subChildId;
                   mainCourse.title=gradeItem.subjectEntities[k].name;
                   childData.children.push(mainCourse)
                 }
@@ -384,25 +319,134 @@
           // console.log(data.result[i]);
         }
       },
+      //获取课程信息
+      async edit(editId){
+        console.log(editId);
+        // console.log(this.dataSource[editId]);
+        this.treeData=[];
+        this.checkedKeys=[];
+        this.getCourseInfo();
+        this.editVisit=true;
+        this.editText=this.dataSource.findIndex(item=>item.teacherId==editId);
+        // console.log(this.editText);
+        this.form.teaName=this.dataSource[this.editText].teacherName;
+        this.form.tel=this.dataSource[this.editText].tel;
+        this.dataSource[this.editText].teacherRoleDtos.length===0?this.form.type='否':this.form.type='是';
+        let selectData=this.dataSource[this.editText].subjectTeacherDtos;
+        console.log("selectData",selectData);
+        for(let i=0;i<selectData.length;i++){
+          this.form.course.push(selectData[i].subId);
+        }
+        console.log(this.form.course);
+      },
+      //选择课程信息
+      selectCourse(allInfo){
+        let courseInfo=[];
+        for(let i=0;i<this.treeData.length;i++){
+          let gradeChild=this.treeData[i].children;
+          for(let j=0;j<allInfo.length;j++){
+            console.log(allInfo[j]);
+            //连带级部一块选
+            if(allInfo[j]==this.treeData[i].key){
+              for(let k=0;k<gradeChild.length;k++){
+                if(gradeChild[k].children){
+                  for(let w=0;w<gradeChild[k].children.length;w++){
+                    courseInfo.push(gradeChild[k].children[w].key);
+                  }
+                }
+              }
+            }else{
+              for(let k=0;k<gradeChild.length;k++){
+                //选择年级和课程
+                if(allInfo[j]===gradeChild[k].key){
+                  let children=gradeChild[k].children;
+                  if(children){
+                    for(let v=0;v<children.length;v++){
+                      // console.log(children[v].key);
+                      // console.log("=========================================")
+                      courseInfo.push(children[v].key);
+                    }
+                  }
+                }else{
+                  // console.log(allInfo[j]);
+                  // console.log("=========================================")
+                  courseInfo.push(allInfo[j]);
+                }
+              }
+            }
+          }
+        }
+        // console.log(courseInfo);
+        //去除重复
+        for(let i=0;i<courseInfo.length;i++){
+          for(let j=i+1;j<courseInfo.length;j++){
+            if(courseInfo[i]===courseInfo[j]){
+              for(let temp=j;temp<courseInfo.length;temp++){
+                courseInfo[temp]=courseInfo[temp+1];
+              }
+               j--;
+               courseInfo.length=courseInfo.length-1;
+            }
+          }
+        }
+        // console.log(courseInfo);
+        //判断年级
+        for(let i=0;i<this.treeData.length;i++){
+          if(this.treeData[i].children){
+            let children=this.treeData[i].children;
+            for(let j=0;j<children.length;j++){
+              for(let k=0;k<courseInfo.length;k++){
+                if(children[j].key==courseInfo[k]){
+                  courseInfo[k]=courseInfo[k+1];
+                  courseInfo.length--;
+                }
+              }
+            }
+          }
+          this.chooseCourse=courseInfo;
+          console.log(courseInfo);
+          console.log(this.chooseCourse);
+        }
+      },
       //规则设置
       settingRule(id){
         this.$router.push("/basic/teacher/rule?id=" + id);
       },
       //编辑信息的保存
       async handleOk(){
-        console.log(this.gradeIds);
+        let pushData=[];
+        console.log(this.editText);
+        console.log(this.dataSource[this.editText]);
+        let allData=this.dataSource[this.editText].subjectTeacherDtos;
+        console.log(allData);
+        for(let i=0;i<allData.length;i++){
+          pushData.push(allData[i].gradeId)
+        }
+        console.log(pushData);
+        //去除重复
+        for(let i=0;i<pushData.length;i++){
+          for(let j=i+1;j<pushData.length;j++){
+            if(pushData[i]===pushData[j]){
+              for(let temp=j;temp<pushData.length;temp++){
+                pushData[temp]=pushData[temp+1];
+              }
+              j--;
+              pushData.length=pushData.length-1;
+            }
+          }
+        }
+        console.log(pushData);
         this.editVisit=false;
         let addData={};
-        console.log(this.courseInfo);
-        for(let i in this.gradeIds){
-          // console.log(this.dataSource[this.editText].teacherId)
-          // console.log(this.gradeIds[i])
-          // console.log(this.courseInfo)
+        for(let i in pushData){
+          console.log(this.dataSource[this.editText].teacherId)
+          console.log(pushData[i])
+          console.log(this.chooseCourse);
            addData={
             teacherId:this.dataSource[this.editText].teacherId,
             gradeSubjectDtoList:[{
-              gradeId:this.gradeIds[i].toString(),
-              subIds:this.courseInfo,
+              gradeId:pushData[i].toString(),
+              subIds:this.chooseCourse,
             }]
           }
         }
@@ -410,13 +454,29 @@
         let {data}=await this.$api.basic.teacher.saveTeacherInfo(addData);
         console.log(data);
         if(data&&data.success){
-          alert("编辑老师成功");
-          this.handleGradeChange();
+          message.info("修改老师成功");
+          this.form.course=[];
+          if(this.form.adminId!=undefined){
+            if(this.form.gradeId!=undefined){
+              if(this.form.teacherName!=undefined){
+                this.onSearch();
+              }else{
+                this.handleGradeChange();
+              }
+            }else{
+              this.handleAdminChange();
+            }
+          }else{
+            this.allTeacher();
+          }
+        }else{
+          message.info("授课班级为空！");
         }
       },
       //编辑信息的取消
       handleCancel(){
         this.editVisit=false;
+        this.form.course=[];
       },
     }
   }

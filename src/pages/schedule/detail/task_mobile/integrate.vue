@@ -146,48 +146,67 @@
             },
             //课表查看
             async allLookInfo(){
-                let {data:{result,success}}=await this.$api.schedule.classTask.getData({planId:this.planId,scheduleTaskId:this.scheduleTaskId})
-                // console.log(result[0]);
-                this.tableId=result[0].id;
-                this.allData=result[0].syllabus;
-                console.log(this.allData);
-                //创建数组
-                let dataSource=[];
-                for(let i=0;i<this.allData.length;i++){
-                    let position = eval(this.allData[i].position);
-                    const getInfo=(dataItem,sourceItem={})=>{
-                        if(!sourceItem) sourceItem={}
-                        let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classroomName + ')';
-                        const column=eval(dataItem.position)[1];
-                        switch (column) {
-                            case 1:
-                                sourceItem.one=sourceItem.one ?sourceItem.one+",\n"+content:content;
-                                break;
-                            case 2:
-                                sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
-                                break;
-                            case 3:
-                                sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
-                                break;
-                            case 4:
-                                sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
-                                break;
-                            case 5:
-                                sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
-                                break;
+                let {data}=await this.$api.schedule.classTask.getData({planId:this.planId,scheduleTaskId:this.scheduleTaskId})
+                console.log(data);
+                if(data.success==false){
+                    message.info(data.code);
+                }else{
+                    this.tableId=data.result[0].id;
+                    this.allData=data.result[0].syllabus;
+                    console.log(this.allData);
+                    //创建数组
+                    let dataSource=[];
+                    for(let i=0;i<this.allData.length;i++){
+                        let position = eval(this.allData[i].position);
+                        const getInfo=(dataItem,sourceItem={})=>{
+                            if(!sourceItem) sourceItem={}
+                            let content = dataItem.subChildName +dataItem.classNumId + '(' + dataItem.classroomName + ')';
+                            const column=eval(dataItem.position)[1];
+                            switch (column) {
+                                case 1:
+                                    sourceItem.one=sourceItem.one ?sourceItem.one+",\n"+content:content;
+                                    break;
+                                case 2:
+                                    sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                    break;
+                                case 3:
+                                    sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                    break;
+                                case 4:
+                                    sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                    break;
+                                case 5:
+                                    sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
+                                    break;
+                            }
+                            return sourceItem
+                        };
+                        dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                    }
+                    // console.log(dataSource);
+                    this.tableData=dataSource;
+                    // console.log(this.tableData);
+                    for(let i=0;i<this.tableData.length;i++){
+                        // console.log(i,this.tableData[i]);
+                        if(this.tableData[i]===undefined){
+                            // console.log(i);
+                            let pushData={
+                                one:"",
+                                two:"",
+                                three:"",
+                                four:"",
+                                five:"",
+                            }
+                            this.tableData[i]=pushData;
+                            // this.tableData[i].one="";
                         }
-                        return sourceItem
-                    };
-                    dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                    }
+                    //编号
+                    for(let i=0;i<this.tableData.length;i++){
+                        this.tableData[i].key=i+1;
+                    }
+                    console.log(this.tableData);
                 }
-                // console.log(dataSource);
-                this.tableData=dataSource;
-                // console.log(this.tableData);
-                //编号
-                for(let i=0;i<this.tableData.length;i++){
-                    this.tableData[i].key=i+1;
-                }
-                console.log(this.tableData);
             },
             //选择单元格
             choose(rowIndex,colIndex){

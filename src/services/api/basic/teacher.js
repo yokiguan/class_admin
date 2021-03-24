@@ -33,7 +33,7 @@ const teacher = {
     },
     // 教师时间规则删除接口(已调)
     deleteRule(params){
-        return axios.get(`${baseUrl}/deleteData.json`,{params});
+        return axios.post(`${baseUrl}/deleteData.json`,params);
     },
     // 查询全部教师时间规则左侧树（已测）(已调)
     AdminGradeSubTec(params){

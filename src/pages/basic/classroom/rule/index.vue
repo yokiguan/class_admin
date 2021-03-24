@@ -318,6 +318,7 @@
             },
             //场地规则查看
             async lookInfo(id){
+                this.initData();
                 let {data:{result,success}}=await this.$api.basic.classroom.fetchRule({id:id});
                 console.log(result);
                 this.ruleInfo=result.ruleInfo;
@@ -342,7 +343,7 @@
                     // console.log(getRRow);
                     // console.log(getRRow);
                     this.tableData[getRRow].rowList[getRColumn].defaultCheck = 1;
-                    this.disableData.push([getRColumn,getRRow]);
+                    this.disableData.push([getRRow,getRColumn]);
                 }
                 console.log(this.disableData);
             },
@@ -475,8 +476,10 @@
                 console.log(data);
                 this.saveVisit = false;
                 if(data&&data.success){
-                    alert("保存成功");
+                    message.info("保存成功");
                     this.initData();
+                }else{
+                    message.info("保存失败！");
                 }
                 this.placeInfo();
             },

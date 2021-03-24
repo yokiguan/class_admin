@@ -56,9 +56,11 @@
                    <a-row style="margin-top:80px;">
                        <a-col :span="4"><h3>{{data.name}}:</h3></a-col>
                        <template style="margin-left: 200px;margin-top: 30px" >
-                               <a-checkbox v-for="(sub,index2) in data.subChildIds" @change="chooseCourse(data.id,sub.subChildId)">
+                           <a-checkbox-group v-model="Course"  @change="chooseCourse">
+                               <a-checkbox v-for="(sub,index2) in data.subChildIds" :value="sub.subChildId">
                                    {{sub.subChildName}}
                                </a-checkbox>
+                           </a-checkbox-group>
                        </template>
                    </a-row>
                </template>
@@ -82,6 +84,8 @@
                 teachId: "",
                 teachDatas: [],
                 chooseId:[],
+                isChoosen:[],
+                Course:[],
             };
         },
         //查看单个选课计划
@@ -106,12 +110,16 @@
                    this.planId=data.result.courseSelectDtos[0].planId;
                    console.log(this.allData);
                    let list=[...this.allData];
-                   // console.log(list);
+                   console.log(list);
                    list.forEach(item=>{
                        let listSub=[...item.subChildIds];
-                       // console.log(listSub);
                        item.mustSubject="";
                        listSub.forEach(itemSub=>{
+                           if(itemSub.ischoosen==1){
+                                this.Course.push(itemSub.subChildId);
+                           }
+                           this.isChoosen.push(itemSub.ischoosen);
+                           // console.log(this.isChoosen);
                            if(itemSub.isable===1){
                                if(item.mustSubject===""){
                                    item.mustSubject=itemSub.subChildName;
@@ -125,6 +133,7 @@
                    })
                    console.log(this.allData);
                    this.getInfo(this.planId);
+                   console.log(this.Course);
                }
             },
             //规则查看
@@ -137,12 +146,14 @@
                     this.information = data.message;
                 }
             },
-            //课程选择
-            chooseCourse(id,index){
-              console.log(id);
-              console.log(index);
-              this.chooseId.push(index);
-              console.log(this.chooseId);
+            // //课程选择
+            chooseCourse(checkValue){
+                console.log(checkValue);
+                console.log(this.Course);
+            //   console.log(id);
+            //   console.log(index);
+            //   this.chooseId.push(index);
+            //   console.log(this.chooseId);
             },
             //规则说明查看
             warning() {
@@ -157,7 +168,7 @@
             },
             async save() {
                 let pushData = [];
-                this.chooseId.forEach(item=>{
+                this.Course.forEach(item=>{
                     console.log(item);
                     let addData={
                         subChildId:item,
@@ -174,7 +185,8 @@
                 console.log(data);
                  if(data&&data.success){
                     message.info('保存成功');
-                }else{
+                    this.chooseCourseInfo();
+                 }else{
                      message.info("保存失败");
                  }
             },

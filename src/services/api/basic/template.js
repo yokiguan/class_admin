@@ -23,7 +23,7 @@ const curriculumTemplates = {
 
     // 课表删除接口
     deleteTemplate(params){
-        return axios.get(`${baseUrl}/deleteData.json`,{params});
+        return axios.post(`${baseUrl}/deleteData.json`,params);
     }
 }
 

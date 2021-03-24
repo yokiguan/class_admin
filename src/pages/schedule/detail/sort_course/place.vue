@@ -170,8 +170,19 @@
                 // console.log(this.dataSource);
             },
             //添加教室
-            async addClass() {
+            addClass() {
                 this.visible = true;
+                this.allBuildingInfo();
+                console.log(this.dataSource);
+                let allBuilding=[];
+                for(let i=0;i<this.dataSource.length;i++){
+                    allBuilding.push(this.dataSource[i].classRoomId);
+                }
+                console.log(allBuilding);
+                this.checkedKeys=allBuilding;
+            },
+            //全部教室信息查看
+            async allBuildingInfo(){
                 this.treeData=[];
                 //全部教室信息查询
                 let { data:classroomData}  = await this.$api.basic.classroom.fetchList();
@@ -190,23 +201,21 @@
                         for (let j = 0; j < data.result[i].floor_list.length; j++) {
                             let item = data.result[i].floor_list[j]
                             let childData = {}
-                            childData.key = item.floor
+                            childData.key = data.result[i].building_Id+item.floor
                             childData.title = '第' + item.floor + '层'
                             if(item.classroom_list.length) {
                                 childData.children = [];
-                                let dataThree = {};
                                 for (let k in item.classroom_list) {
-                                    dataThree.key = item.classroom_list[k].room_id
-                                    dataThree.title = item.classroom_list[k].classroom_name
+                                    let dataThree = {};
+                                    dataThree.key = item.classroom_list[k].room_id;
+                                    dataThree.title = item.classroom_list[k].classroom_name;
+                                    childData.children.push(dataThree);
                                 }
-                                childData.children.push(dataThree)
                             }
                             numberTree.children.push(childData)
                         }
+                        this.treeData.push(numberTree)
                     }
-                    this.treeData.push(numberTree)
-                    console.log(data.result[i])
-                    console.log(this.treeData);
                 }
             },
             //获取教室相关信息
@@ -225,6 +234,7 @@
                 console.log(result);
                 this.visible=false;
                 let list=[...result];
+                let pushData=[];
                 list.forEach(item=>{
                     addData={
                         classRoomId:item.classRoomId,
@@ -234,9 +244,12 @@
                         typeId:item.typeId,
                         classroomName:item.classroomName,
                     }
-                    this.dataSource.push(addData);
+                    console.log(addData);
+                    pushData.push(addData);
                 })
                 // console.log(addData);
+                console.log(pushData);
+                this.dataSource=pushData;
                 console.log(this.dataSource);
             },
             //取消新增教室

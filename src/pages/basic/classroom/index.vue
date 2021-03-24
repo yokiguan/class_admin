@@ -71,7 +71,7 @@
           <a-input v-model="form.capacity" placeholder="请输入你想要新增的场地容量"></a-input>
         </a-form-model-item>
         <a-form-item label="状态" ref="status" prop="status">
-          <a-switch v-model="form.status" default-checked @change="onChangeCheck"/>
+          <a-switch v-model="form.status" />
         </a-form-item>
       </a-form-model>
     </a-modal>
@@ -176,7 +176,7 @@
           type: '',
           buildingId:"",
           capacity:'',
-          status:''
+          status:false,
         },
         rules:{
           classroomName:[
@@ -245,23 +245,24 @@
       showModal() {
          this.changeTitle='新增教室'
          this.show = true;
-      },
-      onChangeCheck(checked) {
-        console.log(`a-switch to ${checked}`);
+         this.form.status=false;
+         this.form.classroomName="";
+         this.form.buildingId="";
+        this.form.floor="";
+        this.form.capacity="";
+        this.form.type="";
       },
       //保存弹窗
       async handleOk() {
-        if(this.changeTitle=="新增教室")
-        {
+        if(this.changeTitle=="新增教室") {
           console.log(this.form.status);
           let formData = {
-            ...this.form,
             name:this.form.classroomName,
             buildingId:this.form.buildingId,
             floor:this.form.floor,
             capacity: Number(this.form.capacity),
             type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1:2,
-            status: this.form.status=='true'? 1:0,
+            status: this.form.status==true?1:0,
             subId: 1
           };
           console.log(formData)
@@ -270,7 +271,6 @@
           console.log(res);
           this.buildingInfo();
           this.show = false;
-          this.$refs.ruleForm.resetFields();
         }else{
           let formData = {
             roomId:this.dataSource[this.editText].roomId,

@@ -27,7 +27,6 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-row class="form" style="margin-left: -150px;margin-top:60px">
                 <a-form-model :modal="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 8}" >
@@ -237,10 +236,6 @@
             //规则设置
             ruleSetting(){
                 this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`)
-            },
-            //开始排课
-            startArray(){
-                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             //返回
             back(){

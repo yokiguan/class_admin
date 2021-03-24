@@ -10,6 +10,7 @@ const scheduleTask=base.root+'/a/scheduleTask'
 const scheduleConflict=base.root+'/a/scheduleConflict'
 const studentSyllabus=base.root+'/a/studentSyllabus'
 const scheduleClass=base.root+'/a/scheduleClass'
+const basicSettingQuery=base.root+'/a/basicSettingQuery'
 const  classTask = {
     //走班排课任务查看(已调）
     getScheduleTask(params){
@@ -87,6 +88,11 @@ const  classTask = {
     teacherLook(params){
         return axios.get(`${scheduleSyllabus}/getDataSelectByTeacherId.json`,{params});
     },
+    //教师设置查找老师
+    searchTeacher(params){
+        return axios.get(`${basicSettingQuery}/getTecByGradeId.json`,{params});
+    },
+
 }
 export default  classTask
 

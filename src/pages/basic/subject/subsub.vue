@@ -125,6 +125,7 @@
         addClassVisit:false,
         loading:false,
         changeTitle:'新增子课程',
+        editText:-1,
         form:{
           name:"",
           gradeIds:[],
@@ -175,7 +176,7 @@
       async grade(){
         this.treeData = []
         let {data:{result,success}}=await this.$api.basic.grade.fetchList();
-        console.log(result);
+        // console.log(result);
         for(let i in result){
           //第一层（级部）
           let adminData={};
@@ -209,28 +210,36 @@
         console.log('treeData',this.treeData);
         let selectData = this.dataSource[editId].childSubjectGrade;
         console.log('selectData',selectData);
-        for(let i in this.treeData){
-          for(let j in selectData){
-            if(this.treeData[i].childSubjectGrade!=selectData[j].gradeId){
-              this.form.gradeIds.push(selectData[j].gradeId);
-            }else{
-              let children=this.treeData[i].children;
-              for(let k in children){
-                this.form.gradeIds.push(children[k].key);
-              }
-            }
-          }
+        for(let j=0;j<selectData.length;j++){
+          console.log(selectData[j].gradeId);
+          this.form.gradeIds.push(selectData[j].gradeId);
         }
         console.log(this.form.gradeIds);
         this.addClassVisit=true;
         this.form.name=this.dataSource[editId].name;
         this.form.type=this.dataSource[editId].type==1?'行政班课':'走班课';
+        this.editText=editId;
       },
       async handleOk() {
+        let gradeIds=[];
+        console.log(this.form.gradeIds);
+        for (let i=0;i<this.treeData.length;i++){
+          for(let j=0;j<this.form.gradeIds.length;j++){
+            if(this.form.gradeIds[j]==this.treeData[i].key){
+              let children=this.treeData[i].children;
+              for(let j=0;j<children.length;j++){
+                gradeIds.push(children[j].key);
+              }
+            }else{
+                gradeIds.push(this.form.gradeIds[j]);
+            }
+          }
+        }
+        console.log(gradeIds);
         if(this.changeTitle=='新增子课程'){
           let formData={
             name: this.form.name,
-            gradeIds: this.form.gradeIds,
+            gradeIds: gradeIds,
             type: Number(this.form.type),
             subFatherId: this.$router.history.current.query.id
           };
@@ -241,17 +250,10 @@
           this.subCourseInfo();
           this.$refs.ruleForm.resetFields();
         }else{
-          let gradeId="";
-          for(let i in this.treeData){
-            if(this.form.gradeIds.toString()==this.treeData[i].key){
-                gradeId=this.treeData[i].children[0].key;
-            }
-          }
-          console.log(this.form.gradeIds);
           let formData={
             subChildId:this.dataSource[this.editText].subChildId,
             name: this.form.name,
-            gradeIds: [gradeId],
+            gradeIds: gradeIds,
             type: Number(this.form.type),
             subFatherId: this.$router.history.current.query.id
           };
@@ -264,9 +266,6 @@
             let { data:{result,success} } = await this.$api.basic.subject.fetchChildList({id});
             this.dataSource=result.subjectChildEntitys;
           }
-          // let { data:{result,success} } = await this.$api.basic.subject.fetchChildList();
-          // this.dataSource=result;
-          // this.$refs.ruleForm.resetFields();
         }
       },
       handleCancel() {
@@ -277,8 +276,11 @@
         let {data}=await this.$api.basic.subject.deleteSubject({ids:[id]});
         console.log(data)
         if(data&&data.success){
-          this.subCourseInfo();
           message.info('删除成功');
+          if(this.dataSource.length===1){
+            this.dataSource=[];
+          }
+          this.subCourseInfo();
         }else{
           message.info('删除失败');
         }

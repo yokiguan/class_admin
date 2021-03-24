@@ -4,7 +4,7 @@
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item @click="classDetail">排课详情</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="#">选课设置</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
@@ -19,9 +19,8 @@
                 <a-form-item label="选课开始时间：" prop="time" ref="time">
                     <a-date-picker v-model="startValue"
                                    :disabled-date="disabledStartDate"
-                                   show-time
                                    format="YYYY-MM-DD HH:mm:ss"
-                                   placeholder="Start"
+                                   placeholder="开始时间"
                                    @openChange="handleStartOpenChange"
                                    valueFormat="YYYY-MM-DD HH:mm:ss"/>
                 </a-form-item>
@@ -30,7 +29,7 @@
                             :disabled-date="disabledEndDate"
                             show-time
                             format="YYYY-MM-DD HH:mm:ss"
-                            placeholder="End"
+                            placeholder="结束时间"
                             :open="endOpen"
                             @openChange="handleEndOpenChange"
                             valueFormat="YYYY-MM-DD HH:mm:ss"/>
@@ -38,7 +37,7 @@
             </a-form-model>
             <a-table :rowKey="'id'" :columns="columns" :dataSource="dataSource" :pagination='false'>
                 <div slot="subChildIds" slot-scope="text, record,index_1">
-                    <a-table :rowKey="'text.subChildId'"
+                    <a-table :rowKey="'subChildId'"
                             :dataSource="text"
                             :columns="changeColumns"
                             :showHeader="false"
@@ -52,11 +51,8 @@
                         </div>
                         <div slot="teacherIds" slot-scope="text,record,index_2">
                             <a-form-model ref="dynamicValidateForm">
-                                <a-form-model-item
-                                        v-for="(domain, index) in text"
-                                        :key="domain.key">
-                                    <a-input
-                                            style="float: left;color: black;width: 80px;border:none;background-color:#fff"
+                                <a-form-model-item v-for="(domain, index) in text" :key="domain.key">
+                                    <a-input style="float: left;color: black;width: 80px;border:none;background-color:#fff"
                                             :value="domain.teacherName"
                                             v-model="dataSource[index_1].subChildIds[index_2].teacherIds[index].teacherName"
                                             disabled>
@@ -121,6 +117,7 @@
 </template>
 
 <script>
+    import {message} from "ant-design-vue";
     import { TreeSelect } from 'ant-design-vue';
     const SHOW_PARENT = TreeSelect.SHOW_PARENT;
     const columns = [
@@ -157,6 +154,14 @@
         // },
     ];
     const columnsSubjects = [
+        {
+            title: " ",
+            dataIndex: "subChildId",
+            align:'center',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
+        },
         {
             title: "科目",
             dataIndex: "subChildName",
@@ -199,7 +204,7 @@
                 dataSource: [],
                 loading:false,
                 addVisit: false,
-                value: [''],
+                value: [],
                 treeData:[],
                 subTimes:[],
                 SHOW_PARENT,
@@ -246,15 +251,6 @@
         },
         async created(){
             this. lookInfo();
-        },
-        //监测选课时间
-        watch: {
-            startValue(val) {
-                console.log('startValue', val);
-            },
-            endValue(val) {
-                console.log('endValue', val);
-            },
         },
         methods: {
             //指定排课计划信息查看
@@ -303,23 +299,35 @@
             },
             //查看教师
             async lookTeacherInfo(id){
-                let {data:{result}}=await this.$api.schedule.setting.lookTeacher({gradeId:this.gradeId,subChildId:id})
-                this.treeData[0] = {
-                    ...this.treeData[0],
-                    key:result.gradeId,
-                    value:result.gradeId,
-                    title:result.gradeName + result.subName
-                }
-                this.treeData[0].children = []
-                result.teachers.forEach((chr)=>{
-                    let child = {
-                        key:chr.teacherId,
-                        value:chr.teacherId,
-                        title:chr.teacherName
-                    }
-                    this.treeData[0].children.push(child)
-                })
-                console.log("this.treedata",this.treeData)
+                let {data}=await this.$api.schedule.setting.lookTeacher({
+                    gradeId:this.gradeId,
+                    subChildId:id})
+                this.treeData=[];
+               if(data.success){
+                   if(data.result){
+                       this.addVisit=true;
+                       this.treeData[0] = {
+                           ...this.treeData[0],
+                           key:data.result.gradeId,
+                           value:data.result.gradeId,
+                           title:data.result.gradeName + data.result.subName
+                       }
+                       this.treeData[0].children = []
+                       data.result.teachers.forEach((chr)=>{
+                           let child = {
+                               key:chr.teacherId,
+                               value:chr.teacherId,
+                               title:chr.teacherName
+                           }
+                           this.treeData[0].children.push(child)
+                       })
+                       console.log("this.treeData",this.treeData)
+                   }else{
+                       message.info(data.message);
+                   }
+               }else {
+                    message.info("获取教师信息失败！");
+               }
             },
             //选择老师
             chooseTeacher(){
@@ -337,18 +345,20 @@
             addTeacher(id,index_1,index_2){
                 this.index_1 = index_1
                 this.index_2 = index_2
-                this.addVisit=true;
+                console.log(this.dataSource[index_1].subChildIds[index_2]);
+                console.log(this.dataSource[index_1].subChildIds[index_2].subChildId);
                 this.lookTeacherInfo(this.dataSource[index_1].subChildIds[index_2].subChildId);
             },
             //保存新增老师
             handleOk() {
+                this.addVisit = false;
                 this.dataSource[this.index_1].subChildIds[this.index_2].teacherIds = []
                 this.dataSource[this.index_1].subChildIds[this.index_2].teacherIds[0] = {}
                 let childTeachers = []
                 for(let item of this.value){
                     if(item === this.treeData[0].key && this.value.length === 1){
                         this.treeData[0].children.forEach(chr=>{
-                            childTeachers.push({teacherName:chr.title,teacherId:chr.key,capacity:'10'})
+                            childTeachers.push({teacherName:chr.title,teacherId:chr.key,capacity:'0'})
                         })
                         break
                     }else{
@@ -356,22 +366,22 @@
                             return chr.key === item
                         })
                         teacherIds.forEach(chr=>{
-                            childTeachers.push({teacherName:chr.title,teacherId:chr.key,capacity:'10'})
+                            childTeachers.push({teacherName:chr.title,teacherId:chr.key,capacity:'0'})
                         })
                     }
                 }
                 this.$set(this.dataSource[this.index_1].subChildIds,this.index_2,{...this.dataSource[this.index_1].subChildIds[this.index_2],teacherIds:childTeachers})
-                this.addVisit = false
-                console.log("this.dataSource",this.dataSource)
+                console.log("this.dataSource",this.dataSource);
+                this.value=[];
             },
             //关闭添加老师弹框
             handleCancel() {
                 this.addVisit=false;
+                this.value=[];
             },
             // //选择覆盖科目
             handleChange($event,index){
                 console.log(index);
-            //     console.log(index);
                 console.log($event);
                 this.dataSource[index].coverRule=$event;
                 console.log(this.dataSource[index].coverRule);
@@ -415,14 +425,21 @@
             let {data} = await this.$api.schedule.setting.settingAdd(addData);
                 console.log(data);
                 if(data&&data.success){
-                    alert("保存成功");
-                    this.chooseClassSettingInfo();
+                    message.info("保存成功");
+                    this.classDetail();
                 }
-
             },
             //清空
             Clear(){
-                this.form.setFieldsValue();
+                for(let i=0;i<this.dataSource.length;i++){
+                    for(let j=0;j<this.dataSource[i].subChildIds.length;j++){
+                        this.dataSource[i].subChildIds[j].isable="";
+                        for(let k=0;k<this.dataSource[i].subChildIds[j].teacherIds.length;k++){
+                            this.dataSource[i].subChildIds[j].teacherIds[k]={};
+                        }
+                    }
+                }
+                this.form.explanation="";
             },
             //返回
             back(){
@@ -442,6 +459,10 @@
                 dataSource.splice(this.editText,1);
                 this.dataSource[index1].subChildIds[index2].teacherIds= dataSource
             },
+            //排课详情查看
+            classDetail(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            }
         },
     };
 </script>

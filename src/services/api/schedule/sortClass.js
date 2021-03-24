@@ -35,7 +35,7 @@ const sortClass={
     },
     //自动分班 教师列表的修改和新增(已调）
     classAlterTeacherlist(params){
-        return axios.get(`${scheduleCourse}/saveTeacher.json`,params);
+        return axios.post(`${scheduleCourse}/saveTeacher.json`,params);
     },
     //自动分班 删除教师(已测）(已调）
     classDeleteTeacher(params){

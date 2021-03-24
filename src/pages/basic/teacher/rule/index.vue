@@ -118,6 +118,7 @@
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue"
     import { TreeSelect } from 'ant-design-vue';
     const SHOW_PARENT = TreeSelect.SHOW_PARENT;
     const columnsPlace=[
@@ -367,11 +368,13 @@
             },
             //删除规则
             async deleteRule(){
-                let {data}=await this.$api.basic.teacher.deleteRule({ids:this.selectedRowKeys.toString()});
+                let {data}=await this.$api.basic.teacher.deleteRule({ids:[this.selectedRowKeys.toString()]});
                 console.log(data);
                 if(data&&data.success){
-                    alert('删除成功');
+                    message.info('删除成功');
                     this.teacherRuleInfo();
+                }else{
+                    message.info("删除失败！");
                 }
             },
             //复选框
@@ -534,9 +537,9 @@
                     getRColumn=this.disable[i][1];
                     // console.log(getRRow);
                     // console.log(getRRow);
-                    this.tableData[getRColumn].rowList[getRRow].defaultCheck = 1;
+                    this.tableData[getRRow].rowList[getRColumn].defaultCheck = 1;
                 }
-                this.disableData.push([getRColumn,getRRow]);
+                this.disableData.push([getRRow,getRColumn]);
                 console.log(this.disableData);
                 let getGRow=0;
                 let getGColumn=0;
@@ -545,14 +548,15 @@
                     getGColumn=this.priority[j][1];
                     // console.log(getGRow);
                     // console.log(getGColumn);
-                    this.tableData[getGColumn].rowList[getGRow].defaultCheck = 3;
+                    this.tableData[getGRow].rowList[getGColumn].defaultCheck = 3;
                 }
-                this.priorityData.push([getGColumn,getGRow]);
+                this.priorityData.push([getGRow,getGColumn]);
                 console.log(this.priorityData);
             },
             //教师规则的详细查看
             //场地规则查看
             async lookInfo(id){
+                this.initData();
                 let {data:{result,success}}=await this.$api.basic.teacher.fetchRule({ruleId:id});
                 console.log(result);
                 this.ruleInfo=result[0].ruleInfo;
@@ -585,9 +589,13 @@
                 console.log(addData);
                 let {data}=await this.$api.basic.teacher.saveRule(addData);
                 console.log(data);
-                this.saveVisit=false;
-                this.teacherRuleInfo();
-                this.initData();
+                if(data&&data.success){
+                    this.saveVisit=false;
+                    this.teacherRuleInfo();
+                    this.initData();
+                }else{
+                    message.info("保存失败！");
+                }
             },
             //关闭规则弹框
             handleCancel(){

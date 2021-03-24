@@ -43,6 +43,7 @@
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue"
     const columns = [
         {
             align: "center",

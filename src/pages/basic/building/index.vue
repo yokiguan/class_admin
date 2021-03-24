@@ -133,7 +133,6 @@
               message: "请输入数字"
             }
           ]
-
         }
       }
     },
@@ -141,6 +140,8 @@
       showModal() {
         this.changeTitle = '新增教学楼'
         this.show = true;
+        //清空表单的内容，如果不清空，会存在之前填的内容
+        this.form.resetFields();
       },
       //获取基本信息
       async gainBaseInfo(){

@@ -340,11 +340,43 @@
             },
             //设置普通按钮方法
             normalBtn(){
-                if(this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck === 0){
-                    // 修改颜色为绿色
-                    this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck = -1
+                let cellRow=0;
+                let cellColumn=0;
+                //设置多选
+                for(let i=0;i<this.cellCheck.length;i++){
+                    cellRow=this.cellCheck[i][0];
+                    cellColumn=this.cellCheck[i][1];
+                    console.log(this.cellCheck[i][0])
+                    console.log(this.cellCheck[i][1])
+                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
+                        // 修改颜色为白色
+                        this.tableData[cellRow].rowList[cellColumn].defaultCheck = -1
+                    }
                 }
-                this.setStore(this.tableData)
+                this.setStore(this.tableData);
+                for(let i in this.disableData){
+                    // console.log(this.disableData);
+                    let row=this.disableData[i][0];
+                    let col=this.disableData[i][1];
+                    // console.log(row);
+                    // console.log(col);
+                    if(cellRow==row &&cellColumn==col){
+                        this.disableData.splice(i,1);
+                    }
+                }
+                // console.log(this.disableData);
+                for(let i in this.priorityData){
+                    console.log(this.priorityData);
+                    let row=this.priorityData[i][0];
+                    let col=this.priorityData[i][1];
+                    console.log(row);
+                    console.log(col);
+                    if(this.defaultRow==row &&this.defaultColumn==col){
+                        this.priorityData.splice(i,1);
+                    }
+                }
+                // console.log(this.disableData);
+                console.log(this.priorityData);
             },
             //设置优先按钮方法
             priorityBtn(){

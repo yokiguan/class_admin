@@ -194,6 +194,7 @@
                 gradeId:"",
                 contrastModal:false,
                 loading:false,
+                teacherTotal:0,     //教师数据总数
                 pagination:{
                     total:0,    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
                     pageSize:20,    //默认每页显示的数据总数
@@ -210,47 +211,77 @@
                 },
             };
         },
-        created() {
+        async created() {
+            //获取planId
+            let queryString = (window.location.hash || " ").split(/[?&]/)[1];
+            let planId = (queryString || " ").split('=')[1];
+            // console.log(planId);
+            this.planId = planId;
+            //获取scheduleTaskId
+            let queryTaskString = (window.location.hash || " ").split(/[?&]/)[2];
+            let scheduleTaskId = (queryTaskString || " ").split('=')[1];
+            this.scheduleTaskId= scheduleTaskId;
+            // console.log( this.scheduleTaskId);
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name;
+                this.gradeId=result.gradeId;
+                console.log(this.gradeId);
+            }
             this.treeTeacher();
-            this.chooseCourseInfo();
         },
         methods: {
-            //获取单个选课计划信息
-            async chooseCourseInfo(){
-                //获取planId
-                let queryString = (window.location.hash || " ").split(/[?&]/)[1];
-                let planId = (queryString || " ").split('=')[1];
-                // console.log(planId);
-                this.planId = planId;
-                //获取scheduleTaskId
-                let queryTaskString = (window.location.hash || " ").split(/[?&]/)[2];
-                let scheduleTaskId = (queryTaskString || " ").split('=')[1];
-                this.scheduleTaskId= scheduleTaskId;
-                // console.log( this.scheduleTaskId);
-                if (planId) {
-                    //获取单个选课计划的信息
-                    let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
-                    this.planData = result.name;
-                    this.gradeId=result.gradeName;
-                }
-            },
             onCheck(checkedKeys) {
+                this.checkedKeys=[];
                 console.log('onCheck', checkedKeys);
                 this.checkedKeys=checkedKeys;
                 this.teacherInfo();
             },
             //获取左侧的教室树
             async treeTeacher(){
+                console.log(this.gradeId);
                 //根据年级信息调用接口
-                let {data}=await this.$api.basic.teacher.fetchTeacherList({gradeId:this.gradeId});
-                // console.log(data);
-                // console.log(data.rows);
-                this.treeData=[];
-                for(let i=0;i<data.rows.length;i++){
-                    let numberTree={};
-                    numberTree.title=data.rows[i].teacherName;
-                    numberTree.key=data.rows[i].teacherId;
-                    this.treeData.push(numberTree);
+                let {data}=await this.$api.schedule.classTask.searchTeacher({gradeId:this.gradeId});
+                console.log(data);
+                let addData=[];
+                if(data.success==true){
+                    this.treeData=[];
+                    let allData=data.result[0].gradeDtos;
+                    console.log(allData);
+                    for(let i=0;i<allData.length;i++){
+                        if(allData[i].teachers){
+                            let teachers=allData[i].teachers;
+                            for(let j=0;j<teachers.length;j++){
+                                let pushData={
+                                    teacherId:teachers[j].teacherId,
+                                    teacherName:teachers[j].teacherName,
+                                }
+                                addData.push(pushData);
+                            }
+                        }
+
+
+                    }
+                    console.log(addData);
+                    // for(let i=0;i<allData.length;i++){
+                    //     for(let j=i+1;j<allData.length;j++){
+                    //         if(allData[i]==allData[j]){
+                    //             for(let temp=j;temp<allData.length;temp++){
+                    //                 allData[temp]=allData[temp+1];
+                    //             }
+                    //             j--;
+                    //             allData.length--;
+                    //         }
+                    //     }
+                    // }
+                    console.log(allData);
+                    for(let i=0;i<addData.length;i++){
+                        let numberTree={};
+                        numberTree.title=addData[i].teacherName;
+                        numberTree.key=addData[i].teacherId;
+                        this.treeData.push(numberTree);
+                    }
                 }
             },
             //教师课表查看
@@ -264,7 +295,7 @@
                 console.log(data);
                 console.log(data.success);
                 if(data.success==false){
-                    message.info(data.message);
+                    message.info(data.code);
                 }else{
                     this.showTable=true;
                     this.allData=data.result.teacherCurriDtos;
@@ -421,7 +452,7 @@
         flex-direction:row;
     }
     .left{
-        width: 18%;
+        width: 20%;
         background-color: white;
         border-radius: 10px;
         display: flex;
@@ -430,7 +461,7 @@
     }
     .right{
         border-radius: 5px;
-        width: 81%;
+        width: 79%;
     }
     .title{
         width: 100%;

@@ -11,14 +11,13 @@
       <a-table :rowKey="'id'"
                :columns="columns"
                :dataSource="dataSource">
-        <div slot="operation" slot-scope="text, record">
-          <span @click="edit(record.id)">编辑</span>
+        <div slot="operation" slot-scope="text, record,index">
+          <span @click="edit(index)">编辑</span>
         </div>
       </a-table>
     </div>
-    <a-modal
-            :visible='editVisit'
-            width="400px"
+    <a-modal :visible='editVisit'
+             width="400px"
             :closable="false">
       <template slot="footer">
         <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
@@ -26,17 +25,16 @@
       </template>
       <template>
         <!--        v-model="checkedKeys"-->
-        <a-tree
-                v-model="checkedKeys"
-                checkable
+        <a-tree  v-model="chooseCourse"
+                 checkable
                 :checkedKeys="checkedKeys"
-                :tree-data="treeData"
-                @check="onCheck"/>
+                :tree-data="treeData"/>
       </template>
     </a-modal>
   </div>
 </template>
 <script>
+  import {message} from "ant-design-vue"
   const columns=[
     {
       title:'序号',
@@ -82,20 +80,20 @@
         checkedKeys: [],
         treeData:[],
         editText:-1,
+        chooseCourse:[],
       };
     },
     //查看规则详细信息
     async created(){
+      this.courseInfo();
       let {data}=await this.$api.basic.rule.fetchRuleList();
-      console.log(data);
-      this.dataSource=data.result;
-      console.log(this.dataSource)
-    },
-    //监测课程分支数据的获取
-    watch: {
-      checkedKeys(val) {
-        console.log('watchDataOfKeys', val);
-      },
+      // console.log(data);
+      if(data&&data.success){
+        this.dataSource=data.result;
+      }
+     else{
+       message.info("课程信息获取失败");
+      }
     },
     methods:{
       //编辑按钮的实现
@@ -103,75 +101,84 @@
         this.treeData = []
         this.checkedKeys = []
         this.editVisit=true;
-        let selectData = this.dataSource.filter(item => item.id === editId)
-        selectData[0].subChildIds.forEach((item)=>{
-          this.checkedKeys.push(item.subChildId)
-        })
-        //获取课程信息
-        let {data}=await this.$api.basic.subject.fetchSubjectList({subType:0})
-        console.log(data.result);
-        for(let i in data.result){
-          //第一层(级部）
-          let mainCourseTree={};
-          mainCourseTree.title=data.result[i].subName;
-          mainCourseTree.key=data.result[i].id;
-          if(data.result[i].subjectChildEntitys.length){
-            //第二层(年级）
-            mainCourseTree.children=[];
-            for(let j=0;j<data.result[i].subjectChildEntitys.length;j++){
-              let gradeItem=data.result[i].subjectChildEntitys[j];
-              let childData={}
-              childData.key=gradeItem.subChildId;
-              childData.title=gradeItem.name;
-              mainCourseTree.children.push(childData);
-            }
-          }
-          this.treeData.push(mainCourseTree);
-          // console.log(data.result[i]);
+        this.chooseCourse=[];
+        let selectData = this.dataSource[editId].subChildIds;
+        console.log("selectData",selectData);
+        for(let i=0;i<selectData.length;i++){
+          this.chooseCourse.push(selectData[i].subChildId);
         }
-        this.editText=this.dataSource.findIndex(item=>item.id==editId);
-        console.log(this.editText);
+        this.editText=editId;
+        this.courseInfo();
       },
-      onCheck(e) {
-        console.log('onCheck', e);
-      },
+    //获取课程信息
+    async courseInfo() {
+      //获取课程信息
+      let {data}=await this.$api.basic.subject.fetchSubjectList({subType:0})
+      console.log(data.result);
+      for(let i in data.result) {
+        //第一层(级部）
+        let mainCourseTree = {};
+        mainCourseTree.title = data.result[i].subName;
+        mainCourseTree.key = data.result[i].id;
+        if (data.result[i].subjectChildEntitys.length) {
+          //第二层(年级）
+          mainCourseTree.children = [];
+          for (let j = 0; j < data.result[i].subjectChildEntitys.length; j++) {
+            let gradeItem = data.result[i].subjectChildEntitys[j];
+            let childData = {}
+            childData.key = gradeItem.subChildId;
+            childData.title = gradeItem.name;
+            mainCourseTree.children.push(childData);
+          }
+        }
+        this.treeData.push(mainCourseTree);
+      }
+      console.log(this.treeData);
+    },
       //保存编辑信息
       async handleOk(){
-        console.log(this.checkedKeys);
-        let subChildIds = []
-        this.checkedKeys.forEach((item,index) =>{
-          let parentNode = this.treeData.filter(child => child.key === item)
-          console.log(parentNode);
-          if(parentNode.length > 0 && Object.prototype.hasOwnProperty.call(parentNode[0],'children')){
-            parentNode[0].children.forEach(chr=>{
-              console.log(chr.key);
-              subChildIds.push(chr.key)
-            });
-          }else{
-            console.log(item);
-            subChildIds.push(item)
-          }
-        })
-        for(let i=0;i<subChildIds.length-1;i++){
-          for(let j=i+1;j<subChildIds.length;j++){
-            console.log(subChildIds[i]);
-            console.log(subChildIds[j]);
-
-            if(subChildIds[i]==subChildIds[j]){
-              subChildIds[j]=subChildIds[j+1];
-              subChildIds.length=subChildIds.length-1
+        console.log(this.chooseCourse);
+        let course=[];
+        //获取父课程名
+        for(let i=0;i<this.treeData.length;i++){
+            for(let k in this.chooseCourse){
+              // console.log(this.treeData[i].key);
+              // console.log(this.chooseCourse[k]);
+                  if(this.treeData[i].key==this.chooseCourse[k]){
+                    course.push(this.chooseCourse[k]);
+                    // console.log(this.chooseCourse[k]);
+                  }
+            }
+        }
+        console.log(course);
+        //剔除父课程id
+        let resultCourse=[];
+        for(let i in this.chooseCourse){
+          for(let j in course){
+            if(this.chooseCourse[i]==course[j]){
+              for(let temp=j;temp<this.chooseCourse.length;temp++){
+                this.chooseCourse[temp]=this.chooseCourse[temp+1];
+              }
+              j--;
+              this.chooseCourse.length--;
             }
           }
         }
-        console.log(subChildIds);
-        this.checkedKeys= subChildIds;
-        console.log(this.checkedKeys);
-        this.editVisit=false;
-        let {data}=await this.$api.basic.rule.saveRuleItem({ id:this.dataSource[this.editText].id,subChildId:this.checkedKeys.join(',')})
-        if(data.success){
-          let {data}=await this.$api.basic.rule.fetchRuleList();
-          this.dataSource=data.result;
+        console.log(this.chooseCourse);
+        for(let i in this.chooseCourse){
+          if(this.chooseCourse[i]!=undefined){
+            resultCourse.push(this.chooseCourse[i]);
+          }
         }
+        console.log(resultCourse);
+        this.editVisit=false;
+        // let {data}=await this.$api.basic.rule.saveRuleItem({
+        //   id:this.dataSource[this.editText].id,subChildId:resultCourse.join(',')});
+        // console.log(this.data);
+        // if(data.success){
+        //   let {data}=await this.$api.basic.rule.fetchRuleList();
+        //   this.dataSource=data.result;
+        // }
       },
       //关闭编辑弹框
       handleCancel(){

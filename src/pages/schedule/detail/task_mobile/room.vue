@@ -330,6 +330,21 @@
                   console.log(dataSource);
                   this.tableData=dataSource;
                   console.log(this.tableData);
+                  for(let i=0;i<this.tableData.length;i++){
+                      // console.log(i,this.tableData[i]);
+                      if(this.tableData[i]===undefined){
+                          // console.log(i);
+                          let pushData={
+                              one:"",
+                              two:"",
+                              three:"",
+                              four:"",
+                              five:"",
+                          }
+                          this.tableData[i]=pushData;
+                          // this.tableData[i].one="";
+                      }
+                  }
                   //编号
                   for(let i=0;i<this.tableData.length;i++){
                       this.tableData[i].key=i+1;

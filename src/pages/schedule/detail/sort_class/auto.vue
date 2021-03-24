@@ -61,7 +61,7 @@
                 <a-input slot="classNum" slot-scope="classNum,recordClass,classIndex" v-model="classNum" @blur="changeClass(classNum,classIndex)"/>
                 <a-input slot="max" slot-scope="max,recordMax,maxIndex" v-model="max"  @blur="changeMax(max,maxIndex)"/>
                 <a-input slot="classTime" slot-scope="classTime,recordClassTime,timeIndex" v-model="classTime" @blur="changeClassTime(classTime,timeIndex)"/>
-                <a-button slot="action" slot-scope="text,record" @click="add(record.subId,record.id)" style="background-color:blue;color:white">添加</a-button>
+                <a-button slot="action" slot-scope="text,record,index" @click="add(record.subId,record.id,index)" style="background-color:blue;color:white">添加</a-button>
             </a-table>
             <div style="margin: 20px 0px 20px 40%">
                 <a-button type="primary" @click="saveAll" style="margin-right:40px;margin-top: 50px;width: 100px;height: 40px">保存</a-button>
@@ -120,6 +120,7 @@
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue"
     const columns = [
         {
             title:'',
@@ -237,6 +238,7 @@
                 courseId:"",
                 checkName:"",
                 checkId:"",
+                teaNames:[],
                 form:{
                     maxPerNum:0,
                     classNum:0,
@@ -295,12 +297,17 @@
             },
             //保存统一设置最大人数
             async handleOkMax(){
-                let {data}=await this.$api.schedule.sortClass.settingMaxNum({planId:this.planId,maxNum:parseInt(this.form.maxPerNum)});
+                let {data}=await this.$api.schedule.sortClass.settingMaxNum({
+                    planId:this.planId,
+                    maxNum:parseInt(this.form.maxPerNum)});
                 console.log(data);
-                if(data&&data.success){
-                    alert('最大人数设置成功！');
+                if(data.success==true){
+                    this.maxPerNumModal=false;
+                    message.info('最大人数设置成功！');
+                    this.lookAuto();
+                    this.form.maxPerNu="";
                 }
-                this.maxPerNumModal=false;
+
             },
             //关闭统一设置最大人数
             handleCancelMax(){
@@ -312,11 +319,14 @@
             },
             //保存统一设置课时数
             async handleOkTime(){
-                this.maxTimeNumModal=false;
-                let {data}=await this.$api.schedule.sortClass.settingTimeNum({planId:this.planId,lessonNum:parseInt(this.form.times)});
+                let {data}=await this.$api.schedule.sortClass.settingTimeNum({
+                    planId:this.planId,lessonNum:parseInt(this.form.times)});
                 console.log(data);
-                if(data&&data.success){
-                    alert('统一课时数设置成功！');
+                if(data.success==true){
+                    message.info('统一课时数设置成功！');
+                    this.lookAuto();
+                    this.maxTimeNumModal=false;
+                    this.form.times="";
                 }
             },
             //关闭统一设置课时数
@@ -326,7 +336,7 @@
             //改变所教班级数量
             async changeCapacity(num,index){
                 if(num===0){
-                    alert('所教班级个数为0,不能保存！')
+                    message.info('所教班级个数为0,不能保存！')
                 }else{
                     let pushData={
                         scheduleTeacherEntity:{
@@ -337,22 +347,49 @@
                         },
                         courseId:this.courseId,
                     }
-                    let {data}= await this.$api.schedule.sortClass.classAutoAlter(pushData);
+                    let {data}= await this.$api.schedule.sortClass.classAlterTeacherlist(pushData);
                     console.log(data);
                     if(data&&data.success){
-                        alert("保存成功");
+                        message.info("保存成功");
                         this.teacherList(this.subId);
+                    }
+                    console.log(this.treeData);
+                    console.log(this.teacherData);
+                    let allTeacherData=[];
+                    for(let i=0;i<this.teacherData.length;i++){
+                        allTeacherData.push(this.teacherData[i].teacherId);
+                    }
+                    console.log(allTeacherData);
+                    for(let i=0;i<this.treeData.length;i++){
+                        console.log(this.treeData)
+                        if(this.treeData[i].children){
+                            let children=this.treeData[i].children;
+                            for(let j=0;j<children.length;j++){
+                                for(let k=0;k<allTeacherData.length;k++){
+                                    if(allTeacherData[k]==children[j].key){
+                                        children[j].disableCheckbox=true;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
             //添加教师
-            add (subId,id) {
+            add (subId,id,index) {
                 // console.log(subId);
                 this.addVisit=true;
                 this.teacherInfo(subId);
                 this.teacherList(subId);
                 this.subId=subId;
                 this.courseId=id;
+                console.log(this.dataSource);
+                let teaData=this.dataSource[index].scheduleTeacherEntities;
+                    teaData.forEach(itemTea=>{
+                        console.log(itemTea);
+                        this.teaNames.push(itemTea.teacherId);
+                    })
+                console.log(this.teaNames);
             },
             //查看教师信息
             async teacherInfo(subId){
@@ -363,6 +400,7 @@
                   let numberTree={};
                   numberTree.title=result[i].departName+result[i].subjectChildEntity.name;
                   numberTree.key=result[i].id+result[i].subjectChildEntity.subChildId;
+                  numberTree.disableCheckbox=false;
                   numberTree.children=[];
                   if(result[i].schWxUserEntities.length){
                       for(let j=0;j<result[i].schWxUserEntities.length;j++){
@@ -370,12 +408,29 @@
                           let childData={};
                           childData.title=item[j].userName;
                           childData.key=item[j].wxUid;
+                          childData.disableCheckbox=false;
                           numberTree.children.push(childData);
                       }
                   }
                   this.treeData.push(numberTree);
                   console.log(this.treeData);
               }
+              for(let i=0;i<this.treeData.length;i++){
+                    // console.log(this.treeData)
+                    if(this.treeData[i].children){
+                        let children=this.treeData[i].children;
+                        for(let j=0;j<children.length;j++){
+                            for(let k=0;k<this.teaNames.length;k++){
+                                // console.log(children[j].key);
+                                // console.log(this.teaNames[k]);
+                                // console.log("=====================================");
+                                if(this.teaNames[k]==children[j].key){
+                                    children[j].disableCheckbox=true;
+                                }
+                            }
+                        }
+                    }
+                }
             },
             //查看教师列表
             async teacherList(subId){
@@ -412,7 +467,7 @@
                 const {  teacherCount, teacherData} = this;
                 console.log(this.checkName);
                 if(this.checkName===" "){
-                    alert("没有选择老师，请选择老师！")
+                    message.info("没有选择老师，请选择老师！")
                 }else{
                     const newData = {
                         capacity:0,
@@ -427,6 +482,7 @@
             //关闭添加弹框
             handleCancel() {
                 this.addVisit=false;
+                this.lookAuto();
             },
             //选择老师
             onCheck(check){
@@ -443,7 +499,6 @@
                             }
                         }
                     }
-
                 };
                 console.log(this.checkName);
             },
@@ -473,21 +528,6 @@
                     message.info("保存失败");
                 }
             },
-            //根据教师姓名查找老师信息
-            // async inputTeacher(){
-            //     // //只根据姓名查找教师信息
-            //     let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({teacherName:this.form.teacherName});
-            //     console.log(this.treeData);
-            //     for(let i in this.treeData){
-            //         for (let j in this.treeData.children){
-            //             if(this.form.teacherName==this.treeData[i].children[j].title){
-            //                 this.checkedKeys==this.form.teacherName;
-            //                 this.checkName==this.form.teacherName;
-            //             }
-            //         }
-            //     }
-            //     console.log(allTeacherData);
-            // },
         }
     };
 </script>
