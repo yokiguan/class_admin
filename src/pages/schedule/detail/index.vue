@@ -101,7 +101,7 @@
     },
     {
       icon: "snippets",
-      text: "选课分班",
+      text: "选择老师",
     },
     {
       icon: "schedule",
@@ -139,7 +139,7 @@
     },
     {
       icon: "snippets",
-      text: "选课分班",
+      text: "选择老师",
     },
     {
       icon: "schedule",
@@ -158,22 +158,6 @@
     {
       icon: "edit",
       text: "修改",
-    },
-    {
-      icon: "setting",
-      text: "选课设置",
-    },
-    {
-      icon: "cloud-upload",
-      text: "发布选课",
-    },
-    {
-      icon: "pie-chart",
-      text: "选课统计",
-    },
-    {
-      icon: "snippets",
-      text: "选课分班",
     },
     {
       icon: "schedule",
@@ -233,7 +217,7 @@
           name:"",
           term:"",
           gradeId:"",
-          type:"",
+          type:[],
         },
         rules:{
           name:[
@@ -269,15 +253,15 @@
     },
     created(){
       this.lookInfo();
+      this.grade();
+      this.termInf();
     },
     methods: {
       //主界面的按钮
       goDetail(item) {
         if(item.text==='修改'){
           this.editVisit=true;
-          this.grade();
           this.editInfo();
-          this.termInf();
         }else if(item.text==='选课设置'){
           this.$router.push(`/schedule/detail/setting?planId=${this.planId}`)
         }else if(item.text==='发布选课'){
@@ -285,8 +269,8 @@
           this.lookPublicStudent();
         }else if(item.text==='选课统计'){
           this.$router.push( `/schedule/detail/statistics?planId=${this.planId}`)
-        }else if(item.text==='选课分班'){
-          this.$router.push(`/schedule/detail/sort_class/admin?planId=${this.planId}`)
+        }else if(item.text==='选择老师'){
+          this.$router.push(`/schedule/detail/sort_class/auto?planId=${this.planId}`)
         }else if(item.text==='选课排课'){
           this.$router.push(`/schedule/detail/sort_course/index?planId=${this.planId}`)
         }else if(item.text==='行政班排课'){
@@ -314,18 +298,28 @@
             this.operationList=this.operationListAdmin;
           }
         }
-        console.log(this.operationList)
+        // console.log(this.operationList)
       },
       //修改信息
       async editInfo(){
         this.planId = window.location.href.split('?')[1].split('=')[1];
-        let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
-        console.log(result);
-        this.form.name=result.name;
-        this.form.term=result.term;
-        this.form.gradeId=result.gradeName;
-        console.log(result.type);
-        this.form.type=result.type==0?['走班排课']:result.type==1?['行政班课']:['走班排课','行政班课'];
+        let {data}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
+        console.log(data.result);
+        if(data&&data.success){
+          this.form.name=data.result.name;
+          this.form.term=data.result.term;
+          this.form.gradeId=data.result.gradeName;
+          console.log(data.result.type);
+        }
+        let type=[];
+        if(data.result.type==0){
+          type=["走班排课"];
+        }else if(data.result.type==0){
+          type=["行政班课"];
+        }else{
+          type=["走班排课","行政班课"];
+        }
+        this.form.type=type;
       },
       //查看发布选课学生
       async lookPublicStudent(){
@@ -344,6 +338,15 @@
       },
       //保存排课计划
       async handleOk(){
+        let type=null;
+        console.log(this.form.type.toString());
+        if(this.form.type.toString()=="走班排课"){
+          type=0;
+        }else if(this.form.type.toString()=="行政班课"){
+          type=1;
+        }else{
+          type=2;
+        }
         if(this.form.name==undefined||this.form.term==undefined||this.form.gradeId==undefined){
           message.info('输入信息不能为空！')
         }else{
@@ -352,7 +355,7 @@
             name:this.form.name,
             term:this.form.term,
             gradeId:this.form.gradeId,
-            type:this.form.type=='行政班课'?1:(this.form.type=='走班课'?0:2),
+            type:type,
           };
           let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
           console.log(data);

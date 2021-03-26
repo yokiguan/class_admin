@@ -19,7 +19,7 @@
                 <a-col :span="12">
                     <a-row>
                         <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changeTime">修改选课时间</a-button></a-col>
-                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>
+<!--                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>-->
                         <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
                     </a-row>
                 </a-col>
@@ -31,7 +31,7 @@
                 :visible="changeChooseTimeModal"
                 :closable="false">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
             <div class="chooseData">
@@ -87,8 +87,8 @@
                 width="600px"
                 :closable="false">
             <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
-                <a-button key="back" @click="handleCancel">取消</a-button>
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOkTeacher">保存</a-button>
+                <a-button key="back" @click="handleCancelTeacher">取消</a-button>
             </template>
             <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}" style="">
                 <a-form-model-item label="未选课人员：" prop="unStudent" ref="unStudent">
@@ -103,7 +103,7 @@
     </div>
 </template>
 <script>
-    import CreateModal from "../../../../components/modal/CreateModal";
+    import {message} from "ant-design-vue"
     import moment from "moment";
     const columns = [{
         title: '',
@@ -197,6 +197,8 @@
                     this.result = result;
                     this.planData = result.name
                     console.log(this.result);
+                    this.form.startChooseTime=this.result.timeLimit.split(" - ")[0];
+                    this.form.endChooseTime=this.result.timeLimit.split(" - ")[1];
                 }
             },
             //选课结果详细信息查看
@@ -259,14 +261,28 @@
                 console.log( this.unChooseNums);
             },
             async handleOk(id) {
-                id=this.planId;
+                id = this.planId;
                 //保存选课时间
                 //修改选课时间alterTime
-                let timeLimit=this.form.startChooseTime+"——"+this.form.endChooseTime
-                let addData={id,timeLimit}
-                let {data:changeChooseTime}=await this.$api.schedule.statics.alterTime(addData);
-                console.log(changeChooseTime)
-                ////将未选课的学生添加进已选课程中
+                console.log(this.form.startChooseTime);
+                if (this.form.startChooseTime == null || this.form.endChooseTime == null) {
+                    message.warning("请检查输入信息是否为空！")
+                } else {
+                    let timeLimit = this.form.startChooseTime + "——" + this.form.endChooseTime
+                    let addData = {id, timeLimit}
+                    let {data} = await this.$api.schedule.statics.alterTime(addData);
+                    console.log(data)
+                    if(data&&data.success){
+                        message.success("保存成功！");
+                        this.chooseCourseInfo();
+                    }
+                    else{
+                        message.error(data.message);
+                    }
+                }
+            },
+            ////将未选课的学生添加进已选课程中
+            async handleOkTeacher(){
                 let {data:saveData}=await this.$api.schedule.statics.alterResultButtonResult({planId:this.planId,subId:this.subId,stuIdList:this.form.unStudent})
                 console.log(saveData);
                 this.changeChooseTimeModal=false;
@@ -276,15 +292,17 @@
                this.chooseCourseInfo();
             },
             handleCancel() {
-                this.addVisit = false;
                 this.changeChooseTimeModal=false;
+            },
+            handleCancelTeacher(){
+                this.addVisit = false;
             },
             back(){
                 this.$router.go(-1)
             },
-            Clear(){
-                this. classData=[]
-            },
+            // Clear(){
+            //     this. classData=[]
+            // },
             //删除已选课的学生
             async handleClose(removedTag) {
                let mineIds = []

@@ -129,10 +129,10 @@
                 scheduleTaskId:"",
                 showTable:false,
                 gradeName:"",
+                gradeId:"",
             };
         },
         created() {
-            this.treeTeacher();
             this.chooseCourseInfo();
         },
         methods: {
@@ -153,26 +153,61 @@
                     let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                     this.planData = result.name;
                     this.gradeName=result.gradeName;
+                    this.gradeId=result.gradeId;
+                    console.log(this.gradeId);
                 }
+                this.treeTeacher();
             },
             onCheck(checkedKeys) {
                 console.log('onCheck', checkedKeys);
                 this.checkedKeys=checkedKeys;
-
                 this.teacherInfo();
             },
-            //获取左侧的教室树
             async treeTeacher(){
+                console.log(this.gradeId);
                 //根据年级信息调用接口
-                let {data}=await this.$api.basic.teacher.fetchTeacherList({gradeId:this.gradeId});
-                // console.log(data);
-                // console.log(data.rows);
-                this.treeData=[];
-                for(let i=0;i<data.rows.length;i++){
-                    let numberTree={};
-                    numberTree.title=data.rows[i].teacherName;
-                    numberTree.key=data.rows[i].teacherId;
-                    this.treeData.push(numberTree);
+                let {data}=await this.$api.schedule.classTask.searchTeacher({gradeId:this.gradeId});
+                console.log(data);
+                let addData=[];
+                if(data.success==true){
+                    this.treeData=[];
+                   if(data.result){
+                       let allData=data.result[0].gradeDtos;
+                       console.log(allData);
+                       for(let i=0;i<allData.length;i++){
+                           if(allData[i].teachers){
+                               let teachers=allData[i].teachers;
+                               for(let j=0;j<teachers.length;j++){
+                                   let pushData={
+                                       teacherId:teachers[j].teacherId,
+                                       teacherName:teachers[j].teacherName,
+                                   }
+                                   addData.push(pushData);
+                               }
+                           }
+
+
+                       }
+                       console.log(addData);
+                       // for(let i=0;i<allData.length;i++){
+                       //     for(let j=i+1;j<allData.length;j++){
+                       //         if(allData[i]==allData[j]){
+                       //             for(let temp=j;temp<allData.length;temp++){
+                       //                 allData[temp]=allData[temp+1];
+                       //             }
+                       //             j--;
+                       //             allData.length--;
+                       //         }
+                       //     }
+                       // }
+                       console.log(allData);
+                       for(let i=0;i<addData.length;i++){
+                           let numberTree={};
+                           numberTree.title=addData[i].teacherName;
+                           numberTree.key=addData[i].teacherId;
+                           this.treeData.push(numberTree);
+                       }
+                   }
                 }
             },
             //教师课表查看
@@ -185,7 +220,7 @@
                 // console.log(this.allData);
                 console.log(data.success);
               if(data.success==false){
-                  message.info(data.code);
+                  message.info(data.message);
               }else{
                   console.log(data.result);
                   this.allData=data.result.teacherCurriDtos;

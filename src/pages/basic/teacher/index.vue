@@ -9,17 +9,8 @@
     </div>
     <a-card>
     <a-form-model layout="horizontal" :form="form" >
-      <a-row>
-        <a-col :md="7" :sm="24">
-          <a-form-model-item label="级部" :labelCol="{ span: 3 }" :wrapperCol="{ span: 15, offset: 1 }">
-            <a-select placeholder="请选择"  v-model="form.adminId" @change="handleAdminChange">
-              <a-select-option v-for="(admin,index) in this.adminData" :key="index">
-                {{admin.adminName}}
-              </a-select-option>
-            </a-select>
-          </a-form-model-item>
-        </a-col>
-        <a-col :md="7" :sm="24">
+      <a-row >
+        <a-col :span="7" style="margin-left: 100px">
           <a-form-model-item label="年级" :labelCol="{ span: 3}" :wrapperCol="{ span: 15, offset: 1 }">
             <a-select placeholder="请选择" v-model="form.gradeId" @change="handleGradeChange">
               <a-select-option v-for="(grade,index) in this.gradeData" :key="index">
@@ -28,10 +19,13 @@
             </a-select>
           </a-form-model-item>
         </a-col>
-        <a-col :md="7" :sm="24">
+        <a-col :span="7" style="margin-left: 50px">
           <a-form-model-item label="按姓名查找" :labelCol="{ span: 5 }" :wrapperCol="{ span: 15, offset: 1 }">
            <a-input-search placeholder="请输入老师姓名"  v-model="form.teacherName" @search="onSearch"/>
           </a-form-model-item>
+        </a-col>
+        <a-col :span="7">
+          <a-button @click="clear" style="float: right;margin-right: 150px" type="primary">重置</a-button>
         </a-col>
       </a-row>
     </a-form-model>
@@ -41,8 +35,8 @@
               :dataSource="dataSource"
               @change="handleTableChange">
         <div slot="operation" slot-scope="text,record,index">
-          <span @click="edit(record.teacherId)">编辑</span>|
-          <span @click="settingRule">规则设置</span>
+          <a @click="edit(record.teacherId)">编辑</a>|
+          <a @click="settingRule(record.teacherId)">规则设置</a>
         </div>
       </a-table>
     <a-modal :visible='editVisit'
@@ -194,7 +188,8 @@
       // console.log(result);
       //获取级部
       this.adminData=result;
-      // console.log(this.adminData);
+      console.log(this.adminData);
+      this.gradeData=this.adminData[0].adminGrades
       this.allTeacher();
     },
     methods: {
@@ -206,12 +201,8 @@
         this.queryParam.size=pagination.pageSize;
         console.log(this.pagination.current)
         console.log(this.pagination.pageSize);
-        if(this.form.adminId!=undefined){
-          if(this.form.gradeId!=undefined){
-            this.handleGradeChange();
-          }else{
-            this.handleAdminChange();
-          }
+        if(this.form.gradeId!=undefined){
+          this.handleGradeChange();
         }else{
           this.onSearch();
         }
@@ -227,22 +218,6 @@
         pagination.total=allTeacherData.total;
         this.pagination=pagination;
       },
-      //级部监听
-       async handleAdminChange(){
-        for (let i=0;i<this.adminData.length;i++){
-          if(i==this.form.adminId){
-            // //获取年级
-            this.gradeData=this.adminData[i].adminGrades,
-            console.log(this.gradeData)
-            // // //根据年级选择教师
-            let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,adminId: this.adminData[i].adminId});
-            console.log(data.rows);
-            const pagination={...this.pagination};
-            pagination.total=data.total;
-            this.pagination=pagination;
-          }
-        }
-      },
       //年级监听
        async handleGradeChange(){
          this.gradeIds=this.form.gradeId;
@@ -250,9 +225,11 @@
         console.log(this.form.gradeId)
         for (let i=0;i<this.gradeData.length;i++){
           if(i==this.form.gradeId){
-            console.log(this.adminData[this.form.adminId].adminId)
             //根据年级信息调用接口
-            let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,adminId:this.adminData[this.form.adminId].adminId,gradeId:this.gradeData[i].gradeId});
+            let {data}=await this.$api.basic.teacher.fetchTeacherList({
+              rowCount: this.queryParam.size,
+              current:this.queryParam.page,
+              gradeId:this.gradeData[i].gradeId});
             console.log(data);
             this.dataSource=data.rows;
             const pagination={...this.pagination};
@@ -264,9 +241,12 @@
        async onSearch(value) {
         console.log(value);
         console.log(this.form.teacherName);
-        if(this.form.adminId==undefined||this.form.gradeId==undefined){
+        if(this.form.gradeId==undefined){
           // //只根据姓名查找教师信息
-          let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,teacherName:this.form.teacherName});
+          let {data:allTeacherData}=await this.$api.basic.teacher.fetchAllTeacherList({
+            rowCount: this.queryParam.size,
+            current:this.queryParam.page,
+            teacherName:this.form.teacherName});
           console.log(allTeacherData);
           this.dataSource=allTeacherData.rows;
           console.log(this.dataSource)
@@ -274,13 +254,20 @@
           pagination.total=allTeacherData.total;
           this.pagination=pagination;
         }else {
-          let {data}=await this.$api.basic.teacher.fetchTeacherList({rowCount: this.queryParam.size,current:this.queryParam.page,adminId: this.adminData[this.form.adminId].adminId,gradeId: this.gradeData[this.form.gradeId].gradeId,teacherName: this.form.teacherName})
+          let {data}=await this.$api.basic.teacher.fetchTeacherList({
+            rowCount: this.queryParam.size,current:this.queryParam.page,
+            gradeId: this.gradeData[this.form.gradeId].gradeId,teacherName: this.form.teacherName})
           console.log(data)
           this.dataSource=data.rows;
           const pagination={...this.pagination};
           pagination.total=data.total;;
           this.pagination=pagination;
         }
+      },
+      //重置
+      clear(){
+          this.form.gradeId="";
+          this.form.teacherName="";
       },
       //获取所属课程信息
       async getCourseInfo(editId){
@@ -456,16 +443,12 @@
         if(data&&data.success){
           message.info("修改老师成功");
           this.form.course=[];
-          if(this.form.adminId!=undefined){
-            if(this.form.gradeId!=undefined){
+          if(this.form.gradeId!=undefined){
               if(this.form.teacherName!=undefined){
                 this.onSearch();
               }else{
                 this.handleGradeChange();
               }
-            }else{
-              this.handleAdminChange();
-            }
           }else{
             this.allTeacher();
           }

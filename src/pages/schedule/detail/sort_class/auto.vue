@@ -18,7 +18,6 @@
                     <a-row>
                         <a-button style="width: 150px;height: 40px;background-color: #1abc9c;color: white" @click="maxNum">统一设置最大人数</a-button>
                         <a-button style="margin-left:50px;width: 150px;height: 40px;background-color: #1abc9c;color: white" @click="timeNum">统一设置课时数</a-button>
-                        <button style="margin-left:50px;width: 100px;height: 40px;background-color: blue;color: white;border-radius: 5px;border: none" @click="back">返回</button>
                     </a-row>
                 </a-col>
             </a-row>
@@ -65,7 +64,7 @@
             </a-table>
             <div style="margin: 20px 0px 20px 40%">
                 <a-button type="primary" @click="saveAll" style="margin-right:40px;margin-top: 50px;width: 100px;height: 40px">保存</a-button>
-                <a-button type="primary" style="width: 100px;height: 40px">返回</a-button>
+                <a-button type="primary" style="width: 100px;height: 40px" @click="back">返回</a-button>
             </div>
         </div>
 <!--        添加-->

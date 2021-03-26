@@ -22,34 +22,22 @@
                 <div style="width: 100%; height: 1px;
             margin-top: 10px;
             border-top: solid black 1px;"></div>
-                <div>
-                    <a-tree v-model="checkedKeys"
-                            :tree-data="treeData"
-                            checkable
-                            @check="onCheck"
-                            style="font-size: 1.3em;"/>
-                </div>
+                <a-tree v-model="checkedKeys"
+                        :tree-data="treeData"
+                        @check="onCheck"
+                        style="font-size: 1.3em;"/>
             </a-card>
             <div class="right">
                 <div class="title">
                     <a-row>
                         <a-col><span style="font-size:1.5em">{{this.planData}}</span></a-col>
-                        <a-col :span="20"><button style="background-color: #19b294;
+                        <a-col><button style="background-color: #19b294;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px" @click="studentContrast">查看冲突</button></a-col>
-                        <a-col>
-                            <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        float: right;
-                        width: 150px" @click="back">返回</button>
-                        </a-col>
+                        width: 150px" @click="back">返回</button></a-col>
                     </a-row>
                 </div>
                 <div class="table-bg">
@@ -111,21 +99,6 @@
                      style="">
             </a-table>
         </a-modal>
-<!--        冲突查看-->
-        <a-modal :visible="contrastModal"
-                 :closable="false">
-            <template slot="footer">
-                <a-button key="back" @click="handleCancelContr">取消</a-button>
-            </template>
-            <div class="right_title"><h3 style="color: white;padding-top: 8px;margin-left: 15px">查看学生冲突(共{{pagination.total}}名学生发生冲突)</h3></div>
-            <a-table :rowKey="'id'"
-                     :columns="stuColumns"
-                     :data-source="stuTableData"
-                     :pagination="pagination"
-                     :bordered="true"
-                     @change="handleTableChange"
-                     style="margin-top: 20px;"/>
-        </a-modal>
     </div>
 </template>
 <script>
@@ -181,31 +154,6 @@
             align:'center'
         },
     ];
-    const stuColumns=[
-        {
-            title:'',
-            dataIndex:'id',
-            align:'center',
-            customRender: function(t, r, index) {
-                return parseInt(index) + 1
-            }
-        },
-        {
-            title:'学生',
-            dataIndex:'studentName',
-            align:'center',
-        },
-        {
-            title:'课程班',
-            dataIndex:'course',
-            align:'center'
-        },
-        {
-            title:'说明',
-            dataIndex:'information',
-            align:'center'
-        },
-    ]
     export default {
         data() {
             return {
@@ -218,6 +166,7 @@
                 planId:"",
                 scheduleTaskId:"",
                 studentName:"",
+                scheduleStuId:"",
                 visible: false,
                 loading: false,
                 checkedKeys:[],
@@ -227,9 +176,6 @@
                 selectedRows:[],
                 stuId:"",
                 showTable:false,
-                contrastModal:false,
-                stuColumns,
-                stuTableData:[],
                 pagination:{
                     total:0,    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
                     pageSize:20,    //默认每页显示的数据总数
@@ -256,13 +202,20 @@
                 //获取planId
                 let queryString = (window.location.hash || " ").split(/[?&]/)[1];
                 let planId = (queryString || " ").split('=')[1];
-                // console.log(planId);
+                console.log(queryString);
+                console.log(planId);
                 this.planId = planId;
                 //获取scheduleTaskId
                 let queryTaskString = (window.location.hash || " ").split(/[?&]/)[2];
                 let scheduleTaskId = (queryTaskString || " ").split('=')[1];
                 this.scheduleTaskId= scheduleTaskId;
-                // console.log( this.scheduleTaskId);
+                console.log( queryTaskString);
+                console.log( this.scheduleTaskId);
+                let queryStuString = (window.location.hash || " ").split(/[?&]/)[3];
+                let StuId = (queryStuString || " ").split('=')[1];
+                this.scheduleStuId= StuId;
+                console.log( queryStuString);
+                console.log( this.scheduleStuId);
                 if (planId) {
                     //获取单个选课计划的信息
                     let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
@@ -418,50 +371,6 @@
             //按学生查看
             studentLook(){
                 this.$router.push(`/schedule/detail/task_mobile/student?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
-            },
-            //查看学生冲突
-            studentContrast(){
-                this.contrastModal=true;
-                this.lookConflict();
-            },
-            //查看学生冲突接口
-            async lookConflict(){
-                let {data}=await this.$api.schedule.classTask.contrastLook({rowCount: this.queryParam.size,current:this.queryParam.page,planId:this.planId,scheduleTaskId:this.scheduleTaskId});
-                let addData=[];
-                console.log(data);
-                addData=data.rows;
-                console.log(addData);
-                for(let i=0;i<addData.length;i++){
-                    let course = (addData[i].info || " ").split('---')[0];
-                    // console.log(course);
-                    let information = (addData[i].info || " ").split('---')[1];
-                    // console.log(information);
-                    let pushData={
-                        id:addData[i].id,
-                        studentName:addData[i].schWxUserEntity.userName,
-                        course:course,
-                        information:information,
-                    }
-                    this.stuTableData.push(pushData);
-                }
-                console.log(this.stuTableData);
-                const pagination={...this.pagination};
-                pagination.total=data.total;
-                this.pagination=pagination;
-            },
-            //表格监听
-            async handleTableChange(pagination) {
-                this.pagination.current = pagination.current;
-                this.pagination.pageSize = pagination.pageSize;
-                this.queryParam.page = pagination.current;
-                this.queryParam.size = pagination.pageSize;
-                console.log(this.pagination.current)
-                console.log(this.pagination.pageSize);
-                this.lookConflict();
-            },
-            //关闭学生冲突弹框
-            handleCancelContr(){
-                this.contrastModal=false;
             },
             //返回
             back(){

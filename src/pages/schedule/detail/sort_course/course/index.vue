@@ -46,7 +46,7 @@
                     <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
                 </a-row>
                 <div class="table-content">
-                    <a-table :rowKey="'id'"
+                    <a-table :rowKey="'subId'"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
@@ -143,7 +143,7 @@
     const columns=[
         {
           title:'',
-          dataIndex:'id',
+          dataIndex:'subId',
           align:'center',
           customRender: function(t, r, index) {
               return parseInt(index) + 1
@@ -151,11 +151,11 @@
         },
         {
             title: '课程名称',
-            dataIndex: 'className',
+            dataIndex: 'subName',
             align:'center',
         },{
             title:'老师',
-            dataIndex:'userName',
+            dataIndex:'teacherName',
             align:'center',
         },{
             title:'每周课时',

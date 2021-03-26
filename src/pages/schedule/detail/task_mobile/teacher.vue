@@ -19,7 +19,6 @@
                 <div>
                     <a-tree v-model="checkedKeys"
                             :tree-data="treeData"
-                            checkable
                             @check="onCheck"
                             style="font-size: 1.3em;"/>
                 </div>
@@ -95,6 +94,7 @@
                 </a-card>
             </div>
         </div>
+<!--        查看学生冲突弹框-->
         <a-modal :visible="contrastModal"
                  :closable="false">
             <template slot="footer">
@@ -107,7 +107,11 @@
                      :pagination="pagination"
                      :bordered="true"
                      @change="handleTableChange"
-                    style="margin-top: 20px"/>
+                    style="margin-top: 20px">
+                <template slot="operation" slot-scope="text,record">
+                    <a-button type="primary" @click="lookInfo(record.id)">查看</a-button>
+                </template>
+            </a-table>
         </a-modal>
     </div>
 </template>
@@ -176,6 +180,11 @@
             title:'说明',
             dataIndex:'information',
             align:'center'
+        },{
+            title:'操作',
+            dataIndex:'opt',
+            align:'center',
+            scopedSlots:{customRender:"operation"}
         },
     ];
     export default {
@@ -382,6 +391,11 @@
                 const pagination={...this.pagination};
                 pagination.total=data.total;
                 this.pagination=pagination;
+            },
+            //学生冲突详细信息查看
+            lookInfo(id){
+                console.log(id);
+                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}&stuId=${id}`);
             },
             //表格监听
             async handleTableChange(pagination) {

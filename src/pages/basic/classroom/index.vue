@@ -34,8 +34,7 @@
         </template>
       </a-table>
     </div>
-    <a-modal
-            :title="changeTitle"
+    <a-modal :title="changeTitle"
             :visible="show"
             :closable="false">
       <template slot="footer">
@@ -71,7 +70,7 @@
           <a-input v-model="form.capacity" placeholder="请输入你想要新增的场地容量"></a-input>
         </a-form-model-item>
         <a-form-item label="状态" ref="status" prop="status">
-          <a-switch v-model="form.status" />
+          <a-switch v-model="form.status"/>
         </a-form-item>
       </a-form-model>
     </a-modal>
@@ -81,10 +80,9 @@
 
 <script>
   import {message} from "ant-design-vue";
-  import Templet from "../templet/index";
   const columns = [
     {
-      title: "教室编号",
+      title: "序号",
       dataIndex: "roomId",
       align:'center',
       customRender: function(t, r, index) {
@@ -176,7 +174,7 @@
           type: '',
           buildingId:"",
           capacity:'',
-          status:false,
+          status:true,
         },
         rules:{
           classroomName:[
@@ -186,6 +184,13 @@
               trigger:"blur"
             }
           ],
+          buildingId:[
+            {
+              required:true,
+              message:"请选择所属教学楼！",
+              trigger:"change"
+            }
+          ],
           floor:[
             {
               required:true,
@@ -193,14 +198,10 @@
               trigger:"blur"
             }
           ],
-          type: [
-            { required: true, message: '请选择教室类型', trigger: 'change' }
-          ],
-          buildingId:[
-            {
-              required:true,
-              message:"请输入教室名称！",
-              trigger:"blur"
+          type: [{
+              required: true,
+              message: '请选择教室类型',
+              trigger: 'change'
             }
           ],
           capacity:[
@@ -245,7 +246,7 @@
       showModal() {
          this.changeTitle='新增教室'
          this.show = true;
-         this.form.status=false;
+         this.form.status=true;
          this.form.classroomName="";
          this.form.buildingId="";
         this.form.floor="";
@@ -254,39 +255,43 @@
       },
       //保存弹窗
       async handleOk() {
-        if(this.changeTitle=="新增教室") {
-          console.log(this.form.status);
-          let formData = {
-            name:this.form.classroomName,
-            buildingId:this.form.buildingId,
-            floor:this.form.floor,
-            capacity: Number(this.form.capacity),
-            type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1:2,
-            status: this.form.status==true?1:0,
-            subId: 1
-          };
-          console.log(formData)
-          let addData = { ...formData};
-          let res = await this.$api.basic.classroom.saveClassRoom(addData);
-          console.log(res);
-          this.buildingInfo();
-          this.show = false;
+        if(this.form.classroomName==""||this.form.buildingId=="" ||this.form.floor=="" ||this.form.capacity==""){
+          message.warning("保存失败,请检查输入数据是否有空");
         }else{
-          let formData = {
-            roomId:this.dataSource[this.editText].roomId,
-            name:this.form.classroomName,
-            buildingId:this.form.buildingId,
-            floor:this.form.floor,
-            capacity: Number(this.form.capacity),
-            type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1 :2,
-            status: this.form.status ? 1 : 0,
-            subId: 1
-          };
-          let addData = { ...formData};
-          let {data:saveData} = await this.$api.basic.classroom.saveClassRoom(addData);
-          let { data:classroomData } = await this.$api.basic.classroom.fetchList();
-          this.dataSource=classroomData.rows;
-          this.show = false;
+          if(this.changeTitle=="新增教室") {
+            console.log(this.form.status);
+            let formData = {
+              name:this.form.classroomName,
+              buildingId:this.form.buildingId,
+              floor:this.form.floor,
+              capacity: Number(this.form.capacity),
+              type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1:2,
+              status: this.form.status==true?1:0,
+              subId: 1
+            };
+            console.log(formData)
+            let addData = { ...formData};
+            let res = await this.$api.basic.classroom.saveClassRoom(addData);
+            console.log(res);
+            this.buildingInfo();
+            this.show = false;
+          }else{
+            let formData = {
+              roomId:this.dataSource[this.editText].roomId,
+              name:this.form.classroomName,
+              buildingId:this.form.buildingId,
+              floor:this.form.floor,
+              capacity: Number(this.form.capacity),
+              type:this.form.type=='专业教学场地'?0:this.form.type=='公共教学场地'?1 :2,
+              status: this.form.status ? 1 : 0,
+              subId: 1
+            };
+            let addData = { ...formData};
+            let {data:saveData} = await this.$api.basic.classroom.saveClassRoom(addData);
+            let { data:classroomData } = await this.$api.basic.classroom.fetchList();
+            this.dataSource=classroomData.rows;
+            this.show = false;
+          }
         }
       },
       //关闭弹窗
@@ -304,7 +309,9 @@
       },
       //跳转至规则设置
       gotoNew(id) {
-        this.$router.push("/basic/classroom/rule?id=" + id);
+        // console.log(this.dataSource);
+        // console.log(id);
+        this.$router.push("/basic/classroom/rule?id=" +id);
       },
       //编辑教室弹框
       edit(id){
@@ -336,9 +343,9 @@
         console.log(data);
         if(data&&data.success){
           this.buildingInfo();
-          message.info('删除成功')
+          message.success('删除成功')
         } else{
-          message.info('删除失败')
+          message.warning(data.message);
         }
       },
     }

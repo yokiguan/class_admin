@@ -42,18 +42,8 @@
                             <a-input :value="text" style="float: left;width: 200px" disabled/>
                             <a-icon type="edit"  style="color: #00ccff;font-size: 25px;font-weight: bold; float:right" @click="edit(index1,index2)"/>
                         </template>
-                        <a-icon type="close" slot="blank" slot-scope="text,record,index2" style="font-weight: bolder;font-size: 30px;color: #0099ff" @click="delet(index1,index2)" />
                     </a-table>
-                    <span slot="add" style="color:blue;margin-top: 20px;float: left;font-size: 18px;margin-left: 10px" @click="addSubject(index1)">+添加学科</span>
                 </div>
-                <template slot="action" slot-scope="text, record,index">
-                    <a-popconfirm
-                            v-if="data.length"
-                            title="确认删除?"
-                            @confirm="() => onDelete(index)">
-                        <a href="javascript:;">删除</a>
-                    </a-popconfirm>
-                </template>
             </a-table>
             <button style="background-color: #00ccff;
                         color: white;
@@ -73,18 +63,7 @@
                 <a-button key="Save" type="primary" :loading="loading" @click="handleOkTeacher">保存</a-button>
                 <a-button key="back" @click="handleCancelTeacher">取消</a-button>
             </template>
-            <a-radio-group v-model="form.teacherName" :options="optionTeacher" @change="chooseTeacher" />
-        </a-modal>
-<!--        添加课程弹框-->
-        <a-modal  title="添加学科"
-                  :visible="addSubjectVisit"
-                  :closable="false">
-            <template slot="footer">
-                <a-button key="Save" type="primary" :loading="loading" @click="handleOkSubject">保存</a-button>
-                <a-button key="back" @click="handleCancelSubject">取消</a-button>
-            </template>
-<!--            @check="onCheck"-->
-            <a-radio-group v-model="subjects" :options="options" @change="chooseSubject"/>
+            <a-radio-group v-model="form.teacherName" :options="optionTeacher"/>
         </a-modal>
     </div>
 </template>
@@ -110,12 +89,6 @@
             align:'center',
             scopedSlots: { customRender: 'subjectTeacherList' },
         },
-        {
-            title: '操作',
-            dataIndex: 'action',
-            align:'center',
-            scopedSlots: { customRender: 'action' },
-        },
     ];
     const columnsSubject=[
         {
@@ -137,12 +110,6 @@
             align:'center',
             scopedSlots:{customRender:'class_day'}
         },
-        {
-            title: '  ',
-            dataIndex: 'blank',
-            align:'center',
-            scopedSlots: { customRender: 'blank' },
-        },
     ];
     export default {
         data() {
@@ -150,7 +117,6 @@
                 data:[],
                 columns,
                 columnsSubject,
-                addSubjectVisit: false,
                 editTeacherVisit:false,
                 loading: false,
                 planData:"",
@@ -163,12 +129,13 @@
                 },
                 index1:null,
                 index2:null,
-                options:[],
                 subRuleIds:"",
                 addId:"",
                 optionTeacher:[],
                 subjects:"",
                 classType:"",
+                teacherName:"",
+                subId:"",
             };
         },
         async created() {
@@ -218,44 +185,6 @@
                 this.data=allData;
                 console.log(this.data);
             },
-            //删除学科老师
-            delet(index1,index2){
-                // console.log(index1);
-                // console.log(index2);
-                // console.log(this.data[index1])
-                let index=this.data[index1].subjectTeacherList[index2].scheduleTeacherClassId;
-                console.log(index);
-                this.delete(index);
-                // this.data[index1].subjectTeacherList.splice(index2,1);
-                // console.log(this.data);
-            },
-            //添加学科
-            addSubject(id){
-                this.addId=id;
-                console.log(this.addId);
-                this.addSubjectVisit=true;
-                this.options=[];
-                this.subjectInfo();
-            },
-            //获取学科信息
-            async subjectInfo(){
-                let {data}=await this.$api.schedule.adminClass. getCourseSetting({planId:this.planId,scheduleType:1});
-                console.log(data.result);
-                for(let i in data.result){
-                    let pushData={
-                        label:data.result[i].subName,
-                        value:data.result[i].subId
-                    }
-                    this.options.push(pushData);
-                }
-                // console.log(this.options);
-            },
-            //选择学科
-            chooseSubject(e){
-                console.log(e.target.value);
-                this.subRuleIds=e.target.value;
-                console.log(this.subRuleIds);
-            },
             //编辑教师姓名
             async edit(index1,index2){
                 console.log(index1);
@@ -265,9 +194,16 @@
                 this.index2=index2;
                 this.optionTeacher=[];
                 this.subName=this.data[index1].subjectTeacherList[index2].subName;
-                let subId=this.data[index1].subjectTeacherList[index2].subId;
+                this.subId=this.data[index1].subjectTeacherList[index2].subId;
+                this.teacherName=this.data[index1].subjectTeacherList[index2].teacherName;
+                console.log(this.teacherName);
                 this.editTeacherVisit=true;
-                let {data:{result,success}}=await this.$api.schedule.setting.lookTeacher({gradeId:this.gradeId,subChildId:subId});
+                this.teacherInfo();
+            },
+            //获取老师信息
+            async teacherInfo(){
+                let {data:{result,success}}=await this.$api.schedule.setting.lookTeacher({
+                    gradeId:this.gradeId,subChildId:this.subId});
                 console.log(result);
                 let teachers=result.teachers;
                 console.log(teachers)
@@ -275,48 +211,21 @@
                     let pushData={
                         label:teachers[i].teacherName,
                         value:teachers[i].teacherId,
+                        disabled: false,
                     };
                     this.optionTeacher.push(pushData);
                 }
                 console.log(this.optionTeacher);
+                //已选时禁选
+                for(let i=0;i<this.optionTeacher.length;i++){
+                    if(this.optionTeacher[i].label===this.teacherName){
+                        this.optionTeacher[i].disabled=true;
+                    }
+                }
             },
             //选择老师
             chooseTeacher(e){
                 console.log(e.target.value);
-            },
-            //保存添加学科
-            async handleOkSubject(){
-                this.addSubjectVisit=false;
-                console.log(this.subjects);
-                // console.log(this.options);
-                let subRuleName="";
-                for(let i in this.options){
-                    if(this.subRuleIds===this.options[i].value){
-                        subRuleName=this.options[i].label;
-                    }
-                }
-                let pushData={
-                    subId:this.subjects,
-                    subName:subRuleName,
-                    teacherName:"",
-                }
-                console.log(pushData);
-                this.data[this.addId].subjectTeacherList.push(pushData);
-                console.log(this.data[this.addId].subjectTeacherList);
-                console.log(this.data);
-                // let addData={
-                //     planId:this.planId,
-                //     type:1,
-                //     classId:this.data[this.addId].classId,
-                //     // subId:this.data[index1].subjectTeacherList[index2].subId,
-                // };
-                // console.log(addData);
-                // let {data}=await this.$api.schedule.adminClass.addClassSetting(addData);
-                // console.log(data);
-            },
-            //取消添加学科
-            handleCancelSubject(){
-                this.addSubjectVisit=false;
             },
             //保存教师姓名
             async handleOkTeacher(){
@@ -330,12 +239,24 @@
                 }
                 console.log(this.data[this.index1].subjectTeacherList[this.index2].teacherName);
                 // console.log(this.data);
-                let pushData={
-                    planId:this.planId,
-                    type:1,
-                    subId:this.data[this.index1].subjectTeacherList[this.index2].subId,
-                    teacherId:this.data[this.index1].subjectTeacherList[this.index2].teacherId,
-                    classId:this.data[this.index1].classId,
+                let pushData=[];
+                if(this.teacherName==undefined){
+                    pushData={
+                        planId:this.planId,
+                        type:1,
+                        subId:this.data[this.index1].subjectTeacherList[this.index2].subId,
+                        teacherId:this.data[this.index1].subjectTeacherList[this.index2].teacherId,
+                        classId:this.data[this.index1].classId,
+                    }
+                }else{
+                    pushData={
+                        id:this.data[this.index1].subjectTeacherList[this.index2].scheduleTeacherClassId,
+                        planId:this.planId,
+                        type:1,
+                        subId:this.data[this.index1].subjectTeacherList[this.index2].subId,
+                        teacherId:this.data[this.index1].subjectTeacherList[this.index2].teacherId,
+                        classId:this.data[this.index1].classId,
+                    }
                 }
                 console.log(pushData);
                 let {data}=await this.$api.schedule.adminClass.addClassSetting(pushData);
@@ -345,24 +266,6 @@
             //取消教师姓名
             handleCancelTeacher(){
                 this.editTeacherVisit=false;
-            },
-            //删除班级
-            async onDelete(id){
-                // console.log(id);
-                // console.log();
-                let index=this.data[id].classId;
-                this.delete(index);
-            },
-            //获取删除接口
-            async delete(id){
-                let {data}=await this.$api.schedule.adminClass.deleteCoursesetting({ids:[id]});
-                console.log(data);
-                if(data&&data.success){
-                    message.info("删除成功");
-                    this.classSettingInfo();
-                }else{
-                    message.info("删除失败");
-                }
             },
             //课时设置
             timesSetting(){
@@ -406,11 +309,26 @@
             },
             //下一步
             Next(){
-                if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
-                }else{
-                    this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
+                console.log(this.data);
+                for(let i in this.data){
+                    let subjectTeacherList=this.data[i].subjectTeacherList;
+                    console.log(subjectTeacherList);
+                    for(let j in subjectTeacherList){
+                        console.log(subjectTeacherList[j].scheduleTeacherClassId);
+                        console.log();
+                        if(subjectTeacherList[j].teacherName==undefined){
+                            // message.warning(this.data[i].gradeName+this.data[i].className+subjectTeacherList[j].subName+"任课教师为空，请检查！");
+                            message.warning("存在任课教师为空，请检查！");
+                        }else{
+                            if(this.classType==2){
+                                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                            }else{
+                                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
+                            }
+                        }
+                    }
                 }
+
             },
             //返回
             back(){

@@ -8,120 +8,65 @@
                 <a-breadcrumb-item><router-link to="#">规则设置</router-link></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
-        <div class="box">
-                <a-card class="left">
-                    <a-row style="width:100%">
-                        <a-icon type="reload" style="font-size: 1.5em;font-weight: bold"/>
-                        <span style="font-size: 1.2em;margin-left: 10px">刷新菜单</span>
-                        <span style="font-size: 1.2em;margin-left: 10px">全部展开</span>
-                    </a-row>
-                    <div style="width: 100%; height: 1px;margin-top: 10px;border-top: solid black 1px;"/>
-                    <a-tree :tree-data="buildingsData"
-                            checkable
-                            v-model="checkedKeys"
-                            @check="onCheck"
-                            style="font-size: 1.3em;"/>
-                </a-card>
-                <div class="right">
-                    <a-card class="location_content" v-if="showcomLocation">
-                        <a-row style="height: 40px;width:100%;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black;margin-left: -35px;margin-top: -30px">
-                            <span style="float: left;padding: 10px;">场地规则</span>
-                        </a-row>
-                        <a-form :modal="form" :label-col="{ span: 3}" :wrapper-col="{ span:8}" >
-                            <a-form-item label="选择课表模板" ref="modal" prop="modal">
-                                <a-select v-model="form.modal" placeholder="请选择课表模板" @change="handleSelectChange">
-                                    <a-select-option v-for="(modalName,index) in this.modalInfo" :value="modalName.id">
-                                        {{modalName.templateName}}
-                                    </a-select-option>
-                                </a-select>
-                            </a-form-item>
-                        </a-form>
-                       <a-col :span="3"><a-button type="danger" style="width: 150px;margin-left: 600px;margin-top: -800px" @click="deleteRule">删除规则</a-button></a-col>
-                        <a-row>
-                            <a-table :rowKey="'ruleId'" :columns="columnsPlace"
-                                     :bordered="true" :pagination="false"
-                                     :data-source="placeData"
-                                     :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
-                                     :selectedRows="selectedRows"
-                                     style="width: 50%;margin-left: 50px;margin-top: 20px">
-                                <span slot="action" slot-scope="text,record">
-                                    <a  @click="lookInfo(record.ruleId)">查看</a>
-                                </span>
-                            </a-table>
-                        </a-row>
-                    </a-card>
-                    <a-card class="curriculum_content" v-if="showcomCurriculum">
-                        <a-row style="height: 40px;width: 100%;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black">
-                            <a-col>
-                                <span style="float: left;padding: 10px;">课表</span>
-                            </a-col>
-                        </a-row>
-                        <a-row class="buttons-sub">
-                            <a-button type="danger" style="color:white;width: 100px;height: 40px;float:left" @click="diasbleBtn">禁选</a-button>
-                            <a-button style="background-color:grey;width: 100px;height: 40px;color:white;float:left;margin-left: 20px" @click="normalBtn">普通</a-button>
-                            <h3 style="float:left;margin-left: 20px">未设置默认为普通</h3>
-                            <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white" @click="saveData">保存</a-button>
-                            <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white;margin-left: 20px" @click="reSet">重置</a-button>
-                        </a-row>
-                        <div class="class-table">
-                            <div class="table-header"><!-- 表头 -->
-                                <div class="table-header_one"></div><!-- 左上角 -->
-                                <div class="table-header_other" v-for="(item, index) in tableHeader">{{item}}</div>
-                            </div>
-                            <div class="table-body">
-                                <div class="row-box" v-for="(item, rowIndex) in tableData" :key="rowIndex">
-                                    <div class="table-body_one">{{item.activity}}</div><!-- 第一列 -->
-                                    <!--                        :style="{ 'background-color': setColor(child) }"-->
-                                    <div class="table-body_other" v-for="(child, columnIndex) in item.rowList"
-                                         :key="columnIndex + rowIndex + 1" :style="{ 'background-color': setColor(child) }"
-                                         @click="getColumnRow(rowIndex,columnIndex)"></div>
-                                </div><!-- 11个数据  -->
-                            </div>
-                        </div>
-                        <a-modal :visible='saveVisit'
-                                :closable="false">
-                            <template slot="footer">
-                                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
-                                <a-button key="back" @click="handleCancel">取消</a-button>
-                            </template>
-                            <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:18}">
-                                <a-form-model-item label="规则名称" prop="ruleName" ref="ruleName">
-                                    <a-input placeholder="请输入" v-model="form.ruleName"></a-input>
-                                </a-form-model-item>
-                            </a-form-model>
-                        </a-modal>
-                    </a-card>
+        <a-card class="right">
+            <a-card class="location_content" v-if="showcomLocation">
+                <a-row style="height: 40px;width:100%;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black;margin-left: -35px;margin-top: -30px"><span style="float: left;padding: 10px;">场地规则</span></a-row>
+                <a-form :modal="form" :label-col="{ span: 3}" :wrapper-col="{ span:8}" style="margin-top: 20px">
+                    <a-form-item label="选择课表模板" ref="modal" prop="modal">
+                        <a-select v-model="form.modal" placeholder="请选择课表模板" @change="handleSelectChange">
+                            <a-select-option v-for="(modalName,index) in this.modalInfo" :value="modalName.id">
+                                {{modalName.templateName}}
+                            </a-select-option>
+                        </a-select>
+                    </a-form-item>
+                </a-form>
+            </a-card>
+            <a-card class="curriculum_content" v-if="showcomCurriculum">
+                <a-row style="height: 40px;width: 100%;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black">
+                    <a-col>
+                        <span style="float: left;padding: 10px;">课表</span>
+                    </a-col>
+                </a-row>
+                <a-row class="buttons-sub">
+                    <a-button type="danger" style="color:white;width: 100px;height: 40px;float:left" @click="diasbleBtn">禁选</a-button>
+                    <a-button style="background-color:grey;width: 100px;height: 40px;color:white;float:left;margin-left: 20px" @click="normalBtn">普通</a-button>
+                    <h3 style="float:left;margin-left: 20px">{{this.reguleName}}</h3>
+                    <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white" @click="saveData">保存</a-button>
+                    <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white;margin-left: 20px" @click="reSet">重置</a-button>
+                </a-row>
+                <div class="class-table">
+                    <div class="table-header"><!-- 表头 -->
+                        <div class="table-header_one"></div><!-- 左上角 -->
+                        <div class="table-header_other" v-for="(item, index) in tableHeader">{{item}}</div>
+                    </div>
+                    <div class="table-body">
+                        <div class="row-box" v-for="(item, rowIndex) in tableData" :key="rowIndex">
+                            <div class="table-body_one">{{item.activity}}</div><!-- 第一列 -->
+                            <!--                        :style="{ 'background-color': setColor(child) }"-->
+                            <div class="table-body_other" v-for="(child, columnIndex) in item.rowList"
+                                 :key="columnIndex + rowIndex + 1" :style="{ 'background-color': setColor(child) }"
+                                 @click="getColumnRow(rowIndex,columnIndex)"></div>
+                        </div><!-- 11个数据  -->
+                    </div>
                 </div>
-            </div>
+                <a-modal :visible='saveVisit'
+                         :closable="false">
+                    <template slot="footer">
+                        <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                        <a-button key="back" @click="handleCancel">取消</a-button>
+                    </template>
+                    <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:18}">
+                        <a-form-model-item label="规则名称" prop="ruleName" ref="ruleName">
+                            <a-input placeholder="请输入" v-model="form.ruleName"></a-input>
+                        </a-form-model-item>
+                    </a-form-model>
+                </a-modal>
+            </a-card>
+        </a-card>
     </div>
 </template>
 <script>
-    const columnsPlace=[
-        {
-            title:'序号',
-            dataIndex:'ruleId',
-            align:'center',
-            customRender: function(t, r, index) {
-                return parseInt(index) + 1
-            }
-        },
-        {
-            title:'规则名称',
-            dataIndex:'name',
-            align:'center',
-        },
-        {
-            title:'包含教室数量',
-            dataIndex:'number',
-            align:'center',
-        },
-        {
-            title:'操作',
-            dataIndex:'opts',
-            align:'center',
-            scopedSlots: { customRender: 'action' },
-        },
-    ];
+    import {message} from "ant-design-vue";
     const activity = [
         {
             name: "早读",
@@ -152,19 +97,13 @@
     export default {
         data() {
             return {
-                buildingsData:[],
-                columnsPlace,
-                placeData:[],
-                checkedKeys:[],
-                showcomLocation:false,
+                showcomLocation:true,
                 showcomCurriculum:false,
                 adminClass:"",
                 modelName:[],
                 modalInfo:[],
                 modalName:"",
                 modalIds:"",
-                selectedRowKeys: [], // Check here to configure the default column
-                selectedRows:[],
                 tableData:[],
                 timeData:[],
                 defaultRow: -1,
@@ -177,8 +116,10 @@
                 saveVisit:false,
                 loading:false,
                 activity,
-                disable:[],
                 ruleInfo: "",
+                reguleName:"",
+                classRoomId:"",
+                ruleId:"",
                 form:{
                     modal:" ",
                     ruleName:undefined,
@@ -195,46 +136,16 @@
             };
         },
         async created(){
-            this.getData();
+            this.classroomId();
             this.getModalInfo();
         },
         methods: {
-            //查看信息树
-            async getData () {
-                let {data} = await this.$api.basic.classroom.fetchRoomList();
-                // console.log(data.result)
-                for(let i in data.result) {
-                    // 第一层
-                    let numberTree = {}
-                    numberTree.title = data.result[i].building_name
-                    numberTree.key = data.result[i].building_Id;
-                    // console.log(data.result[i].floor_list)
-                    if (data.result[i].floor_list.length) {
-                        //    第二层
-                        numberTree.children = []
-                        for (let j = 0; j < data.result[i].floor_list.length; j++) {
-                            let item = data.result[i].floor_list[j]
-                            let childData = {}
-                            childData.key = data.result[i].building_Id + item.floor
-                            childData.title = '第' + item.floor + '层'
-                            // console.log(item.classroom_list);
-                            if(item.classroom_list.length) {
-                                childData.children = []
-                                //第三层
-                                for (let k in item.classroom_list) {
-                                    let dataThree = {}
-                                    dataThree.key = item.classroom_list[k].room_id;
-                                    dataThree.title = item.classroom_list[k].classroom_name;
-                                    childData.children.push(dataThree)
-                                }
-                            }
-                            numberTree.children.push(childData)
-                        }
-                    }
-                    this.buildingsData.push(numberTree)
-                    // console.log(data.result[i])
-                }
-                // console.log(this.buildingsData)
+            //获取教室Id
+            async classroomId(){
+                let queryString = (window.location.hash || " ").split('?')[1]
+                let classRoomId = (queryString || " ").split('=')[1]
+                this.classRoomId = classRoomId;
+                console.log(this.classRoomId);
             },
             //获得课表模板信息
             async getModalInfo(){
@@ -243,92 +154,37 @@
                 this.modalInfo=data.rows;
                 // console.log(this.modalInfo);
             },
-            //监控选择的数
-            onCheck(checkedKeys){
-                console.log(checkedKeys);
-                this.showcomLocation=true;
-                let classroomId=[];
-                this.checkedKeys.forEach((item,index)=>{
-                    console.log(item);
-                    console.log(index);
-                    let parentNode=[];
-                    for(let i=0;i<this.buildingsData.length;i++){
-                        if(this.buildingsData[i].key!==item){
-                            let classroomData=this.buildingsData[i].children;
-                            for(let j=0;j<classroomData.length;j++){
-                                if(classroomData[j].key===item){
-                                    parentNode.push(classroomData[j]);
-                                }
-                            }
-                        }
-                    }
-                    console.log(parentNode);
-                    if(parentNode.length>0&& Object.prototype.hasOwnProperty.call(parentNode[0],'children')){
-                        parentNode[0].children.forEach(chr=>{
-                            console.log(chr.key);
-                            classroomId.push(chr.key);
-                        });
-                    }else{
-                        classroomId.push(item)
-                    }
-                })
-                // console.log(classroomId);
-                //去除重复的
-                for(let i=0;i<classroomId.length-1;i++){
-                    for(let j=i+1;j<classroomId.length;j++){
-                        if(classroomId[i]==classroomId[j]){
-                            classroomId[j]=classroomId[j+1];
-                            classroomId.length=classroomId.length-1
-                        }
-                    }
-                }
-                this.checkedKeys=classroomId;
-                console.log(this.checkedKeys);
-            },
             //选择课表模板
             handleSelectChange(){
-                this.placeInfo();
-                this.initData();
-                this.settingInfo();
                 this.showcomCurriculum=true;
-            },
-            //获取场地信息
-            async placeInfo(){
-                let {data:placeData}=await this.$api.basic.classroom.fetchRuleList({currId:this.form.modal});
-                console.log(placeData);
-                this.placeData=placeData.rows;
-            },
-            //复选框(删除时选中)
-            onSelectChange( selectedRowKeys,selectedRows) {
-                this.selectedRowKeys = selectedRowKeys;
-                this.selectedRows=selectedRows
-                console.log(this.selectedRowKeys);
-                console.log(this.selectedRows);
-            },
-            //删除场地规则
-            async deleteRule(){
-                let {data}=await this.$api.basic.classroom.deleteRule({ids:this.selectedRowKeys});
-                console.log(data);
-                if(data&&data.success){
-                    this.placeInfo();
-                    message.info('删除成功');
-                }else{
-                    message.info('删除失败');
-                }
+                this.placeInfo(this.form.modal);
+                this.initData();
             },
             //场地规则查看
-            async lookInfo(id){
-                this.initData();
-                let {data:{result,success}}=await this.$api.basic.classroom.fetchRule({id:id});
-                console.log(result);
-                this.ruleInfo=result.ruleInfo;
-                console.log(this.ruleInfo);
-                this.settingInfo();
-                this.getModalInfo();
+            async placeInfo(currId){
+                this.reguleName="";
+                this.ruleInfo="";
+                this.ruleId="";
+              let {data}=await this.$api.basic.classroom.fetchRule({
+                  currId:currId,
+                  roomId:this.classRoomId
+              });
+              if(data&&data.success){
+                  console.log(data.result);
+                  this.reguleName=data.result.name;
+                  this.ruleInfo=data.result.ruleInfo;
+                  this.ruleId=data.result.ruleId;
+                  this.settingInfo();
+              }else{
+                  message.warning(data.message);
+              }
             },
+            //查看课表信息
             async settingInfo(){
                 // console.log(this.tableData)
+                this.disableData=[];
                 //字符串转化为数组
+                console.log(this.ruleInfo);
                 this.disable=eval(this.ruleInfo);
                 console.log(this.disable);
                 // console.log(this.disable.length);
@@ -351,8 +207,6 @@
             async initData(){
                 let {data}=await this.$api.basic.template.fetchTemplate({id:this.form.modal})
                 console.log(data.result);
-                this.currId= this.templateId
-                console.log(this.templateId);
                 let activities = [];
                 let timeDatas = [];
                 let list = [...this.activity];
@@ -402,7 +256,7 @@
             diasbleBtn(){
                 let cellRow=0;
                 let cellColumn=0;
-                this.disableData=[];
+                //设置多选
                 for(let i=0;i<this.cellCheck.length;i++){
                     cellRow=this.cellCheck[i][0];
                     cellColumn=this.cellCheck[i][1];
@@ -411,13 +265,12 @@
                     if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
                         // 修改颜色为红色
                         this.tableData[cellRow].rowList[cellColumn].defaultCheck = 1
-                        this.disableData.push([cellRow,cellColumn])
+                        this.disableData.push([cellRow,cellColumn]);
                     }
                     this.setStore(this.tableData);
                     console.log(this.disableData);
-                    console.log(JSON.stringify(this.disableData));
                 }
-
+                this.cellCheck=[];
             },
             //设置普通按钮方法
             normalBtn(){
@@ -427,14 +280,29 @@
                 for(let i=0;i<this.cellCheck.length;i++){
                     cellRow=this.cellCheck[i][0];
                     cellColumn=this.cellCheck[i][1];
-                    console.log(this.cellCheck[i][0])
-                    console.log(this.cellCheck[i][1])
-                    if(this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck === 0) {
+                    // console.log(this.cellCheck[i][0])
+                    // console.log(this.cellCheck[i][1])
+                    if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0) {
                         // 修改颜色为白色
-                        this.tableData[this.defaultRow].rowList[this.defaultColumn].defaultCheck = -1
+                        this.tableData[cellRow].rowList[cellColumn].defaultCheck = -1
+                        for(let j in this.disableData){
+                            // console.log(this.disableData);
+                            let row=this.disableData[j][0];
+                            let col=this.disableData[j][1];
+                            // console.log(row);
+                            // console.log(col);
+                            if(cellRow==row && cellColumn==col){
+                                console.log("删除元素下标"+j);
+                                console.log("删除元素个数"+this.cellCheck.length);
+                                this.disableData.splice(j,1);
+                                console.log(this.disableData);
+                            }
+                        }
                     }
                 }
-                this.setStore(this.tableData)
+                console.log(this.disableData);
+                this.setStore(this.tableData);
+                this.cellCheck=[];
             },
             //颜色设置
             setColor(child){
@@ -460,32 +328,54 @@
             //打开弹框
             saveData(){
                 this.saveVisit=true;
+                if(this.reguleName!=""){
+                    this.form.ruleName=this.reguleName;
+                }
             },
             async handleOk(){
+               console.log(this.disableData);
                 //保存场地规则
-                let addData={
-                    classroomIds: this.checkedKeys,
-                    classroomRuleEntity:{
-                        name:this.form.ruleName,
-                        currId:this.form.modal,
-                        number:this.checkedKeys.length,
-                        ruleInfo:JSON.stringify(this.disableData),
+                let addData={};
+                if(this.ruleId==""){
+                    addData={
+                        classroomIds: [this.classRoomId],
+                        classroomRuleEntity:{
+                            name:this.form.ruleName,
+                            currId:this.form.modal,
+                            number:1,
+                            ruleInfo:JSON.stringify(this.disableData),
+                        }
+                    }
+                }else{
+                    addData={
+                        classroomIds:[this.classRoomId],
+                        classroomRuleEntity:{
+                            ruleId:this.ruleId,
+                            name:this.form.ruleName,
+                            currId:this.form.modal,
+                            number:1,
+                            ruleInfo:JSON.stringify(this.disableData),
+                        }
                     }
                 }
+                console.log(addData);
                 let {data}=await this.$api.basic.classroom.saveRule(addData);
                 console.log(data);
                 this.saveVisit = false;
                 if(data&&data.success){
-                    message.info("保存成功");
-                    this.initData();
+                    message.success("保存成功");
+                    this.reguleName=this.form.ruleName;
+                    this.form.ruleName=="";
+                    this.placeInfo(this.form.modal);
                 }else{
-                    message.info("保存失败！");
+                    message.error("保存失败！");
+
                 }
-                this.placeInfo();
             },
             //取消
             handleCancel(){
                 this.saveVisit=false;
+                this.form.ruleName=="";
             },
         },
     };
@@ -501,32 +391,9 @@
         vertical-align: top;
         border-radius: 5px;
     }
-    .box{
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        flex-direction:row;
-    }
-    .left{
-        width: 20%;
-        background-color: white;
-        /*margin: 0px 0px 20px 0px;*/
-        /*padding: 20px 25px;*/
-        border-radius: 10px;
-        display: flex;
-        min-height: 800px;
-    }
     .right{
         border-radius: 5px;
-        width: 79%;
-    }
-    .title{
-        width: 100%;
-        background-color: #fff;
-        height: 170px;
-        padding: 20px 25px;
-        border-radius: 10px;
-        margin-bottom: 50px;
+        width:100%;
     }
     .location_content{
         background-color: white;
@@ -534,7 +401,7 @@
         border-radius: 10px;
         text-align: center;
         width: 100%;
-        min-height: 440px;
+        min-height: 100px;
     }
     .curriculum_content{
         background-color: white;

@@ -33,7 +33,7 @@
                             cancelText="取消"
                             okText="确定"
                             @confirm="() => handleDeletePlan(item.planId)">
-                <a >删除</a>
+                  <a >删除</a>
               </a-popconfirm>
             </a-card>
           </template>
@@ -69,7 +69,7 @@
               </a-tree-select>
             </a-form-model-item>
             <a-form-model-item label="启用功能">
-              <a-checkbox-group v-model="form.type" @change="onChange">
+              <a-checkbox-group v-model="form.type">
                 <a-checkbox value="走班排课">走班排课</a-checkbox>
                 <a-checkbox value="行政班课">行政班课</a-checkbox>
               </a-checkbox-group>
@@ -89,9 +89,10 @@
         addVisit : false,
         loading:false,
         treeData:[],
-        checkedValues:[],
         tearmData:[],
-        form:{},
+        form:{
+          type:[],
+        },
         formItemLayout: {
           labelCol: {
             xs: { span: 15 },
@@ -146,18 +147,31 @@
         if(this.form.name==undefined||this.form.term==undefined||this.form.gradeId==undefined){
           message.info('输入信息不能为空！')
         }else{
+          let type=null;
+          console.log(this.form.type.toString());
+          if(this.form.type.toString()=="走班排课"){
+              type=0;
+          }else if(this.form.type.toString()=="行政班课"){
+              type=1;
+          }else{
+              type=2;
+          }
           let formData={
             name:this.form.name,
             term:this.tearmData[this.form.term].termName,
             gradeId:this.form.gradeId,
-            type:this.form.type=='行政班排课'?1:this.form.type=='走班排课'?0:2,
+            type:type,
           };
+          console.log(formData);
           let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
           console.log(data);
           if(data&&data.success){
-            this.addVisit = false
+            message.success("保存成功！");
+            this.addVisit = false;
+            this.initSearch();
+          }else{
+            message.error("保存失败！");
           }
-          this.initSearch()
         }
         this.$refs.createForm.resetFields();
       },
@@ -167,14 +181,12 @@
       },
       async handleDeletePlan(value){
         // 删除排课计划
-        let {data} = this.$api.schedule.plan.deleteSchedulePlan({ids:value})
-        this.initSearch()
-      },
-      //选择课程类型
-      onChange(checkedValues) {
-        console.log('checked = ',checkedValues);
-        this.checkedValues=checkedValues;
-        console.log('value = ', this.value);
+        let {data} = this.$api.schedule.plan.deleteSchedulePlan({ids:[value]});
+        if(data&&data.success){
+          message.success("删除成功！");
+          this.initSearch();
+        }
+        message.error("删除失败！");
       },
       //新增排课计划
       addNew(){

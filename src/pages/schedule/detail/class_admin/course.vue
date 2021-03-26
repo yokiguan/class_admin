@@ -84,15 +84,14 @@
                 </template>
                 <template>
                     <a-form-model :form="form">
-                        <a-form-model-item>
-                            <a-tree-select
-                                    v-model="form.value"
+                        <a-form-model-item label="选择课程:">
+                            <a-tree-select v-model="form.value"
                                     style="width: 100%"
-                                    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                                     :tree-data="gData"
-                                    placeholder="Please select"
-                                    tree-default-expand-all
-                                    :checkedKeys="checkedKeys"/>
+                                    placeholder="请选择课程"
+                                    tree-checkable
+                                    :checkedKeys="checkedKeys"
+                                    :show-checked-strategy="SHOW_PARENT"/>
                         </a-form-model-item>
                     </a-form-model>
                 </template>
@@ -120,7 +119,6 @@
                 </a-form-model-item>
             </a-form-model>
         </a-modal>
-
     </div>
 </template>
 <script>
@@ -214,6 +212,7 @@
                 editIndex:null,
                 scheduleTaskId:"",
                 classType:"",
+                gradeId:"",
                 form:{
                     value:[],
                 },
@@ -241,6 +240,7 @@
                     let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                     this.planData = result.name;
                     this.classType=result.type;
+                    this.gradeId=result.gradeId;
                     console.log(this.classType);
                 }
             },
@@ -292,9 +292,9 @@
             //学科设置查看
             async subjectInfo(){
                 let {data}=await this.$api.schedule.adminClass.getCourseSetting({planId:this.planId,scheduleType:1});
-                console.log(data)
+                // console.log(data)
                 this.dataSource=data.result;
-                console.log(this.dataSource);
+                // console.log(this.dataSource);
             },
             //删除行数据
             async onDelete(ids){
@@ -327,27 +327,49 @@
             //查看课程接口
             async lookCourse(){
                 this.gData=[];
-                let {data}=await this.$api.basic.subject.fetchSubjectList({subType:1})
-                // console.log(data.result);
-                for(let i in data.result){
-                    //第一层(级部）
-                    let mainCourseTree={};
-                    mainCourseTree.title=data.result[i].subName;
-                    mainCourseTree.key=mainCourseTree.value=data.result[i].id;
-                    if(data.result[i].subjectChildEntitys.length){
-                        //第二层(年级）
-                        mainCourseTree.children=[];
-                        for(let j=0;j<data.result[i].subjectChildEntitys.length;j++){
-                            let gradeItem=data.result[i].subjectChildEntitys[j];
-                            let childData={}
-                            childData.key=childData.value=gradeItem.subChildId;
-                            childData.title=gradeItem.name;
-                            mainCourseTree.children.push(childData);
+                let {data}=await this.$api.schedule.adminClass.searchCourse({
+                    gradeId:this.gradeId,
+                    subType:1})
+                console.log(data.result);
+               if(data.success){
+                   for(let i in data.result){
+                       //第一层(级部）
+                       let mainCourseTree={};
+                       mainCourseTree.title=data.result[i].subName;
+                       mainCourseTree.key=mainCourseTree.value=data.result[i].id;
+                       mainCourseTree.disableCheckbox=false;
+                       if(data.result[i].subjectChildEntitys.length){
+                           //第二层(年级）
+                           mainCourseTree.children=[];
+                           for(let j=0;j<data.result[i].subjectChildEntitys.length;j++){
+                               let gradeItem=data.result[i].subjectChildEntitys[j];
+                               let childData={}
+                               childData.key=childData.value=gradeItem.subChildId;
+                               childData.title=gradeItem.name;
+                               childData.disableCheckbox=false;
+                               mainCourseTree.children.push(childData);
+                           }
+                       }
+                       this.gData.push(mainCourseTree);
+                   }
+               }
+                console.log(this.gData);
+                for(let i=0;i<this.gData.length;i++){
+                    if(this.gData[i].children){
+                        let children=this.gData[i].children;
+                        for(let j=0;j<children.length;j++){
+                            for(let k=0;k<this.dataSource.length;k++){
+                                if(this.dataSource[k].subId==children[j].key){
+                                    console.log(children[j].key);
+                                    console.log(this.dataSource[k].subId);
+                                    children[j].disableCheckbox=true;
+                                    this.gData[i].disableCheckbox=true;
+                                }
+                            }
                         }
                     }
-                    this.gData.push(mainCourseTree);
                 }
-                // console.log(this.gData);
+                console.log(this.gData);
             },
             //保存上课天数
             handleOk(){
@@ -360,15 +382,34 @@
             async handleOkAdd(){
                 this.addCourseModal=false;
                 console.log(this.form.value);
+                let course=[];
+                for(let i=0;i<this.gData.length;i++){
+                    for(let j=0;j<this.form.value.length;j++){
+                        if(this.gData[i].key==this.form.value[j]){
+                            if(this.gData[i].children){
+                                let children=this.gData[i].children;
+                                for(let k=0;k<children.length;k++){
+                                    course.push(children[k].key);
+                                }
+                            }else{
+                                course.push(this.form.value[j]);
+                            }
+                        }
+                    }
+                }
+                console.log(course);
                let addData={
                    planId:this.planId,
-                   subId:this.form.value,
+                   ids:course,
                    scheduleType: 1,
                }
-                let {data}=await this.$api.schedule.adminClass.addCourseSetting(addData);
+                let {data}=await this.$api.schedule.adminClass.addCourse(addData);
                 console.log(data);
                 if(data&&data.success){
                     this.subjectInfo();
+                    message.info("保存成功");
+                }else{
+                    message.info("保存失败");
                 }
                 console.log(this.dataSource);
             },
@@ -445,10 +486,21 @@
             },
             //下一步
             Next(){
-                if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
-                }else{
-                    this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`);
+                console.log(this.dataSource);
+                for(let i=0;i<this.dataSource.length;i++){
+                    if(this.dataSource[i].lessonWeekly){
+                        if(this.dataSource[i].lessonWeekly==0){
+                            message.warning(this.dataSource[i].subName+"课节数为0，请输入大于0的课节数");
+                        }else{
+                            if(this.classType==2){
+                                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                            }else{
+                                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`);
+                            }
+                        }
+                    }else{
+                        message.warning(this.dataSource[i].subName+"课节数为空，请输入课节数");
+                    }
                 }
             },
             //返回

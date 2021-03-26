@@ -12,6 +12,7 @@ const schedulePlan=base.root+'/a/schedulePlan/'
 const basicSettingQuery=base.root+'/a/basicSettingQuery/'
 const scheduleSyllabus=base.root+'/a/scheduleSyllabus'
 const scheduleTask=base.root+'/a/scheduleTask'
+const subject=base.root+'/a/subject'
 const adminClass = {
     //行政班排课查看
     //行政班排课修改
@@ -35,9 +36,17 @@ const adminClass = {
     deleteCourseSetting(params){
         return axios.post(`${scheduleCourse}/deleteData.json`,params);
     },
-    //学科设置新增/修改(已调）
+    //学科设置新增(已调）
+    addCourse(params){
+        return axios.post(`${scheduleCourse}/saveXzbSubSettingDataList.json`,params);
+    },
+    //学科设置修改(已调）
     addCourseSetting(params){
         return axios.post(`${scheduleCourse}/saveData.json`,params);
+    },
+    //学科设置中的课程查看
+    searchCourse(params){
+        return axios.get(`${subject}/getMainChildSubjectTreeByGradeId.json`,{params});
     },
     //班级设置查看(已调）
     getClassSetting(params){

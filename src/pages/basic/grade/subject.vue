@@ -35,13 +35,12 @@
             </template>
             <a-form-model :model="form" :rules="rules":label-col="{span:5}" :wrapper-col="{span:12}">
                 <a-form-model-item label='课程名' prop="addsub" ref="addsub">
-                    <a-tree-select :default-value="form.addSub"
+                    <a-tree-select v-model="form.addSub"
                                    placeholder="请选择课程"
                                    style="width: 275px"
                                    :checkedKeys="checkedKeys"
                                    :tree-data="treeData"
                                    tree-checkable
-                                   @change="changeCourse"
                                    :show-checked-strategy="SHOW_PARENT">
                     </a-tree-select>
                 </a-form-model-item>
@@ -50,8 +49,8 @@
     </a-card>
     </div>
 </template>
-
 <script>
+    import {message} from "ant-design-vue";
     import { TreeSelect } from 'ant-design-vue';
     const SHOW_PARENT = TreeSelect.SHOW_PARENT;
     const columns = [
@@ -90,6 +89,7 @@
                 allSubjectId:[],
                 checkCourseInfo:[],
                 form:{
+                    addSub:[],
                 },
                 rules:{
                     addSub:[
@@ -132,6 +132,7 @@
                     let mainCourseData={};
                     mainCourseData.title=result[i].subName;
                     mainCourseData.key=mainCourseData.value=result[i].id;
+                    mainCourseData.disableCheckbox=false;
                     if(result[i].subjectChildEntitys.length){
                         //第二层（年级）
                         mainCourseData.children=[];
@@ -140,6 +141,7 @@
                             let courseData={};
                             courseData.key=courseData.value=item.subChildId;
                             courseData.title=item.name;
+                            courseData.disableCheckbox=false;
                             mainCourseData.children.push(courseData);
                         }
                     }
@@ -150,60 +152,95 @@
             //新建
             addNew() {
                 this.showSubject=true;
+                this.form.addSub=[];
                 //获取课程信息
                 console.log(this.treeData);
-                this.form.addSub=this.allSubjectId;
-                console.log(this.form.addSub);
-            },
-            //选择课程
-            changeCourse(info){
-                console.log(info);
-                // this.checkCourseInfo=info;
-                let list=[...this.treeData];
-                list.forEach(item=>{
-                    console.log(item);
-                    let infoList=[...info];
-                    infoList.forEach(itemInfo=>{
-                        console.log(itemInfo);
-                        if(itemInfo==item.key){
-                            let children=item.children;
-                            for(let i=0;i<children.length;i++){
-                                this.checkCourseInfo.push(children[i].key)
+                // this.form.addSub=this.allSubjectId;
+                console.log(this.allSubjectId);
+                for(let i=0;i<this.treeData.length;i++){
+                    if(this.treeData[i].children){
+                        let children=this.treeData[i].children;
+                        for(let j=0;j<children.length;j++){
+                            for(let k=0;k<this.allSubjectId.length;k++){
+                                if(this.allSubjectId[k]==children[j].key){
+                                    children[j].disableCheckbox=true;
+                                }
                             }
-                        }else{
-                            this.checkCourseInfo.push(itemInfo);
-                        }
-                    })
-                })
-                console.log(this.checkCourseInfo);
-                //去除重复
-                let course=[];
-                for(let i=0;i<this.checkCourseInfo.length;i++){
-                    for(let j=i+1;j<this.checkCourseInfo.length;j++){
-                        if(this.checkCourseInfo[i]===this.checkCourseInfo[j]) {
-                            for(let temp=j;temp<this.checkCourseInfo.length;temp++){
-                                this.checkCourseInfo[temp] = this.checkCourseInfo[temp + 1];
-                            }
-                            j--;
-                            this.checkCourseInfo.length = this.checkCourseInfo.length - 1;
                         }
                     }
                 }
-                console.log(this.checkCourseInfo);
+                // console.log(this.form.addSub);
             },
+            //选择课程
+            // changeCourse(info){
+            //     console.log(info);
+
+            // },
             //取消
             handleCancel(){
-                this.showSubject=false
+                this.showSubject=false;
             },
             //保存
             async handleOk(){
-                console.log(this.checkCourseInfo);
-                let {data}=await this.$api.basic.grade.saveGrade({
-                    gradeId:this.$router.history.current.query.id,
-                    gradeSubChildIds:this.checkCourseInfo});
-                console.log(data);
-                this.showSubject=false;
-                this.gainBaseInfo();
+                console.log(this.form.addSub);
+                    this.checkCourseInfo=[];
+                    let course=[];
+                    for(let i=0;i<this.treeData.length;i++){
+                        for(let j=0;j<this.form.addSub.length;j++){
+                            if(this.form.addSub[j]==this.treeData[i].key){
+                                this.form.addSub.splice(j,1);
+                                if(this.treeData[i].children){
+                                    let children=this.treeData[i].children;
+                                    for(let k=0;k<children.length;k++){
+                                        course.push(children[k].key);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    console.log(this.form.addSub);
+                    console.log(course);
+                    //删除已禁选的科目
+                    for(let i=0;i<course.length;i++){
+                        for(let j=0;j<this.allSubjectId.length;j++){
+                            if(course[i]==this.allSubjectId[j]){
+                                course.splice(i,1);
+                            }
+                        }
+                    }
+                    console.log(course);
+                    console.log(this.checkCourseInfo);
+                    if(course.length>0){
+                        for(let i=0;i<course.length;i++){
+                            this.checkCourseInfo.push(course[i]);
+                        }
+                    }
+                   if(this.form.addSub.length>0){
+                       for(let j=0;j<this.form.addSub.length;j++){
+                           this.checkCourseInfo.push(this.form.addSub[j]);
+                       }
+                   }
+                    console.log(this.checkCourseInfo);
+
+
+
+                if(this.checkCourseInfo.length==0){
+                    message.warning("数据为空，请选择数据！");
+                }else{
+                    let {data}=await this.$api.basic.grade.saveGrade({
+                        gradeId:this.$router.history.current.query.id,
+                        gradeSubChildIds:this.checkCourseInfo});
+                    console.log(data);
+                    if(data&&data.success){
+                        message.success("保存成功");
+                        this.form.addSub=[];
+
+                    }else{
+                        message.error("保存失败！");
+                    }
+                    this.showSubject=false;
+                    this.gainBaseInfo();
+                }
             },
             //返回年级
             backGrade(){
@@ -213,7 +250,12 @@
             async deleteItem(id){
                 let {data}=await this.$api.basic.grade.deleteGradeSubject({gradeId:this.$router.history.current.query.id,gradeSubChildIds:[id]});
                 console.log(data);
-                this.gainBaseInfo();
+                if(data&&data.success){
+                    message.success("删除成功！");
+                    this.gainBaseInfo();
+                }else{
+                    message.error(data.message);
+                }
             }
         },
     };

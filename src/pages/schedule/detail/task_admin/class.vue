@@ -147,7 +147,19 @@
         methods: {
             onCheck(checkedKeys) {
                 console.log('onCheck', checkedKeys);
+                console.log(this.checkedKeys);
+                this.checkedKeys=[];
+                // if(this.checkedKeys==[]){
+                //     this.checkedKeys=checkedKeys;
+                // }else{
+                //     let check=checkedKeys.splice(0,1);
+                //     console.log(check);
+                //     // this.checkedKeys=
+                // }
                 this.checkedKeys=checkedKeys;
+                checkedKeys=[];
+                console.log(this.checkedKeys);
+                console.log(checkedKeys);
                 this.classInfo();
             },
             //获取左侧的教室树
@@ -165,7 +177,6 @@
             },
             //班级课表查看
             async classInfo() {
-                // teacherId还没传变量
                 let {data} = await this.$api.schedule.adminTask.classTable({
                     planId: this.planId,
                     scheduleTaskId:this.scheduleTaskId,
@@ -173,7 +184,7 @@
                 });
                 // console.log(result);
                if(data.success==false){
-                   message.info(data.message);
+                   message.error(data.message);
                }else{
                    this.allData=data.result;
                    console.log(this.allData);
@@ -183,7 +194,7 @@
                        let position=eval(this.allData[i].position);
                        const getInfo=(dataItem,sourceItem={})=>{
                            if(!sourceItem) sourceItem={};
-                           let content = this.gradeName+dataItem.subName+"————"+dataItem.teacherName;
+                           let content = this.gradeName+dataItem.subName+"_"+dataItem.teacherName;
                            const column=eval(dataItem.position)[1];
                            switch (column) {
                                case 1:

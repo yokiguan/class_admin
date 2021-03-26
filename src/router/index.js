@@ -100,28 +100,28 @@ export default new Router({
                 }
               ]
             },
-            {
-              path: '/basic/class',
-              name: '行政班',
-              component:BlankView,
-              children: [{
-                path: '/basic/class/admin',
-                name: '行政班管理',
-                component: () => import('@/pages/basic/class/index'),
-              },
-                {
-                  path: '/basic/class/member',
-                  name: '行政班人员管理',
-                  component: () => import('@/pages/basic/class/member'),
-
-                }
-              ]
-            },
-            {
-              path: '/basic/student',
-              name: '学生',
-              component: () => import('@/pages/basic/student/index'),
-            },
+            // {
+            //   path: '/basic/class',
+            //   name: '行政班',
+            //   component:BlankView,
+            //   children: [{
+            //     path: '/basic/class/admin',
+            //     name: '行政班管理',
+            //     component: () => import('@/pages/basic/class/index'),
+            //   },
+            //     {
+            //       path: '/basic/class/member',
+            //       name: '行政班人员管理',
+            //       component: () => import('@/pages/basic/class/member'),
+            //
+            //     }
+            //   ]
+            // },
+            // {
+            //   path: '/basic/student',
+            //   name: '学生',
+            //   component: () => import('@/pages/basic/student/index'),
+            // },
             {
               path: '/basic/teacher',
               name: '教师',
@@ -201,24 +201,24 @@ export default new Router({
                 },
                 {
                   path: '/schedule/detail/sort_class',
-                  name: '选课分班',
+                  name: '选择老师',
                   component: BlankView,
                   children: [
-                    {
-                      path: '/schedule/detail/sort_class/admin',
-                      name: '选课分班管理',
-                      component: () => import('@/pages/schedule/detail/sort_class'),
-                    },
+                    // {
+                    //   path: '/schedule/detail/sort_class/admin',
+                    //   name: '选课分班管理',
+                    //   component: () => import('@/pages/schedule/detail/sort_class'),
+                    // },
                     {
                       path: '/schedule/detail/sort_class/auto',
                       name: '自动分班',
                       component: () => import('@/pages/schedule/detail/sort_class/auto'),
                     },
-                    {
-                      path: '/schedule/detail/sort_class/manual',
-                      name: '手动分班',
-                      component: () => import('@/pages/schedule/detail/sort_class/manual'),
-                    }
+                    // {
+                    //   path: '/schedule/detail/sort_class/manual',
+                    //   name: '手动分班',
+                    //   component: () => import('@/pages/schedule/detail/sort_class/manual'),
+                    // }
                   ]
                 },
                 {
@@ -393,35 +393,36 @@ export default new Router({
           ]
         },
           //数据字典
-        {
-          path: '/data',
-          component:BlankView,
-          redirect: '/data/template',
-          name: '数据字典',
-          meta: { icon: 'profile' },
-          children: [
-            {
-              path: '/data/subject/index',
-              name: '科目类别',
-              component: () => import('@/pages/data/subject/index')},
-          {
-              path: '/date/class',
-              name: '教室类型',
-              component: () => import('@/pages/data/class/index'),
-            }
-          ]
-        },
+        // {
+        //   path: '/data',
+        //   component:BlankView,
+        //   redirect: '/data/template',
+        //   name: '数据字典',
+        //   meta: { icon: 'profile' },
+        //   children: [
+        //     {
+        //       path: '/data/subject/index',
+        //       name: '科目类别',
+        //       component: () => import('@/pages/data/subject/index')},
+        //   {
+        //       path: '/date/class',
+        //       name: '教室类型',
+        //       component: () => import('@/pages/data/class/index'),
+        //     }
+        //   ]
+        // },
         {
           path: '/studentChooseClass',
           name: '学生选课',
           redirect: '/studentChooseClass',
           component: BlankView,
           meta: { icon: 'profile' },
-          children:[{
-            path: '/studentChooseClass/index',
-            name: '我的课表',
-            component: () => import('@/pages/studentChooseClass/index'),
-          },
+          children:[
+          //     {
+          //   path: '/studentChooseClass/index',
+          //   name: '我的课表',
+          //   component: () => import('@/pages/studentChooseClass/index'),
+          // },
             {
               path: '/studentChooseClass/startChooseClass',
               name: '开始选课',

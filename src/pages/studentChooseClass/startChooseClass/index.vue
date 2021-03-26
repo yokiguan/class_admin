@@ -187,7 +187,7 @@
                     message.info('保存成功');
                     this.chooseCourseInfo();
                  }else{
-                     message.info("保存失败");
+                     message.info(data.message);
                  }
             },
         },

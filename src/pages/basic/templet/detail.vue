@@ -9,19 +9,10 @@
       </a-breadcrumb>
     </div>
     <a-card>
-      <a-form-model
-              layout="horizontal"
-              ref="ruleForm"
-              :model="form"
-              :rules="rules"
-              style="overflow:hidden">
+      <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules" style="overflow:hidden">
         <a-row>
           <a-col :md="24" :sm="24">
-            <a-form-model-item
-                    label="模板名称"
-                    prop="templetName"
-                    :labelCol="{ span: 2 }"
-                    :wrapperCol="{ span: 5 }">
+            <a-form-model-item label="模板名称" prop="templetName" :labelCol="{ span: 2 }" :wrapperCol="{ span: 5 }">
               <a-input v-model="form.templateName" placeholder="请输入" />
             </a-form-model-item>
           </a-col>
@@ -33,7 +24,13 @@
                       :labelCol="{ span: 10 }"
                       :wrapperCol="{ span: 14 }">
                 <a-select placeholder="请选择" v-model="form.workday">
+                  <a-select-option value="1">1</a-select-option>
+                  <a-select-option value="2">2</a-select-option>
+                  <a-select-option value="3">3</a-select-option>
+                  <a-select-option value="4">4</a-select-option>
                   <a-select-option value="5">5</a-select-option>
+                  <a-select-option value="6">6</a-select-option>
+                  <a-select-option value="7">7</a-select-option>
                 </a-select>
               </a-form-model-item>
             </a-col>
@@ -44,7 +41,13 @@
                       :labelCol="{ span: 10 }"
                       :wrapperCol="{ span: 14 }">
                 <a-select placeholder="请选择" v-model="form.restday">
+                  <a-select-option value="1">1</a-select-option>
                   <a-select-option value="2">2</a-select-option>
+                  <a-select-option value="3">3</a-select-option>
+                  <a-select-option value="4">4</a-select-option>
+                  <a-select-option value="5">5</a-select-option>
+                  <a-select-option value="6">6</a-select-option>
+                  <a-select-option value="7">7</a-select-option>
                 </a-select>
               </a-form-model-item>
             </a-col>
@@ -87,20 +90,16 @@
               :visible="timeModal"
               title="节次时间设置"
               @ok="handleOkTime"
-              @cancel="handleCancelTime"
-      >
-        <a-table
-                :columns="timeColumns"
+              @cancel="handleCancelTime">
+        <a-table :columns="timeColumns"
                 :dataSource="timeData"
                 rowKey="value"
-                :pagination="false"
-        >
-        <span slot="time" slot-scope="time">
-          <a-time-picker v-model="time[0]" format="hh:mm" /> -
-          <a-time-picker
-                  v-model="time[1]"
+                :pagination="false">
+        <span slot="time" slot-scope="time,record">
+          <a-time-picker v-model="time[0]" format="HH:mm" /> -
+          <a-time-picker v-model="time[1]"
                   @change="changeTime(record)"
-                  format="hh:mm"/>
+                  format="HH:mm"/>
         </span>
         </a-table>
       </a-modal>
@@ -147,6 +146,7 @@
 
 <script>
   import moment from "moment";
+  import {message} from "ant-design-vue"
   import StandardTable from "../../../components/table/StandardTable";
   const columns = [
     {
@@ -426,19 +426,22 @@
         });
       },
       async saveInfo(){
-        if(this.$router.history.current.query.id==undefined){
-          let query={...this.form,timeSetting:this.timeQuery};
-          let {data}=await this.$api.basic.template.saveTemplate(query);
-          console.log(data.result);
-          this.$router.push("/basic/template/admin");
-          this.$refs.ruleForm.resetFields();
+        if(this.form.workday+this.form.restday==7){
+          if(this.$router.history.current.query.id==undefined){
+            let query={...this.form,timeSetting:this.timeQuery};
+            let {data}=await this.$api.basic.template.saveTemplate(query);
+            console.log(data.result);
+            this.$router.push("/basic/template/admin");
+            this.$refs.ruleForm.resetFields();
+          }else{
+            let query={id:this.$router.history.current.query.id,...this.form,timeSetting:this.timeQuery};
+            let {data}=await this.$api.basic.template.saveTemplate(query);
+            console.log(data.result);
+            this.$router.push("/basic/template/admin");
+          }
         }else{
-          let query={id:this.$router.history.current.query.id,...this.form,timeSetting:this.timeQuery};
-          let {data}=await this.$api.basic.template.saveTemplate(query);
-          console.log(data.result);
-          this.$router.push("/basic/template/admin");
+          message.info("工作日+假期之和不等于7，请重新选择")
         }
-
       },
       clearInfo() {
         this.$refs.ruleForm.resetFields();

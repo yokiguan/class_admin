@@ -11,9 +11,9 @@
         <a-card>
             <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules" style="overflow: hidden;margin-bottom: 30px" :label-col="{span:4}" :wrapper-col="{span:10}">
                 <a-form-model-item label="选课类型" prop="selectType">
-                    <a-select placeholder="请选择" v-model="form.selectType" @change="chooseTeacher">
-                        <a-select-option value="1">按照老师选择</a-select-option>
-                        <a-select-option value="0">不按照老师选择</a-select-option>
+                    <a-select placeholder="请选择"  v-model="form.selectType" @change="chooseTeacher($event)">
+                        <a-select-option value="0">按照老师选择</a-select-option>
+                        <a-select-option value="1">不按照老师选择</a-select-option>
                     </a-select>
                 </a-form-model-item>
                 <a-form-item label="选课开始时间：" prop="time" ref="time">
@@ -71,7 +71,7 @@
                     </a-table>
                 </div>
                 <template  slot="regular" slot-scope="text,record,index3">
-                    <a-select placeholder="请选择覆盖科目" style="width: 150px" @change="handleChange($event,index3)">
+                    <a-select placeholder="请选择覆盖科目" style="width: 150px" v-model="text" @change="handleChange($event,index3)">
                         <a-select-option value="2">2</a-select-option>
                         <a-select-option value="3">3</a-select-option>
                         <a-select-option value="4">4</a-select-option>
@@ -214,9 +214,9 @@
                 dynamicValidateForm: {
                     teacherIds:[{teacherName:'',capacity:''}]
                 },
-                select_type:"",
                 form: {
                     explanation:"",
+                    selectType:"",
                 },
                 rules: {
                     selectType: [
@@ -247,6 +247,7 @@
                 index_1:null,
                 index_2:null,
                 checkedKeys:[],
+                timeLimit:"",
             };
         },
         async created(){
@@ -256,22 +257,34 @@
             //指定排课计划信息查看
             async lookInfo(){
                 this.planId = window.location.href.split('?')[1].split('=')[1];
-                let {data:{result,success}}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
-                console.log(result);
-                this.gradeId=result.gradeId;
+                let {data}=await this.$api.schedule.plan.schedulegetInfo({planId:this.planId});
+                console.log(data.result);
+                this.gradeId=data.result.gradeId;
                 this.chooseClassSettingInfo();
             },
             // 选课设置查看
             async chooseClassSettingInfo(){
-                let {data:{result,success}} = await this.$api.schedule.setting.settingGet({planId:this.planId,gradeId:this.gradeId});
-                console.log(result);
-                console.log(result[0].setInfo);
-                // console.log(settingData.result);
-                this.dataSource =result[0].setInfo;
-                this.dataSource.forEach((item,i)=>{
-                    item.id=i
-                })
-                // console.log(this.dataSource);
+                let {data} = await this.$api.schedule.setting.settingGet({planId:this.planId,gradeId:this.gradeId});
+                console.log(data.result);
+                if(data&&data.success==false){
+                    message.warning(data.message);
+                }else{
+                    this.dataSource =data.result[0].setInfo;
+                    this.form.explanation=data.result[0].tips;
+                    this.timeLimit=data.result[0].timeLimit;
+                    this.startValue=this.timeLimit.split(" - ")[0];
+                    this.endValue=this.timeLimit.split(" - ")[1];
+                    // this.form.selectType=data.result[0].selectType;
+                    // // this.form.selectType=this.form.selectType;
+                    if(data.result[0].selectType==0){
+                        this.form.selectType="按老师选择";
+                        this.changeColumns=columnsSubjectsTeacher;
+                    }else{
+                        this.form.selectType="不按老师选择";
+                        this.changeColumns=columnsSubjects;
+                    }
+                }
+                console.log(data.result[0].setInfo);
             },
             //开始选课时间
             disabledStartDate(startValue) {
@@ -330,16 +343,18 @@
                }
             },
             //选择老师
-            chooseTeacher(){
-                console.log(this.changeColumns);
-                if(this.form.selectType==1){
+            chooseTeacher(info){
+                this.form.selectType="";
+                console.log(info);
+                if(info==0){
                     this.changeColumns=columnsSubjectsTeacher;
-                    this.chooseClassSettingInfo();
+                    this.form.selectType="按老师选择";
                 }
-                else {
+                else{
                     this.changeColumns=columnsSubjects;
-                    this.chooseClassSettingInfo();
+                    this.form.selectType="不按老师选择";
                 }
+                console.log(this.form.selectType);
             },
             //添加教师
             addTeacher(id,index_1,index_2){
@@ -390,43 +405,76 @@
             async saveAll(){
                 //数组转化为字符串
                 //JSON.stringify(this.disableData)
-                let pushData=[];
-                    for(let i=0;i<this.dataSource.length;i++){
-                        pushData[i]={
-                            id:this.dataSource[i].id,
-                            name:this.dataSource[i].name,
-                            coverRule:this.dataSource[i].coverRule,
-                            subChildIds:[],
+                console.log(this.form.selectType);
+                let type=null;
+                if(this.form.selectType=="不按老师选择"){
+                    type=1;
+                }else{
+                    type=0;
+                }
+                if(this.startValue==null ||this.endValue==null){
+                    message.warning("选课时间为空，请设置选课时间！")
+                }else{
+                    let pushData=[];
+                    if(type==1){
+                        for(let i=0;i<this.dataSource.length;i++){
+                            pushData[i]={
+                                id:this.dataSource[i].id,
+                                name:this.dataSource[i].name,
+                                coverRule:this.dataSource[i].coverRule,
+                                subChildIds:[],
+                            }
+                            for(let j=0;j<this.dataSource[i].subChildIds.length;j++) {
+                                pushData[i].subChildIds[j] = {
+                                    subChildName: this.dataSource[i].subChildIds[j].subChildName,
+                                    subChildId: this.dataSource[i].subChildIds[j].subChildId,
+                                    isable: this.dataSource[i].subChildIds[j].isable,
+                                    teacherIds: [],
+                                }
+                            }
                         }
-                    for(let j=0;j<this.dataSource[i].subChildIds.length;j++){
-                        pushData[i].subChildIds[j]={
-                            subChildName:this.dataSource[i].subChildIds[j].subChildName,
-                            subChildId:this.dataSource[i].subChildIds[j].subChildId,
-                            isable:this.dataSource[i].subChildIds[j].isable,
-                            teacherIds: [],
-                        }
-                        for(let k in this.dataSource[i].subChildIds[j].teacherIds){
-                            pushData[i].subChildIds[j].teacherIds[k]={
-                                teacherId:this.dataSource[i].subChildIds[j].teacherIds[k].teacherId,
-                                teacherName:this.dataSource[i].subChildIds[j].teacherIds[k].teacherName,
-                                capacity:this.dataSource[i].subChildIds[j].teacherIds[k].capacity,
+                    }else{
+                        for(let i=0;i<this.dataSource.length;i++){
+                            pushData[i]={
+                                id:this.dataSource[i].id,
+                                name:this.dataSource[i].name,
+                                coverRule:this.dataSource[i].coverRule,
+                                subChildIds:[],
+                            }
+                            for(let j=0;j<this.dataSource[i].subChildIds.length;j++){
+                                pushData[i].subChildIds[j]={
+                                    subChildName:this.dataSource[i].subChildIds[j].subChildName,
+                                    subChildId:this.dataSource[i].subChildIds[j].subChildId,
+                                    isable:this.dataSource[i].subChildIds[j].isable,
+                                    teacherIds: [],
+                                }
+                                for(let k in this.dataSource[i].subChildIds[j].teacherIds){
+                                    pushData[i].subChildIds[j].teacherIds[k]={
+                                        teacherId:this.dataSource[i].subChildIds[j].teacherIds[k].teacherId,
+                                        teacherName:this.dataSource[i].subChildIds[j].teacherIds[k].teacherName,
+                                        capacity:this.dataSource[i].subChildIds[j].teacherIds[k].capacity,
+                                    }
+                                }
                             }
                         }
                     }
-                }
-                console.log(pushData);
-                let addData = {
-                    planId:this.planId,
-                    selectType:this.form.selectType,
-                    timeLimit: this.startValue + ' - '+this.endValue,
-                    tips:this.form.explanation,
-                    setInfo:pushData,
-                }
-            let {data} = await this.$api.schedule.setting.settingAdd(addData);
-                console.log(data);
-                if(data&&data.success){
-                    message.info("保存成功");
-                    this.classDetail();
+                    console.log(pushData);
+                    let addData = {
+                        planId:this.planId,
+                        selectType:type,
+                        timeLimit: this.startValue + ' - '+this.endValue,
+                        tips:this.form.explanation,
+                        setInfo:pushData,
+                    }
+                    console.log(addData);
+                    let {data} = await this.$api.schedule.setting.settingAdd(addData);
+                    console.log(data);
+                    if(data&&data.success){
+                        message.success("保存成功");
+                        this.classDetail();
+                    }else{
+                        message.error("保存失败！");
+                    }
                 }
             },
             //清空

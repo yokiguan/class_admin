@@ -103,7 +103,7 @@
         this.editVisit=true;
         this.chooseCourse=[];
         let selectData = this.dataSource[editId].subChildIds;
-        console.log("selectData",selectData);
+        // console.log("selectData",selectData);
         for(let i=0;i<selectData.length;i++){
           this.chooseCourse.push(selectData[i].subChildId);
         }
@@ -133,52 +133,37 @@
         }
         this.treeData.push(mainCourseTree);
       }
-      console.log(this.treeData);
+      // console.log(this.treeData);
     },
       //保存编辑信息
       async handleOk(){
+        console.log(this.treeData);
         console.log(this.chooseCourse);
         let course=[];
-        //获取父课程名
         for(let i=0;i<this.treeData.length;i++){
-            for(let k in this.chooseCourse){
-              // console.log(this.treeData[i].key);
-              // console.log(this.chooseCourse[k]);
-                  if(this.treeData[i].key==this.chooseCourse[k]){
-                    course.push(this.chooseCourse[k]);
-                    // console.log(this.chooseCourse[k]);
-                  }
+          if(this.treeData[i].children){
+            let children=this.treeData[i].children;
+            for(let j=0;j<children.length;j++){
+              for(let k=0;k<this.chooseCourse.length;k++){
+                if(this.chooseCourse[k]==children[j].key){
+                  course.push(this.chooseCourse[k]);
+                }
+              }
             }
+          }
         }
         console.log(course);
-        //剔除父课程id
-        let resultCourse=[];
-        for(let i in this.chooseCourse){
-          for(let j in course){
-            if(this.chooseCourse[i]==course[j]){
-              for(let temp=j;temp<this.chooseCourse.length;temp++){
-                this.chooseCourse[temp]=this.chooseCourse[temp+1];
-              }
-              j--;
-              this.chooseCourse.length--;
-            }
-          }
-        }
-        console.log(this.chooseCourse);
-        for(let i in this.chooseCourse){
-          if(this.chooseCourse[i]!=undefined){
-            resultCourse.push(this.chooseCourse[i]);
-          }
-        }
-        console.log(resultCourse);
         this.editVisit=false;
-        // let {data}=await this.$api.basic.rule.saveRuleItem({
-        //   id:this.dataSource[this.editText].id,subChildId:resultCourse.join(',')});
-        // console.log(this.data);
-        // if(data.success){
-        //   let {data}=await this.$api.basic.rule.fetchRuleList();
-        //   this.dataSource=data.result;
-        // }
+        let {data}=await this.$api.basic.rule.saveRuleItem({
+          id:this.dataSource[this.editText].id,subChildId:course.join(',')});
+        console.log(this.data);
+        if(data&&data.success){
+          message.info("保存成功！");
+          let {data}=await this.$api.basic.rule.fetchRuleList();
+          this.dataSource=data.result;
+        }else{
+          message.error("保存失败！");
+        }
       },
       //关闭编辑弹框
       handleCancel(){

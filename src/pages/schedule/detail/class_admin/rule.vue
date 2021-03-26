@@ -676,7 +676,7 @@
                 if (planId) {
                     //获取单个选课计划的信息
                     let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
-                    this.planData=result.planData;
+                    this.planData=result.name;
                     this.gradeName=result.gradeName;
                     this.gradeId=result.gradeId;
                     this.currId=result.currId;

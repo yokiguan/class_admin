@@ -21,47 +21,12 @@
                       <a-row>
                           <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changeTime">修改选课时间</a-button></a-col>
                           <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changResult">修改选课结果</a-button></a-col>
-                          <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="clearTable">清空</a-button></a-col>
+<!--                          <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="clearTable">清空</a-button></a-col>-->
                           <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
                       </a-row>
                   </a-col>
               </a-row>
           </div>
-          <!--        修改选课时间弹框-->
-          <a-modal
-                  title="修改选课时间"
-                  :visible="changeChooseTimeModal"
-                  :closable="false">
-              <template slot="footer">
-                  <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
-                  <a-button key="back" @click="handleCancel">取消</a-button>
-              </template>
-              <div class="chooseData">
-                  <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules"
-                                :label-col="{span:6}" :wrapper-col="{span:15}">
-                      <a-form-model-item label="选课开始时间：" prop="startChooseTime" ref="startChooseTime">
-                          <a-date-picker v-model="form.startChooseTime"
-                                         :disabled-date="disabledStartDate"
-                                         show-time
-                                         format="YYYY-MM-DD"
-                                         placeholder="设置开始选课时间"
-                                         @openChange="handleStartOpenChange"
-                                         valueFormat="YYYY-MM-DD"/>
-                      </a-form-model-item>
-                      <a-form-model-item label="选课结束时间：" prop="endChooseTime" ref="endChooseTime">
-                          <a-date-picker v-model="form.endChooseTime"
-                                         :disabled-date="disabledEndDate"
-                                         show-time
-                                         format="YYYY-MM-DD"
-                                         placeholder="设置选课结束时间"
-                                         :open="endOpen"
-                                         @openChange="handleEndOpenChange"
-                                         valueFormat="YYYY-MM-DD"/>
-                      </a-form-model-item>
-                  </a-form-model>
-
-              </div>
-          </a-modal>
           <div class="info link-font-color" style="padding-left: 30px" >
               已有{{this.chooseCourseData.isChoosen}}人选课 （共{{this.chooseCourseData.total}}人）<font style="color:red">{{this.chooseCourseData.notChoosen}}人未选</font></div>
           <div class="table-bg">
@@ -70,8 +35,7 @@
                       :columns="columns"
                       :data-source="dataSource"
                       :bordered = "true"
-                      :pagination = "false"
-              >
+                      :pagination = "false">
               </a-table>
               <!-- charts -->
               <div style="margin-top:50px">
@@ -85,10 +49,44 @@
               <!-- charts -->
           </div>
       </div>
+      <!--        修改选课时间弹框-->
+      <a-modal title="修改选课时间"
+              :visible="changeChooseTimeModal"
+              :closable="false">
+          <template slot="footer">
+              <a-button key="Save" type="primary" :loading="loading" @click="handleOk()">保存</a-button>
+              <a-button key="back" @click="handleCancel">取消</a-button>
+          </template>
+          <div class="chooseData">
+              <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules"
+                            :label-col="{span:6}" :wrapper-col="{span:15}">
+                  <a-form-model-item label="选课开始时间：" prop="startChooseTime" ref="startChooseTime">
+                      <a-date-picker v-model="form.startChooseTime"
+                                     :disabled-date="disabledStartDate"
+                                     show-time
+                                     format="YYYY-MM-DD"
+                                     placeholder="设置开始选课时间"
+                                     @openChange="handleStartOpenChange"
+                                     valueFormat="YYYY-MM-DD"/>
+                  </a-form-model-item>
+                  <a-form-model-item label="选课结束时间：" prop="endChooseTime" ref="endChooseTime">
+                      <a-date-picker v-model="form.endChooseTime"
+                                     :disabled-date="disabledEndDate"
+                                     show-time
+                                     format="YYYY-MM-DD"
+                                     placeholder="设置选课结束时间"
+                                     :open="endOpen"
+                                     @openChange="handleEndOpenChange"
+                                     valueFormat="YYYY-MM-DD"/>
+                  </a-form-model-item>
+              </a-form-model>
+          </div>
+      </a-modal>
   </div>
 </template>
 <script>
     import echarts from 'echarts'
+    import {message} from "ant-design-vue";
     const columns = [
         {
             title: '课程组合',
@@ -187,6 +185,8 @@
                 console.log(result);
                 this.result=result;
                 console.log(this.result);
+                this.form.startChooseTime=this.result.timeLimit.split(" - ")[0];
+                this.form.endChooseTime=this.result.timeLimit.split(" - ")[1];
             },
             //查询课程统计情况
             async staticCourse(){
@@ -307,11 +307,21 @@
                 this.changeChooseTimeModal=false;
               //保存选课时间
                 //修改选课时间alterTime
-                let timeLimit=this.form.startChooseTime+"——"+this.form.endChooseTime
-                let addData={id,timeLimit}
-                let {data:changeChooseTime}=await this.$api.schedule.statics.alterTime(addData);
-                console.log(changeChooseTime)
-                this.lookInfo();
+                if (this.form.startChooseTime == null || this.form.endChooseTime == null) {
+                    message.warning("请检查输入信息是否为空！")
+                } else {
+                    let timeLimit = this.form.startChooseTime + "——" + this.form.endChooseTime
+                    let addData = {id, timeLimit}
+                    let {data} = await this.$api.schedule.statics.alterTime(addData);
+                    console.log(data)
+                    if(data&&data.success){
+                        message.success("保存成功！");
+                        this.lookInfo();
+                    }
+                    else{
+                        message.error(data.message);
+                    }
+                }
             },
             handleCancel(){
                 this.changeChooseTimeModal=false;
@@ -324,10 +334,10 @@
             changeTime(){
                 this.changeChooseTimeModal=true;
             },
-            //清空按钮
-            clearTable(){
-              this.dataSource=[];
-            },
+            // //清空按钮
+            // clearTable(){
+            //   this.dataSource=[];
+            // },
             //返回按钮
             back(){
                 this.$router.go(-1)

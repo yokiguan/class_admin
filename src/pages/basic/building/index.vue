@@ -43,9 +43,7 @@
            <a-input v-model.trim="form.name" placeholder="请输入你想要新增的教学楼名称"></a-input>
          </a-form-model-item>
          <a-form-model-item label="教学楼层数" prop="floor" ref="floor">
-           <a-input v-model.number="form.floor"
-                    placeholder="请输入你想要新增的层数">
-           </a-input>
+           <a-input v-model="form.floor" placeholder="请输入你想要新增的层数"></a-input>
          </a-form-model-item>
          <a-form-model-item label="是否启用" >
            <a-switch v-model="form.status"/>
@@ -59,7 +57,7 @@
   import {message} from 'ant-design-vue'
   const columns = [
     {
-      title: '教学楼编号',
+      title: '序号',
       dataIndex: 'buildingId',
       align:'center',
       customRender: function(t, r, index) {
@@ -104,6 +102,7 @@
         selectedRows: [],
         editText:-1,
         newName:"",
+        defaultChecked:true,
         formItemLayout: {
           labelCol: {span: 6},
           wrapperCol: {span: 14}
@@ -112,7 +111,7 @@
         form:{
           name:" ",
           floor:'',
-          status:false,
+          status:true,
         },
         rules:{
           name:[
@@ -152,44 +151,48 @@
       async handleOk() {
         console.log(this.form.name);
         console.log(this.changeTitle);
-        if(this.changeTitle=="新增教学楼"){
-          let noHave = true;
-          for(let i=0;i<this.dataSource.length;i++){
-            console.log(this.form.name === this.dataSource[i].name,this.form.name,this.dataSource[i].name)
-            if(String(this.form.name) === String(this.dataSource[i].name)){
-              this.$message.info("教学楼已存在，请输入新的教学楼！");
-              noHave = false;
-              break;
+        if(this.form.floor=="" ||this.form.name==""){
+          message.warning("保存失败,请检查输入数据是否有空");
+        }else{
+          if(this.changeTitle=="新增教学楼"){
+            let noHave = true;
+            for(let i=0;i<this.dataSource.length;i++){
+              console.log(this.form.name === this.dataSource[i].name,this.form.name,this.dataSource[i].name)
+              if(String(this.form.name) === String(this.dataSource[i].name)){
+                this.$message.info("教学楼已存在，请输入新的教学楼！");
+                noHave = false;
+                break;
+              }
             }
-          }
-          console.log(noHave)
-          if (noHave) {
-            this.show = false;
-            let formData = {
-              name: this.form.name,
-              floor: parseInt(this.form.floor),
+            console.log(noHave)
+            if (noHave) {
+              this.show = false;
+              let formData = {
+                name: this.form.name,
+                floor: parseInt(this.form.floor),
+                status: this.form.status ? 1 : 0
+              };
+              let addData={...formData};
+              console.log(addData);
+              let {data} = await this.$api.basic.building.saveBuilding(addData);
+              console.log(data);
+              this.gainBaseInfo();
+            } else {
+              this.$message.warning("保存失败！")
+            }
+            this.$refs.ruleForm.resetFields();
+          } else{
+            let  formData={
+              buildingId:this.dataSource[this.editText].buildingId,
+              name:this.form.name,
+              floor:this.form.floor,
               status: this.form.status ? 1 : 0
-            };
-            let addData={...formData};
-            console.log(addData);
-            let {data} = await this.$api.basic.building.saveBuilding(addData);
-            console.log(data);
+            }
+            let addData={...formData}
+            let {data:saveData}=await this.$api.basic.building.saveBuilding(addData);
             this.gainBaseInfo();
-          } else {
-            this.$message.warning("保存失败！")
+            this.show=false;
           }
-          this.$refs.ruleForm.resetFields();
-        } else{
-          let  formData={
-            buildingId:this.dataSource[this.editText].buildingId,
-            name:this.form.name,
-            floor:this.form.floor,
-            status: this.form.status ? 1 : 0
-          }
-          let addData={...formData}
-          let {data:saveData}=await this.$api.basic.building.saveBuilding(addData);
-          this.gainBaseInfo();
-          this.show=false;
         }
       },
       handleCancel() {
@@ -217,7 +220,7 @@
           this.dataSource = buildData.rows
           message.info('删除成功')
         } else{
-          message.info('删除失败')
+          message.info(data.message);
         }
       },
     }

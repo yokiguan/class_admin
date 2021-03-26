@@ -17,7 +17,7 @@ const plan={
     },
     //排课计划删除（已调）
     deleteSchedulePlan(params){
-        return axios.get(`${baseUrl}/deleteData.json`,{params:params})
+        return axios.post(`${baseUrl}/deleteData.json`,params)
     },
     //排课计划查看（全部）（已调）
     getSchedulePlan(params){
