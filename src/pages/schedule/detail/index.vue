@@ -33,14 +33,13 @@
         </a-form-model-item>
         <a-form-model-item label="所属学期" prop="term" ref="term">
           <a-select placeholder="请选择学期" v-model="form.term">
-            <a-select-option v-for="(terms,index) in this.tearmData" :key="index" :value="terms.id">
+            <a-select-option v-for="(terms,index) in this.tearmData" :key="index" :value="terms.termName">
               {{terms.termName}}
             </a-select-option>
           </a-select>
         </a-form-model-item>
         <a-form-model-item label="所属年级" prop="gradeId" ref="gradeId">
-          <a-tree-select
-                  v-model="form.gradeId"
+          <a-tree-select v-model="form.gradeId"
                   placeholder="请选择所属年级"
                   :treeData="treeData"
                   :checkedKeys="checkedKeys"
@@ -339,6 +338,7 @@
       //保存排课计划
       async handleOk(){
         let type=null;
+        console.log(this.form.gradeId);
         console.log(this.form.type.toString());
         if(this.form.type.toString()=="走班排课"){
           type=0;
@@ -357,6 +357,7 @@
             gradeId:this.form.gradeId,
             type:type,
           };
+          console.log(formData);
           let {data} = await this.$api.schedule.plan.saveCoursetime(formData);
           console.log(data);
           if(data&&data.success){

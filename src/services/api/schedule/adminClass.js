@@ -34,7 +34,7 @@ const adminClass = {
     },
     //学科设置删除(已调）
     deleteCourseSetting(params){
-        return axios.post(`${scheduleCourse}/deleteData.json`,params);
+        return axios.post(`${scheduleCourse}/deleteXzbSubSettingData.json`,params);
     },
     //学科设置新增(已调）
     addCourse(params){

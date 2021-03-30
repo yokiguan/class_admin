@@ -3,8 +3,9 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">行政班排课任务</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">行政班排课任务</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -31,21 +32,34 @@
                 <div slot="option" style="color: blue"  slot-scope="text,record">
                     <a-row>
                        <span style="float:left "  @click="onClickLook(record.id)">查看</span>
-                       <span style="margin-left:0px "  @click="delet(record.id)">删除</span>
+                        <span>
+                             <a-popconfirm v-if="tableData.length"
+                                           title="确认删除?"
+                                           cancelText="取消"
+                                           okText="确定"
+                                           @confirm="() => delet(record.id)">
+                            <span>删除</span>
+                        </a-popconfirm>
+                        </span>
                        <span style="margin-left: 50px " @click="publishChoose(record.id)">发布结果</span>
                     </a-row>
                 </div>
             </a-table>
         </a-card>
+        <a-spin tip="Loading..." v-if="showPublic">
+            <div class="spin-content">
+                正在发布，请稍等......
+            </div>
+        </a-spin>
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue"
     const columns = [
         {
             align: "center",
             title: " ",
             dataIndex: 'id',
-            width:'5%',
             customRender: function(t, r, index) {
                 return parseInt(index) + 1
             }
@@ -54,26 +68,22 @@
             title: '任务名称',
             dataIndex: 'taskName',
             align:'center',
-            width:'15%'
         },
         {
             title: '创建时间',
             dataIndex: 'scheduleCreated',
             align:'center',
-            width:'15%'
         },
         {
             title: '状态',
             dataIndex: 'scheduleStatus',
             align:'center',
-            width:'15%'
         },
         {
             title: '操作',
             dataIndex: 'opt',
             align:'center',
             scopedSlots: { customRender: 'option' },
-            width:'50%'
         },
     ];
     export default {
@@ -86,6 +96,7 @@
                 planId:"",
                 planData:"",
                 classType:"",
+                showPublic:false,
                 pagination:{
                     total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
                     pageSize:20,    //默认每页显示的条数
@@ -144,6 +155,11 @@
                 // console.log();
                 let {data}=await this.$api.schedule.classTask.deletScheduleTask({ids:[id]});
                 console.log(data);
+                if(data&&data.success){
+                    message.success("删除成功！");
+                }else{
+                    message.success("删除失败！");
+                }
                 this.lookInfo();
                 console.log(this.tableData);
             },
@@ -159,17 +175,24 @@
             },
             //发布选课
             async publishChoose(id){
+                this.showPublic=true;
                 let {data}=await this.$api.schedule.classTask.publishResult({planId:this.planId,scheduleTaskId:id});
                 console.log(data);
                 if(data&&data.success){
                     alert("发布选课成功");
+                    this.showPublic=true;
+                }else{
+                    message.error(data.message);
                 }
             },
             //返回
             back(){
                 this.$router.go(-1)
             },
-
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
         }
     };
 </script>

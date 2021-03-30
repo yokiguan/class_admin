@@ -4,9 +4,9 @@
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="/schedule/detail/statistics">选课统计</router-link></a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="#">修改选课结果</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="staticClass">选课统计</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">修改选课结果</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -268,13 +268,14 @@
                 if (this.form.startChooseTime == null || this.form.endChooseTime == null) {
                     message.warning("请检查输入信息是否为空！")
                 } else {
-                    let timeLimit = this.form.startChooseTime + "——" + this.form.endChooseTime
-                    let addData = {id, timeLimit}
+                    let timeLimit = this.form.startChooseTime + "—" + this.form.endChooseTime
+                    let addData = {planId:id, timeLimit}
                     let {data} = await this.$api.schedule.statics.alterTime(addData);
                     console.log(data)
                     if(data&&data.success){
                         message.success("保存成功！");
                         this.chooseCourseInfo();
+                        this.changeChooseTimeModal=false;
                     }
                     else{
                         message.error(data.message);
@@ -311,6 +312,13 @@
                 let {data} = await this.$api.schedule.statics.delResult({ids:mineIds});
                this.chooseCourseInfo();
             },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
+            staticClass(){
+                this.$router.push(`/schedule/detail/statistics?planId=${this.planId}`)
+            }
         }
     };
 </script>

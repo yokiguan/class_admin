@@ -3,8 +3,9 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">走班排课任务</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -31,15 +32,30 @@
                 <div slot="option" style="color: blue"  slot-scope="text,record">
                     <a-row>
                        <span style="float:left "  @click="onClickLook(record.id)">查看</span>
-                       <span style="margin-left:0px "  @click="delet(record.id)">删除</span>
-                       <span style="margin-left: 50px " @click="integrate">手动调整</span>
-                       <span @click="changeClass" style="margin-left: 50px ">学生调班</span>
+                        <span>
+                             <a-popconfirm v-if="tableData.length"
+                                           title="确认删除?"
+                                           cancelText="取消"
+                                           okText="确定"
+                                           @confirm="() => delet(record.id)">
+                            <span>删除</span>
+                        </a-popconfirm>
+                        </span>
+
+<!--                       <span style="margin-left:0px "  @click="delet(record.id)">删除</span>-->
+                       <span style="margin-left: 50px " @click="integrate(record.id)">手动调整</span>
+                       <span @click="changeClass(record.id)" style="margin-left: 50px ">学生调班</span>
                        <span style="margin-left: 50px " @click="publishChoose(record.id)">发布结果</span>
                         <span style="margin-left: 50px " @click="conArrClass(record.id)">继续排课</span>
                     </a-row>
                 </div>
             </a-table>
         </a-card>
+        <a-spin tip="Loading..." v-if="showPublic">
+            <div class="spin-content">
+                正在发布，请稍等......
+            </div>
+        </a-spin>
     </div>
 </template>
 <script>
@@ -90,6 +106,7 @@
                 planId:"",
                 planData:"",
                 classType:"",
+                showPublic:false,
                 pagination:{
                     total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
                     pageSize:20,    //默认每页显示的条数
@@ -162,26 +179,34 @@
               }
             },
             //手动调整
-            integrate(){
-                this.$router.push(`/schedule/detail/task_mobile/integrate?planId=${this.planId}`)
+            integrate(id){
+                this.$router.push(`/schedule/detail/task_mobile/integrate?planId=${this.planId}&scheduleTaskId=${id}`)
             },
             //学生调班
-            changeClass(){
-                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}`)
+            changeClass(id){
+                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}&scheduleTaskId=${id}`)
             },
             //发布选课
             async publishChoose(id){
+                this.showPublic=true;
                 let {data}=await this.$api.schedule.classTask.publishResult({planId:this.planId,scheduleTaskId:id});
                 console.log(data);
                 if(data&&data.success){
+                    this.showPublic=false;
                     alert("发布选课成功");
+                }else{
+                    this.showPublic=false;
+                    message.error("排课未完成，不能发布，请继续排课！");
                 }
             },
             //返回
             back(){
                 this.$router.go(-1)
             },
-
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
         }
     };
 </script>

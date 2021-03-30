@@ -3,10 +3,9 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item>排课计划</a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="/schedule/detail/sort_class">选课分班</router-link></a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="#">自动分班</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="#">选择老师</router-link></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -237,6 +236,7 @@
                 courseId:"",
                 checkName:"",
                 checkId:"",
+                gradeId:"",
                 teaNames:[],
                 form:{
                     maxPerNum:0,
@@ -255,7 +255,8 @@
             if (planId) {
                 //获取单个选课计划的信息
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
-                this.planData = result.name
+                this.planData = result.name;
+                this.gradeId=result.gradeId;
             }
            this.lookAuto();
         },
@@ -393,7 +394,9 @@
             //查看教师信息
             async teacherInfo(subId){
                 this.treeData=[];
-              let {data:{result,success}}=await this.$api.schedule.sortClass.classGetTeacherList({subChildId:subId});
+              let {data:{result,success}}=await this.$api.schedule.sortClass.classGetTeacherList({
+                  subChildId:subId,
+                  gradeId:this.gradeId});
               console.log(result);
               for(let i=0; i<result.length;i++){
                   let numberTree={};
@@ -433,7 +436,8 @@
             },
             //查看教师列表
             async teacherList(subId){
-              let {data}=await this.$api.schedule.sortClass.classGetTeacherlist({planId:this.planId,subId:subId})
+              let {data}=await this.$api.schedule.sortClass.classGetTeacherlist({
+                  planId:this.planId,subId:subId})
               console.log(data);
               this.teacherData=data.rows;
               console.log(this.teacherData);
@@ -526,6 +530,10 @@
                 }else{
                     message.info("保存失败");
                 }
+            },
+            //面板屑选课查询
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
             },
         }
     };

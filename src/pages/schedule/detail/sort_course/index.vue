@@ -3,8 +3,8 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item>排课计划</a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
                 <a-breadcrumb-item>选课排课</a-breadcrumb-item>
                 <a-breadcrumb-item><router-link to="#">课时设置</router-link></a-breadcrumb-item>
             </a-breadcrumb>
@@ -23,11 +23,11 @@
         </div>
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教室设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px;background-color:#b9b9b9" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" disabled>课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting" disabled>教室设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting" disabled >课程设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray" disabled>开始排课</a-button></a-col>
             </a-row>
             <a-row class="form" style="margin-left: -150px;margin-top:60px">
                 <a-form-model :modal="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 8}" >
@@ -252,7 +252,11 @@
                     //保存课表模板
                     let {data}=await this.$api.schedule.arrangeClass.saveCoursetime({planId:this.planId,currId:this.currId})
                 }
-            }
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
         }
     };
 </script>
@@ -293,10 +297,7 @@
         background-color:#e4e4e4;
         color:black;
     }
-    .time1{
-        width: 100%;
-        height: 30px;
-        padding-top:5px;
-        background-color: #d9d9d9;
+    .bgColors{
+        background-color: #13c2c2;
     }
 </style>

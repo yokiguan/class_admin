@@ -3,8 +3,10 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">班级课表</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="adminTask">行政班排课任务</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">班级课表</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="box">
@@ -18,8 +20,7 @@
                 <div>
                     <a-tree v-model="checkedKeys"
                             :tree-data="treeData"
-                            @check="onCheck"
-                            checkable
+                            @select="onCheck"
                             style="font-size: 1.3em;"/>
                 </div>
             </a-card>
@@ -65,7 +66,7 @@
                         width: 110px" @click="classLook">按班级查看</button></a-col>
                     </a-row>
                     <a-table v-if="showTable"
-                            :rowKey="'key'"
+                            :rowKey="'activity'"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
@@ -79,36 +80,79 @@
 </template>
 <script>
     import {message} from "ant-design-vue";
+    const activity = [
+        {
+            name: "早读",
+            options: [0, 1, 2],
+            value: "morningread"
+        },
+        {
+            name: "上午",
+            options: [0, 1, 2, 3, 4],
+            value: "morning"
+        },
+        {
+            name: "中午",
+            options: [0, 1, 2],
+            value: "noon"
+        },
+        {
+            name: "下午",
+            options: [0, 1, 2, 3, 4],
+            value: "afternoon"
+        },
+        {
+            name: "晚自习",
+            options: [0, 1, 2, 3, 4],
+            value: "evening"
+        }
+    ];
     const columns = [
         {
             align: "center",
             title: " ",
-            dataIndex: 'key',
+            dataIndex: 'activity',
+            width:"3.4%"
         },
         {
-            title: '一',
+            title: '星期一',
             dataIndex: 'one',
             align: "center",
+            width: "13.8%"
         },
         {
-            title: '二',
+            title: '星期二',
             dataIndex: 'two',
             align: "center",
+            width: "13.8%"
         },
         {
-            title: '三',
+            title: '星期三',
             dataIndex: 'three',
             align: "center",
+            width: "13.8%"
         },
         {
-            title: '四',
+            title: '星期四',
             dataIndex: 'four',
             align: "center",
+            width: "13.8%"
         },
         {
-            title: '五',
+            title: '星期五',
             dataIndex: 'five',
             align: "center",
+            width: "13.8%"
+        },{
+            title: '星期六',
+            dataIndex: 'six',
+            align: "center",
+            width: "13.8%"
+        },{
+            title: '星期日',
+            dataIndex: 'seven',
+            align: "center",
+            width: "13.8%"
         },
     ];
     export default {
@@ -123,6 +167,8 @@
                 scheduleTaskId:"",
                 showTable:false,
                 gradeName:"",
+                activity,
+                currId:"",
             };
         },
         async created() {
@@ -141,25 +187,26 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name;
                 this.gradeName=result.gradeName;
+                this.currId=result.currId;
             }
             this.treeClass();
         },
         methods: {
-            onCheck(checkedKeys) {
-                console.log('onCheck', checkedKeys);
-                console.log(this.checkedKeys);
-                this.checkedKeys=[];
-                // if(this.checkedKeys==[]){
-                //     this.checkedKeys=checkedKeys;
-                // }else{
-                //     let check=checkedKeys.splice(0,1);
-                //     console.log(check);
-                //     // this.checkedKeys=
-                // }
-                this.checkedKeys=checkedKeys;
-                checkedKeys=[];
-                console.log(this.checkedKeys);
-                console.log(checkedKeys);
+            //获取课表模板相关信息
+            async modalInfo(currId) {
+                let {data}=await this.$api.basic.template.fetchTemplate({id:currId})
+                console.log(data.result);
+                let activities = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    for (let i = 1; i <= data.result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                    }
+                });
+                this.tableData = activities;
                 this.classInfo();
             },
             //获取左侧的教室树
@@ -175,8 +222,15 @@
                     this.treeData.push(numberTree);
                 }
             },
+            onCheck(checkedKeys) {
+                console.log('onCheck', checkedKeys);
+                this.checkedKeys=checkedKeys;
+                console.log(this.checkedKeys);
+                this.modalInfo(this.currId);
+            },
             //班级课表查看
             async classInfo() {
+                console.log(this.tableData);
                 let {data} = await this.$api.schedule.adminTask.classTable({
                     planId: this.planId,
                     scheduleTaskId:this.scheduleTaskId,
@@ -197,31 +251,40 @@
                            let content = this.gradeName+dataItem.subName+"_"+dataItem.teacherName;
                            const column=eval(dataItem.position)[1];
                            switch (column) {
-                               case 1:
+                               case 0:
                                    sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
                                    break;
-                               case 2:
+                               case 1:
                                    sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
                                    break;
-                               case 3:
+                               case 2:
                                    sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
                                    break;
-                               case 4:
+                               case 3:
                                    sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
                                    break;
-                               case 5:
+                               case 4:
                                    sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
                                    break;
+                               case 5:
+                                   if(sourceItem.six){
+                                       sourceItem.six=sourceItem.six ?sourceItem.six+',\n'+content:content;
+                                       break;
+                                   }
+                               case 6:
+                                   if(sourceItem.seven){
+                                       sourceItem.seven=sourceItem.seven ?sourceItem.seven+',\n'+content:content;
+                                       break;
+                                   }
                            }
                            return sourceItem
                        };
-                       dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                       dataSource[position[0]]=getInfo(this.allData[i],dataSource[position[0]]);
                    }
                    // console.log(dataSource);
-                   this.tableData=dataSource;
                    for(let i=0;i<this.tableData.length;i++){
                        // console.log(i,this.tableData[i]);
-                       if(this.tableData[i]===undefined){
+                       if(dataSource[i]===undefined){
                            // console.log(i);
                            let pushData={
                                one:"",
@@ -229,18 +292,24 @@
                                three:"",
                                four:"",
                                five:"",
+                               six:"",
+                               seven:"",
                            }
-                           this.tableData[i]=pushData;
-                           // this.tableData[i].one="";
+                           dataSource[i]=pushData;
                        }
                    }
-                   console.log(this.tableData);
-                   // console.log(this.tableData);
-                   // 编号
+                   console.log(dataSource);
                    for(let i=0;i<this.tableData.length;i++){
-                       this.tableData[i].key=i+1;
+                       this.tableData[i].one=dataSource[i].one;
+                       this.tableData[i].two=dataSource[i].two;
+                       this.tableData[i].three=dataSource[i].three;
+                       this.tableData[i].four=dataSource[i].four;
+                       this.tableData[i].five=dataSource[i].five;
+                       this.tableData[i].six=dataSource[i].six;
+                       this.tableData[i].seven=dataSource[i].seven;
                    }
                    console.log(this.tableData);
+                   this.$set(this.tableData);
                }
             },
             //按老师查看
@@ -268,6 +337,14 @@
             //返回
             back(){
                 this.$router.go(-1)
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
+            //排课任务查看
+            adminTask(){
+              this.$router.push(`/schedule/detail/task_admin/index?planId=${this.planId}`)
             },
         },
     };

@@ -1,6 +1,8 @@
 import base from '../base'; // 导入接口域名列表
 import axios from '../../axios'
 const syllabusAdministrative = base.root +'/a/syllabusAdministrative'
+const basicSettingQuery = base.root +'/a/basicSettingQuery'
+
 
 const adminTask={
     //根据老师查看课表(已调)
@@ -23,6 +25,11 @@ const adminTask={
     lookClassList(params){
         return axios.get(`${syllabusAdministrative}/getClasses.json`,{params});
     },
+    //查看老师列表
+    lookTeacher(params){
+        return axios.get(`${basicSettingQuery}/getTeacherListSchedule.json`,{params});
+    }
+
 
 }
 export default adminTask;

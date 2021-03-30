@@ -3,8 +3,10 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">科目课表</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="adminTask">行政班排课任务</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">科目课表</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="box">
@@ -15,13 +17,10 @@
                     <span style="font-size: 1.2em;margin-left: 10px">全部展开</span>
                 </a-row>
                 <div style="width: 100%; height: 1px;margin-top: 10px;border-top: solid black 1px;"/>
-                <div>
-                    <a-tree v-model="checkedKeys"
-                            :tree-data="treeData"
-                            @check="onCheck"
-                            checkable
-                            style="font-size: 1.3em;"/>
-                </div>
+                <a-tree v-model="checkedKeys"
+                        :tree-data="treeData"
+                        @select="onCheck"
+                        style="font-size: 1.3em;"/>
             </a-card>
             <div class="right">
                 <div class="title">
@@ -65,7 +64,7 @@
                         width: 110px" @click="classLook">按班级查看</button></a-col>
                     </a-row>
                     <a-table v-if="showTable"
-                            :rowKey="'key'"
+                            :rowKey="'activity'"
                              :columns="columns"
                              :data-source="tableData"
                              :pagination="false"
@@ -83,39 +82,83 @@
         {
             align: "center",
             title: " ",
-            dataIndex: 'key',
+            dataIndex: 'activity',
+            width:"3.4%"
         },
         {
-            title: '一',
+            title: '星期一',
             dataIndex: 'one',
             align: "center",
+            width: "13.8%"
         },
         {
-            title: '二',
+            title: '星期二',
             dataIndex: 'two',
             align: "center",
+            width: "13.8%"
         },
         {
-            title: '三',
+            title: '星期三',
             dataIndex: 'three',
             align: "center",
+            width: "13.8%"
         },
         {
-            title: '四',
+            title: '星期四',
             dataIndex: 'four',
             align: "center",
+            width: "13.8%"
         },
         {
-            title: '五',
+            title: '星期五',
             dataIndex: 'five',
             align: "center",
+            width: "13.8%"
+        },{
+            title: '星期六',
+            dataIndex: 'six',
+            align: "center",
+            width: "13.8%"
+        },{
+            title: '星期日',
+            dataIndex: 'seven',
+            align: "center",
+            width: "13.8%"
         },
+    ];
+    const activity = [
+        {
+            name: "早读",
+            options: [0, 1, 2],
+            value: "morningread"
+        },
+        {
+            name: "上午",
+            options: [0, 1, 2, 3, 4],
+            value: "morning"
+        },
+        {
+            name: "中午",
+            options: [0, 1, 2],
+            value: "noon"
+        },
+        {
+            name: "下午",
+            options: [0, 1, 2, 3, 4],
+            value: "afternoon"
+        },
+        {
+            name: "晚自习",
+            options: [0, 1, 2, 3, 4],
+            value: "evening"
+        }
     ];
     export default {
         data() {
             return {
                 treeData:[],
                 columns,
+                activity,
                 tableData:[],
                 checkedKeys:[],
                 planData:"",
@@ -123,6 +166,8 @@
                 scheduleTaskId:"",
                 showTable:false,
                 gradeName:"",
+                choose:false,
+                currId:"",
             };
         },
         async created() {
@@ -141,27 +186,51 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name;
                 this.gradeName=result.gradeName;
+                this.currId=result.currId;
             }
             this.treeTeacher();
         },
         methods: {
+            //获取课表模板相关信息
+            async modalInfo(currId) {
+                // console.log(currId);
+                let {data}=await this.$api.basic.template.fetchTemplate({id:currId})
+                console.log(data.result);
+                let activities = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    for (let i = 1; i <= data.result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                    }
+                });
+                this.tableData = activities;
+                this.subjectInfo();
+            },
             onCheck(checkedKeys) {
                 console.log('onCheck', checkedKeys);
                 this.checkedKeys=checkedKeys;
-                this.subjectInfo();
+                this.modalInfo(this.currId);
+                // this.subjectInfo();
             },
             //获取左侧的教室树
             async treeTeacher(){
                 //根据年级信息调用接口
-                let {data:{result,success}}=await this.$api.schedule.adminTask.lookCourseList({planId:this.planId});
-                console.log(result);
+                let {data}=await this.$api.schedule.adminTask.lookCourseList({planId:this.planId});
+                console.log(data.result);
                 // console.log(data.rows);
-                this.treeData=[];
-                for(let i=0;i<result.length;i++){
-                    let numberTree={};
-                    numberTree.title=result[i].subName;
-                    numberTree.key=result[i].subId;
-                    this.treeData.push(numberTree);
+                if(data&&data.success){
+                    this.treeData=[];
+                    for(let i=0;i<data.result.length;i++){
+                        let numberTree={};
+                        numberTree.title=data.result[i].subName;
+                        numberTree.key=data.result[i].subId;
+                        this.treeData.push(numberTree);
+                    }
+                }else{
+                    message.warning(data.message);
                 }
             },
             //教师课表查看
@@ -183,35 +252,42 @@
                        let position=eval(this.allData[i].position);
                        const getInfo=(dataItem,sourceItem={})=>{
                            if(!sourceItem) sourceItem={};
-                           let content = dataItem.teacherName +"——"+this.gradeName+dataItem.className;
+                           let content = dataItem.teacherName +"-"+this.gradeName+dataItem.className;
                            const column=eval(dataItem.position)[1];
                            switch (column) {
-                               case 1:
+                               case 0:
                                    sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
                                    break;
-                               case 2:
+                               case 1:
                                    sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
                                    break;
-                               case 3:
+                               case 2:
                                    sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
                                    break;
-                               case 4:
+                               case 3:
                                    sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
                                    break;
-                               case 5:
+                               case 4:
                                    sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
                                    break;
+                               case 5:
+                                   if(sourceItem.six){
+                                       sourceItem.six=sourceItem.six ?sourceItem.six+',\n'+content:content;
+                                       break;
+                                   }
+                               case 6:
+                                   if(sourceItem.seven){
+                                       sourceItem.seven=sourceItem.seven ?sourceItem.seven+',\n'+content:content;
+                                       break;
+                                   }
                            }
                            return sourceItem
                        };
-                       dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                       dataSource[position[0]]=getInfo(this.allData[i],dataSource[position[0]]);
                    }
-                   // console.log(dataSource);
-                   this.tableData=dataSource;
-                   console.log(this.tableData);
                    for(let i=0;i<this.tableData.length;i++){
                        // console.log(i,this.tableData[i]);
-                       if(this.tableData[i]===undefined){
+                       if(dataSource[i]===undefined){
                            // console.log(i);
                            let pushData={
                                one:"",
@@ -219,17 +295,24 @@
                                three:"",
                                four:"",
                                five:"",
+                               six:"",
+                               seven:"",
                            }
-                           this.tableData[i]=pushData;
-                           // this.tableData[i].one="";
+                           dataSource[i]=pushData;
                        }
                    }
-                   console.log(this.tableData)
-                   // 编号
+                   console.log(dataSource);
                    for(let i=0;i<this.tableData.length;i++){
-                       this.tableData[i].key=i+1;
+                       this.tableData[i].one=dataSource[i].one;
+                       this.tableData[i].two=dataSource[i].two;
+                       this.tableData[i].three=dataSource[i].three;
+                       this.tableData[i].four=dataSource[i].four;
+                       this.tableData[i].five=dataSource[i].five;
+                       this.tableData[i].six=dataSource[i].six;
+                       this.tableData[i].seven=dataSource[i].seven;
                    }
                    console.log(this.tableData);
+                   this.$set(this.tableData);
                }
             },
             //按老师查看
@@ -257,6 +340,14 @@
                 }else{
                     message.info("删除已发布课表失败");
                 }
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
+            //排课任务查看
+            adminTask(){
+                this.$router.push(`/schedule/detail/task_admin/index?planId=${this.planId}`)
             },
         },
     };

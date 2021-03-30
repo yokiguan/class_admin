@@ -3,7 +3,9 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item>行政班排课</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="">规则设置</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
@@ -17,11 +19,12 @@
         </div>
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting" :disabled="choose">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px;background-color:#b9b9b9" @click="ruleSetting ">规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray" disabled>开始排课</a-button></a-col>
             </a-row>
             <div class="table">
                 <template>
@@ -216,16 +219,16 @@
                 <a-button key="back" @click="handleCancelSubTime">取消</a-button>
             </template>
             <div class="model1_head">
-                <a-form-model :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
+                <a-form-model :model="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
                     <a-form-model-item label="类型">
-                        <a-select :default-value="subType" placeholder="不使用/优先使用/必须使用" @change="changeSubType">
+                        <a-select v-model="form.subType" placeholder="不使用/优先使用/必须使用">
                             <a-select-option value="1">不使用</a-select-option>
                             <a-select-option value="2">优先使用</a-select-option>
                             <a-select-option value="3">必须使用</a-select-option>
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择天">
-                        <a-select placeholder="星期一" :default-value="subDay" @change="changeSubDay">
+                        <a-select placeholder="星期一" v-model="form.subDay">
                             <a-select-option value="1">星期一</a-select-option>
                             <a-select-option value="2">星期二</a-select-option>
                             <a-select-option value="3">星期三</a-select-option>
@@ -236,9 +239,7 @@
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择节">
-                        <a-checkbox-group @change="changeSubTime"
-                                :default-value="subTimeValue"
-                                :options="subOption"></a-checkbox-group>
+                        <a-checkbox-group v-model="form.subTimeValue" :options="subOption"></a-checkbox-group>
                     </a-form-model-item>
                 </a-form-model>
             </div>
@@ -252,16 +253,16 @@
                 <a-button key="back" @click="handleCancelTeaTime">取消</a-button>
             </template>
             <div class="model1_head">
-                <a-form-model :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
+                <a-form-model :model="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
                     <a-form-model-item label="类型">
-                        <a-select :default-value="teacherType" placeholder="不使用/优先使用/必须使用" @change="changeTeacherType">
+                        <a-select v-model="form.teacherType" placeholder="不使用/优先使用/必须使用">
                             <a-select-option value="1">不使用</a-select-option>
                             <a-select-option value="2">优先使用</a-select-option>
                             <a-select-option value="3">必须使用</a-select-option>
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择天">
-                        <a-select placeholder="星期一" :default-value="teacherDay" @change="changeteacherDay">
+                        <a-select placeholder="星期一" v-model="form.teacherDay">
                             <a-select-option value="1">星期一</a-select-option>
                             <a-select-option value="2">星期二</a-select-option>
                             <a-select-option value="3">星期三</a-select-option>
@@ -272,9 +273,7 @@
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择节">
-                        <a-checkbox-group @change="changeteacherTime"
-                                          :default-value="teacherTimeValue"
-                                          :options="subOption"></a-checkbox-group>
+                        <a-checkbox-group v-model="form.teacherTimeValue" :options="subOption"></a-checkbox-group>
                     </a-form-model-item>
                 </a-form-model>
             </div>
@@ -332,16 +331,16 @@
                 <a-button key="back" @click="handleCancelClaTime">取消</a-button>
             </template>
             <div class="model1_head">
-                <a-form-model :form="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
+                <a-form-model :model="form" :label-col="{ span: 3 }" :wrapper-col="{ span: 18}">
                     <a-form-model-item label="类型">
-                        <a-select :default-value="classType" placeholder="不使用/优先使用/必须使用" @change="changeClassType">
+                        <a-select v-model="form.classType" placeholder="不使用/优先使用/必须使用">
                             <a-select-option value="1">不使用</a-select-option>
                             <a-select-option value="2">优先使用</a-select-option>
                             <a-select-option value="3">必须使用</a-select-option>
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择天">
-                        <a-select placeholder="星期一" :default-value="classDay" @change="changeClassDay">
+                        <a-select placeholder="星期一" v-model="form.classDay">
                             <a-select-option value="1">星期一</a-select-option>
                             <a-select-option value="2">星期二</a-select-option>
                             <a-select-option value="3">星期三</a-select-option>
@@ -352,9 +351,7 @@
                         </a-select>
                     </a-form-model-item>
                     <a-form-model-item label="选择节">
-                        <a-checkbox-group @change="changeClassTime"
-                                          :default-value="classTimeValue"
-                                          :options="subOption"></a-checkbox-group>
+                        <a-checkbox-group v-model="form.classTimeValue" :options="subOption"></a-checkbox-group>
                     </a-form-model-item>
                 </a-form-model>
             </div>
@@ -395,17 +392,33 @@
             align:'center',
         },
     ]
-    const activity=[
+    const activity = [
         {
-            name:"上午",
-            options:[0,1,2,3,4],
-            value:"morning"
-        }, {
-            name:"下午",
-            options:[0,1,2,3,4],
-            value:"afternoon"
+            name: "早读",
+            options: [0, 1, 2],
+            value: "morningread"
+        },
+        {
+            name: "上午",
+            options: [0, 1, 2, 3, 4],
+            value: "morning"
+        },
+        {
+            name: "中午",
+            options: [0, 1, 2],
+            value: "noon"
+        },
+        {
+            name: "下午",
+            options: [0, 1, 2, 3, 4],
+            value: "afternoon"
+        },
+        {
+            name: "晚自习",
+            options: [0, 1, 2, 3, 4],
+            value: "evening"
         }
-    ]
+    ];
     const column2=[
         {
             title:'',
@@ -588,13 +601,8 @@
                 column1,
                 studyTimeData:[],
                 subOption:[],
-                subTimeValue:[],
                 subEditTimeValue:[],
                 subTimeRegularVisit:false,
-                subType:"",
-                subEditType:"",
-                subDay:"",
-                subEditDay:"",
                 subjectId:"",
                 activity,
                 editSubIndex:-1,
@@ -603,30 +611,18 @@
                 teacherTimeData:[],
                 teacherTimeRegularVisit:false,
                 editTeacherIndex:-1,
-                teacherTimeValue:[],
-                teacherEditTimeValue:[],
-                teacherType:"",
-                teacherEditType:"",
-                teacherDay:"",
-                teacherEditDay:"",
                 teacherVisit:false,
                 teachName:"",
                 teachId:"",
                 selectedRowKeys: [], // Check here to configure the default column
                 selectedRows:[],
                 allTeacherData:[],
-
+                chooseSubjectTime:[],
                 //班级时间规则
                 column3,
                 classTimeData:[],
                 classTimeRegularVisit:false,
                 editclassIndex:-1,
-                classTimeValue:[],
-                classEditTimeValue:[],
-                classType:"",
-                classEditType:"",
-                classDay:"",
-                classEditDay:"",
                 classData:[],
                 //禁止相邻规则
                 column4,
@@ -646,17 +642,30 @@
                 classType:"",
                 subject:[],
                 teacherName:[],
-                form:{},
+                form:{
+                    subType:"",
+                    subDay:"",
+                    subTimeValue:[],
+                    teacherTimeValue:[],
+                    teacherType:"",
+                    teacherDay:"",
+                    classType:"",
+                    classDay:"",
+                    classTimeValue:[],
+                },
                 subjectData:[],
+                choose:false,
+
+                morningread:null,
+                morning:null,
+                aftrernoon:null,
+                noon:null,
+                evening:null,
             };
         },
         async created() {
             this.chooseCourseInfo();
-            this.subjectTimeRule();
             this.subjectInfo();
-            this.teacherTimeRule();
-            this.classTimeRule();
-            this.searchClassInfo();
             this.banNearRule();
             this.singDoubleRule();
         },
@@ -672,7 +681,7 @@
                 let queryTaskString = (window.location.hash || " ").split(/[?&]/)[2];
                 let scheduleTaskId = (queryTaskString || " ").split('=')[1];
                 this.scheduleTaskId= scheduleTaskId;
-                console.log( this.scheduleTaskId);
+                // console.log( this.scheduleTaskId);
                 if (planId) {
                     //获取单个选课计划的信息
                     let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
@@ -680,9 +689,48 @@
                     this.gradeName=result.gradeName;
                     this.gradeId=result.gradeId;
                     this.currId=result.currId;
+                    // console.log(this.currId);
                     this.classType=result.type;
-                    console.log(this.classType);
+                    // console.log(this.classType);
+                    this.morning=result.morning;
+                    this.morningread=result.morningread;
+                    this.noon=result.noon;
+                    this.evening=result.evening;
+                    this.aftrernoon=result.aftrernoon;
+                    if(this.classType==2){
+                        this.choose=true;
+                    }
+                    this.modalInfo();
+                    this.searchClassInfo();
                 }
+            },
+            //获取节次时间
+            async modalInfo() {
+                // console.log(this.currId);
+                //获取时间节
+                let {data} = await this.$api.basic.template.fetchTemplate({id: this.currId});
+                // console.log(data);
+                let activities=[];
+                let list=[...this.activity];
+                list.forEach(item=>{
+                    for(let i=1;i<=data.result[item.value];i++){
+                        activities.push({
+                            label: item.name+i,
+                            value:item.value+i,
+                        });
+                    }
+                });
+                this.subOption=activities;
+                // console.log(this.subOption);
+                for(let i=0;i<this.subOption.length;i++){
+                    this.subOption[i].key=i;
+                }
+                this.$set(this.subOption);
+                // console.log(this.subOption);
+                // console.log(list);
+                this.subjectTimeRule();
+                this.teacherTimeRule();
+                this.classTimeRule();
             },
             //学科时间规则
             //=========================================================
@@ -703,22 +751,20 @@
                                 }
                                 // console.log(timeDay);
                             }
-                        let time1 = [];
                         //==================================
                         //节次转换
                         //     //字符串转换为数组
                         let timeLesson = timeItem.timeLesson.split(',');
                         // console.log(timeLesson);
-                        for (let i = 0; i < timeLesson.length; i++) {
-                                // console.log(timeLesson[i]-1);
-                                if (timeLesson[i] < 5) {
-                                    time1 = [...time1, "上午第" + timeLesson[i] + "节"];
-                                } else {
-                                    let lesson = timeLesson[i] - 4
-                                    time1 = [...time1, "下午第" + lesson + "节"];
+                        let keyDatas=[];
+                        for(let i=0;i<this.subOption.length;i++){
+                            for(let j=0;j<timeLesson.length;j++){
+                                if(Number(timeLesson[j])===this.subOption[i].key){
+                                    keyDatas.push(this.subOption[i].label);
                                 }
-                                // console.log(time1);
                             }
+                        }
+                        // console.log(keyDatas);
                         //=================================================
                         let timeType = "";
                         let type = timeItem.timeType
@@ -727,7 +773,7 @@
                                 case "2":timeType = "优先使用";break;
                                 case "3":timeType = "必须使用";break;
                             }
-                        item.time1=timeType+timeDay+time1;
+                        item.time1=timeType+timeDay+keyDatas.toString();
                     }
                 })
                 // console.log(this.studyTimeData);
@@ -740,7 +786,7 @@
                     planId: this.planId,
                     scheduleType: 1
                 });
-                console.log(data);
+                // console.log(data);
                 for(let i in data.result){
                     let pushData={
                         subId:data.result[i].subId,
@@ -748,7 +794,7 @@
                     }
                     this.subjectData.push(pushData);
                 }
-                console.log(this.subjectData);
+                // console.log(this.subjectData);
             },
             //学科设置规则删除
             subjectTimeDelete(id){
@@ -758,182 +804,105 @@
             //获取删除接口
             async delete(ids){
                 let {data}=await this.$api.schedule.adminClass.deleteRule({ids:[ids]});
-                console.log(data);
+                // console.log(data);
                 if(data&&data.success){
                     message.info("删除成功！");
                 }else{
                     message.info("删除失败！");
                 }
             },
-            //获取节次时间
-            async modalInfo() {
-                let {data} = await this.$api.basic.template.fetchTemplate({id: this.currId});
-                // console.log(data);
-                let activities=[];
-                let list=[...this.activity];
-                list.forEach(item=>{
-                    for(let i=1;i<=data.result[item.value];i++){
-                        activities.push({
-                            label: item.name+i,
-                            value:item.value+i,
-                        });
-                    }
-                });
-                this.subOption=activities;
-                console.log(this.subOption);
-                // console.log(list);
-            },
             //学科时间规则的课时设置
             subTimeRegularSettingEdit(index){
-                console.log(index);
+                // console.log(index);
                 this.editSubIndex=index;
                 this.subTimeRegularVisit = true;
-                this.modalInfo();
-               if(this.studyTimeData[index].timeRuleSetting){
-                   this.subDay=this.subEditDay=this.studyTimeData[index].timeRuleSetting[0].timeDay;
-                   let timeType=this.studyTimeData[index].timeRuleSetting[0].timeType;
-                   switch (timeType) {
-                       case "1":this.subType=this.subEditType="不使用";break;
-                       case "2":this.subType=this.subEditType="优先使用";break;
-                       case "3":this.subType=this.subEditType="必须使用";break;
-                   }
-                   //字符串转化为数组
-                   let timeLesson=this.studyTimeData[index].timeRuleSetting[0].timeLesson.split(',');
-                   console.log(timeLesson);
-                   for(let i in timeLesson){
-                       if(timeLesson[i]<5){
-                           let text="morning"+timeLesson[i];
-                           this.subTimeValue.push(text);
-                           // console.log(this.subTimeValue);
-                       }else{
-                           let text="afternoon"+timeLesson[i]-4;
-                           this.subTimeValue.push(text);
-                       }
-                   }
-                   console.log(this.subTimeValue);
-                   this.subEditTimeValue=this.subTimeValue;
-               }else{
-                   this.timeType="";
-                   this.timeDay="";
-                   this.timeLesson=[];
-               }
+                // console.log(this.studyTimeData[this.editSubIndex].timeRuleSetting);
+                this.form.subType=this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeType;
+                this.form.subDay=this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeDay;
+                let timeRule=this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeLesson.split(",");
+                let timeLesson=[];
+                // console.log(this.subOption);
+                for(let i=0;i<this.subOption.length;i++){
+                    for(let j=0;j<timeRule.length;j++){
+                        if(Number(timeRule[j])===this.subOption[i].key){
+                            timeLesson.push(this.subOption[i].value);
+                        }
+                    }
+                }
+                // console.log(timeLesson);
+                this.form.subTimeValue=timeLesson;
             },
             //保存学科时间设置时间规则弹框
             handleOkSubTime(){
-                this.subTimeRegularVisit = false;
-                let list=[...this.subEditTimeValue];
-                let chooseValue=[];
-                list.forEach(item=>{
-                    // console.log(item);
-                    let num=-1;
-                    switch (item) {
-                        case "morning1":num=1;break;
-                        case "morning2":num=2;break;
-                        case "morning3":num=3;break;
-                        case "morning4":num=4;break;
-                        case "afternoon1":num=5;break;
-                        case "afternoon2":num=6;break;
-                        case "afternoon3":num=7;break;
-                        case "afternoon4":num=8;break;
+                // console.log(this.form.subDay);
+                // console.log(this.form.subType);
+                // console.log(this.form.subTimeValue);
+                if(this.form.subTimeValue==[] || this.form.subType=="" ||this.form.subDay==""){
+                    message.error("输入内容存在空值，请检查！");
+                }else {
+                    this.subTimeRegularVisit = false;
+                    let keyDatas=[];
+                    for(let i=0;i<this.subOption.length;i++){
+                        for(let j=0;j<this.form.subTimeValue.length;j++){
+                            if(this.form.subTimeValue[j]===this.subOption[i].value){
+                                keyDatas.push(this.subOption[i].key);
+                            }
+                        }
                     }
-                    chooseValue.push(num);
-                })
-                console.log(chooseValue);
-               if(this.studyTimeData[this.editSubIndex].timeRuleSetting){
-                   this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeDay=this.subEditDay;
-                   this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeType=this.subEditType;
-                   // this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeLesson=this.subType;
-                   // console.log(this.subEditTimeValue);
-                   this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeLesson=chooseValue.toString();
-                   console.log(this.studyTimeData[this.editSubIndex].timeRuleSetting[0]);
-               }else{
-                   let pushData={
-                       timeDay:this.subEditDay,
-                       timeType:this.subEditType,
-                       timeLesson:chooseValue.toString()
-                   }
-                   console.log(pushData);
-                   this.studyTimeData[this.editSubIndex].timeRuleSetting=[pushData];
-               }
-                // //星期转换
-                // let timeDay="";
-                // for(let i=1;i<8;i++){
-                //     if(this.subEditDay==i){
-                //         timeDay="星期"+i;
-                //     }
-                //     // console.log(timeDay);
-                // }
-                // let time1=[];
-                // //==================================
-                // //节次转换
-                // for(let i=0;i<chooseValue.length;i++){
-                //     // console.log(timeLesson[i]-1);
-                //     if(chooseValue[i]<5){
-                //         time1=[...time1,"上午第"+chooseValue[i]+"节"];
-                //     }else{
-                //         let lesson=chooseValue[i]-4
-                //         time1=[...time1,"下午第"+lesson+"节"];
-                //     }
-                //     // console.log(time1);
-                // }
-                // //=================================================
-                // let timeType="";
-                // let type=this.subEditType
-                // console.log(type);
-                // switch (type) {
-                //     case "0":timeType="不使用";break;
-                //     case "1":timeType="优先使用";break;
-                //     case "2":timeType="必须使用";break;
-                // }
-                // this.studyTimeData[this.editSubIndex].time1=timeType+timeDay+time1;
-                // console.log(this.studyTimeData);
+                    // console.log(keyDatas);
+                    // console.log(this.studyTimeData[this.editSubIndex].timeRuleSetting);
+                    if(this.studyTimeData[this.editSubIndex].timeRuleSetting==null){
+                        let pushData={
+                            timeDay:this.form.subDay,
+                            timeType:this.form.subType,
+                            timeLesson:keyDatas.toString()
+                        }
+                        // console.log(pushData);
+                        this.studyTimeData[this.editSubIndex].timeRuleSetting=[];
+                        this.studyTimeData[this.editSubIndex].timeRuleSetting.push(pushData);
+                    }else{
+                        this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeDay=this.form.subDay;
+                        this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeType=this.form.subType;
+                        this.studyTimeData[this.editSubIndex].timeRuleSetting[0].timeLesson=keyDatas.toString();
+                    }
+                    // console.log(this.studyTimeData[this.editSubIndex].timeRuleSetting);
+                    this.form.subDay="";
+                    this.form.subTimeValue=[];
+                    this.form.subType="";
+                }
             },
             //关闭学科时间设置时间规则弹框
             handleCancelSubTime(){
                 this.subTimeRegularVisit = false;
+                this.form.subDay="";
+                this.form.subTimeValue=[];
+                this.form.subType="";
             },
             //添加学科时间规则(添加一项）
-            addSubjectTimeRegular(){
-                this. studyTimeData.unshift({
-                    id:"",
-                    subId:"",
-                    subName:"",
-                    time1:'',
-                    timeSetting:[],
-                })
+            async addSubjectTimeRegular(){
                 let addData={
                     planId:this.planId,
-                    ruleType:"1",
+                    ruleType:1,
                 }
-                this.saveSubTime(addData);
-                this.subjectTimeRule();
-                console.log(this.studyTimeData);
+                let {data}=await this.$api.schedule.adminClass.addRuleSetting(addData);
+                // console.log(data);
+                if(data&&data.success){
+                    message.success("新建学科时间规则成功！");
+                    this.subjectTimeRule();
+                }else{
+                    message.error("新建学科时间规则失败！");
+                }
             },
             //修改学科
             async changSubId(info,index){
               this.studyTimeData[index].subId=info;
-              console.log(info);
-              console.log(this.studyTimeData[index].subId);
-            },
-            //改变类型
-            changeSubType(info){
-                this.subEditType=info;
-                console.log(this.subEditType)
-            },
-            //选择星期几
-            changeSubDay(info){
-                this.subEditDay=info;
-                console.log(this.subEditDay);
-            },
-            //选择节
-            changeSubTime(info){
-                console.log(info);
-                this.subEditTimeValue=info;
-                console.log(this.subEditTimeValue);
+              // console.log(info);
+              // console.log(this.studyTimeData[index].subId);
             },
             //保存学科时间规则设置
-            subjectTimeSave(index){
-                console.log(index);
+            async subjectTimeSave(index){
+                // console.log(index);
+                // console.log(this.studyTimeData[index]);
                 console.log(this.studyTimeData[index]);
                 let addData={
                     id:this.studyTimeData[index].id,
@@ -947,15 +916,13 @@
                     }]
                 }
                 console.log(addData);
-                this.saveSubTime(addData);
-                this.subjectTimeRule()
-            },
-            //获取保存接口
-            async saveSubTime(addData){
                 let {data}=await this.$api.schedule.adminClass.addRuleSetting(addData);
-                console.log(data);
+                // console.log(data);
                 if(data&&data.success){
-                    message.info("保存成功！");
+                    this.subjectTimeRule()
+                    message.success("保存成功！");
+                }else{
+                    message.error("保存失败！");
                 }
             },
             //=======================================================
@@ -963,9 +930,10 @@
             //=========================================================
             //教师时间规则查看
             async teacherTimeRule(){
-                this.teacherTimeData=[];
+                // this.teacherTimeData=[];
                 //获取教室时间规则
-                let {data:{result,success}}=await this.$api.schedule.adminClass.searchTeacherTimeRule({planId:this.planId})
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchTeacherTimeRule({
+                    planId:this.planId})
                 // console.log(result);
                 this.teacherTimeData=result;
                 this.teacherTimeData.forEach(item=>{
@@ -980,22 +948,20 @@
                                 }
                                 // console.log(timeDay);
                             }
-                        let time1 = [];
                         //==================================
                         //节次转换
-                        //     //字符串转换为数组
                         let timeLesson = timeItem.timeLesson.split(',');
                         // console.log(timeLesson);
-                        for (let i = 0; i < timeLesson.length; i++) {
-                            // console.log(timeLesson[i]-1);
-                            if (timeLesson[i] < 5) {
-                                time1 = [...time1, "上午第" + timeLesson[i] + "节"];
-                                } else {
-                                let lesson = timeLesson[i] - 4
-                                time1 = [...time1, "下午第" + lesson + "节"];
+                        let keyDatas=[];
+                        // console.log(this.subOption);
+                        for(let i=0;i<this.subOption.length;i++){
+                            for(let j=0;j<timeLesson.length;j++){
+                                if(Number(timeLesson[j])===this.subOption[i].key){
+                                    keyDatas.push(this.subOption[i].label);
+                                }
                             }
-                            // console.log(time1);
                         }
+                        // console.log(keyDatas);
                         //=================================================
                         let timeType = "";
                         let type = timeItem.timeType
@@ -1005,7 +971,7 @@
                             case "2":timeType = "优先使用";break;
                             case "3":timeType = "必须使用";break;
                         }
-                        item.time1=timeType+timeDay+time1;
+                        item.time1=timeType+timeDay+keyDatas.toString();
                     }
                 })
                 // console.log(this.teacherTimeData);
@@ -1019,92 +985,76 @@
             teacherTimeRegularSettingEdit(index){
                 this.editTeacherIndex=index;
                 this.teacherTimeRegularVisit=true;
-                this.modalInfo();
-                console.log(this.teacherTimeData[index]);
-                if(this.teacherTimeData[index].timeRuleSetting){
-                    this.teacherDay=this.teacherEditDay=this.teacherTimeData[index].timeRuleSetting[0].timeDay;
-                    let timeType=this.teacherTimeData[index].timeRuleSetting[0].timeType;
-                    switch (timeType) {
-                        case "1":this.teacherType=this.teacherEditType= "不使用";break;
-                        case "2":this.teacherType=this.teacherEditType = "优先使用";break;
-                        case "3":this.teacherType=this.teacherEditType = "必须使用";break;
-                    }
-                    //字符串转化为数组
-                    let timeLesson=this.teacherTimeData[index].timeRuleSetting[0].timeLesson.split(',');
-                    console.log(timeLesson);
-                    for(let i in timeLesson){
-                        if(timeLesson[i]<5){
-                            let text="morning"+timeLesson[i];
-                            this.teacherTimeValue.push(text);
-                            // console.log(this.subTimeValue);
-                        }else{
-                            let text="afternoon"+timeLesson[i]-4;
-                            this.teacherTimeValue.push(text);
+                console.log(this.teacherTimeData[index].timeRuleSetting);
+                this.form.teacherType=this.teacherTimeData[index].timeRuleSetting[0].timeType;
+                this.form.teacherDay=this.teacherTimeData[index].timeRuleSetting[0].timeDay;
+                let timeRule=this.teacherTimeData[index].timeRuleSetting[0].timeLesson.split(",");
+                let timeLesson=[];
+                // console.log(this.subOption);
+                for(let i=0;i<this.subOption.length;i++){
+                    for(let j=0;j<timeRule.length;j++){
+                        if(Number(timeRule[j])===this.subOption[i].key){
+                            timeLesson.push(this.subOption[i].value);
                         }
                     }
-                    console.log(this.teacherTimeValue);
-                    this.teacherEditTimeValue=this.teacherTimeValue;
-                }else{
-                    this.timeType="";
-                    this.timeDay="";
-                    this.timeLesson=[];
                 }
+                // console.log(timeLesson);
+                this.form.teacherTimeValue=timeLesson;
             },
             //保存教师时间规则弹框
             handleOkTeaTime(){
-                this.teacherTimeRegularVisit=false;
-                let list=[...this.teacherEditTimeValue];
-                let chooseValue=[];
-                list.forEach(item=>{
-                    // console.log(item);
-                    let num=-1;
-                    switch (item) {
-                        case "morning1":num=1;break;
-                        case "morning2":num=2;break;
-                        case "morning3":num=3;break;
-                        case "morning4":num=4;break;
-                        case "afternoon1":num=5;break;
-                        case "afternoon2":num=6;break;
-                        case "afternoon3":num=7;break;
-                        case "afternoon4":num=8;break;
-                    }
-                    chooseValue.push(num);
-                })
-                console.log(chooseValue);
-                if(this.teacherTimeData[this.editTeacherIndex].timeRuleSetting){
-                    this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeDay=this.teacherEditDay;
-                    this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeType=this.teacherEditType;
-                    this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeLesson=chooseValue.toString();
-                    console.log(this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0]);
+                if(this.form.teacherTimeValue==[] || this.form.teacherType=="" ||this.form.teacherDay==""){
+                    message.error("输入内容存在空值，请检查！");
                 }else{
-                    let pushData={
-                        timeDay:this.teacherEditDay,
-                        timeType:this.teacherEditType,
-                        timeLesson:chooseValue.toString()
+                    this.teacherTimeRegularVisit=false;
+                    let keyDatas=[];
+                    for(let i=0;i<this.subOption.length;i++){
+                        for(let j=0;j<this.form.teacherTimeValue.length;j++){
+                            if(this.form.teacherTimeValue[j]===this.subOption[i].value){
+                                keyDatas.push(this.subOption[i].key);
+                            }
+                        }
                     }
-                    console.log(pushData);
-                    this.teacherTimeData[this.editTeacherIndex].timeRuleSetting=[pushData];
+                    if(this.teacherTimeData[this.editTeacherIndex].timeRuleSetting==null){
+                        let pushData={
+                            timeDay:this.form.teacherDay,
+                            timeType:this.form.teacherType,
+                            timeLesson:keyDatas.toString()
+                        }
+                        this.teacherTimeData[this.editTeacherIndex].timeRuleSetting=[];
+                        this.teacherTimeData[this.editTeacherIndex].timeRuleSetting.push(pushData);
+                    }else{
+                        this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeDay=this.form.teacherDay;
+                        this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeType=this.form.teacherType;
+                        this.teacherTimeData[this.editTeacherIndex].timeRuleSetting[0].timeLesson=keyDatas.toString();
+                    }
+                    console.log(this.teacherTimeData[this.editTeacherIndex].timeRuleSetting);
+                    this.form.teacherDay="";
+                    this.form.teacherType="";
+                    this.form.teacherTimeValue=[];
                 }
             },
             //关闭教师时间规则弹框
             handleCancelTeaTime(){
                 this.teacherTimeRegularVisit=false;
+                this.form.teacherDay="";
+                this.form.teacherType="";
+                this.form.teacherTimeValue=[];
             },
             //添加教师时间规则(添加一项)
-            addTeacherTimeRegular(){
-                this.teacherTimeData.unshift({
-                    id:"",
-                    teacherId:"",
-                    teacherName:"",
-                    time1:"",
-                    timeSetting:[],
-                })
+            async addTeacherTimeRegular(){
                 let addData={
                     planId:this.planId,
                     ruleType:"2",
                 }
-                this.saveSubTime(addData);
-                this.teacherTimeRule();
+                let {data}=await this.$api.schedule.adminClass.addRuleSetting(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.success("新建教师时间规则成功！");
+                    this.teacherTimeRule();
+                }else{
+                    message.error("新建教师时间规则失败！");
+                }
             },
             //编辑老师
             addTeacher(index){
@@ -1120,7 +1070,7 @@
             //获取老师信息
             async getTeacherData(pushData){
                 let {data:{result,success}}=await this.$api.schedule.adminClass.searchTeacher(pushData);
-                console.log(result);
+                // console.log(result);
                 this.allTeacherData=result[0].gradeDtos;
                 // console.log(this.allTeacherData);
                 let allData=[];
@@ -1147,24 +1097,8 @@
                 console.log(this.selectedRowKeys);
                 console.log(this.selectedRows);
             },
-            //改变类型
-            changeTeacherType(info){
-                this.teacherEditType=info;
-                console.log(this.teacherEditType)
-            },
-            //选择星期几
-            changeteacherDay(info){
-                this.teacherEditDay=info;
-                console.log(this.teacherEditDay);
-            },
-            ////修改教师节
-            changeteacherTime(info){
-                console.log(info);
-                this.teacherEditTimeValue=info;
-                console.log(this.teacherEditTimeValue);
-            },
             //保存教师时间规则
-            teacherTimeSave(index){
+            async teacherTimeSave(index){
                 console.log(index);
                 console.log(this.teacherTimeData[index].teacherId);
                 console.log(this.teacherTimeData[index]);
@@ -1180,8 +1114,14 @@
                     }]
                 }
                 console.log(addData);
-                this.saveSubTime(addData);
-                this.teacherTimeRule();
+                let {data}=await this.$api.schedule.adminClass.addRuleSetting(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.success("保存成功！");
+                    this.teacherTimeRule();
+                }else{
+                    message.error("保存失败！")
+                }
             },
             //选择课程
             chooseSubject(){
@@ -1213,11 +1153,25 @@
                 this.getTeacherData(pushData);
             },
             //保存编辑老师
-            handleOk(){
+            async handleOk(){
                 this.teacherVisit=false;
                 this.teacherTimeData[this.teachId].teacherName=this.selectedRows[0].teacherName;
                 this.teacherTimeData[this.teachId].teacherId=this.selectedRows[0].teacherId;
-                console.log(this.teacherTimeData[this.teachId].teacherName);
+                console.log(this.teacherTimeData[this.teachId]);
+                let addData= {
+                    id: this.teacherTimeData[this.teachId].id,
+                    planId: this.planId,
+                    ruleType: "2",
+                    teacherId: this.teacherTimeData[this.teachId].teacherId,
+                }
+                let {data}=await this.$api.schedule.adminClass.addRuleSetting(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.info("保存成功！");
+                    this.teacherTimeRule();
+                }else{
+                    message.info("保存失败");
+                }
             },
             //关闭编辑老师弹框
             handleCancel(){
@@ -1233,8 +1187,10 @@
                 // console.log(result);
                 this.classTimeData=result;
                 this.classTimeData.forEach(item=>{
+                    item.class=item.gradeName+item.className;
+                    console.log(item.class);
                     // console.log(item);
-                    if(item.timeRuleSetting){
+                    if(item.timeRuleSetting) {
                         let timeItem = item.timeRuleSetting[0];
                         let timeDay = "";
                         //星期转换
@@ -1244,36 +1200,37 @@
                             }
                             // console.log(timeDay);
                         }
-                        let time1 = [];
                         //==================================
-                        //节次转换
                         //     //字符串转换为数组
                         let timeLesson = timeItem.timeLesson.split(',');
                         // console.log(timeLesson);
-                        for (let i = 0; i < timeLesson.length; i++) {
-                            // console.log(timeLesson[i]-1);
-                            if (timeLesson[i] < 5) {
-                                time1 = [...time1, "上午第" + timeLesson[i] + "节"];
-                            } else {
-                                let lesson = timeLesson[i] - 4
-                                time1 = [...time1, "下午第" + lesson + "节"];
+                        let keyDatas = [];
+                        for (let i = 0; i < this.subOption.length; i++) {
+                            for (let j = 0; j < timeLesson.length; j++) {
+                                if (Number(timeLesson[j]) === this.subOption[i].key) {
+                                    keyDatas.push(this.subOption[i].label);
+                                }
                             }
-                            // console.log(time1);
                         }
+                        // console.log(keyDatas);
                         //=================================================
                         let timeType = "";
                         let type = timeItem.timeType
-                        // console.log(type);
                         switch (type) {
-                            case "1":timeType = "不使用";break;
-                            case "2":timeType = "优先使用";break;
-                            case "3":timeType = "必须使用";break;
+                            case "1":
+                                timeType = "不使用";
+                                break;
+                            case "2":
+                                timeType = "优先使用";
+                                break;
+                            case "3":
+                                timeType = "必须使用";
+                                break;
                         }
-                        item.time1=timeType+timeDay+time1;
+                        item.time1 = timeType + timeDay + keyDatas.toString();
                     }
-                    item.class=item.gradeName+item.className
                 })
-                // console.log(this.classTimeData);
+                console.log(this.classTimeData);
             },
             //班级时间规则删除
             classTimeDelete(id){
@@ -1284,75 +1241,63 @@
             classTimeRegularSettingEdit(index){
                 this.editclassIndex=index;
                 this.classTimeRegularVisit=true;
-                this.modalInfo();
-                if(this.classTimeData[index].timeRuleSetting){
-                    this.classDay=this.classEditDay=this.classTimeData[index].timeRuleSetting[0].timeDay;
-                    let timeType=this.classTimeData[index].timeRuleSetting[0].timeType;
-                    switch (timeType) {
-                        case "1":this.classType=this.classEditType= "不使用";break;
-                        case "2":this.classType=this.classEditType = "优先使用";break;
-                        case "3":this.classType=this.classEditType = "必须使用";break;
-                    }
-                    //字符串转化为数组
-                    let timeLesson=this.classTimeData[index].timeRuleSetting[0].timeLesson.split(',');
-                    console.log(timeLesson);
-                    for(let i in timeLesson){
-                        if(timeLesson[i]<5){
-                            let text="morning"+timeLesson[i];
-                            this.classTimeValue.push(text);
-                            // console.log(this.subTimeValue);
-                        }else{
-                            let text="afternoon"+timeLesson[i]-4;
-                            this.classTimeValue.push(text);
+                console.log(this.classTimeData[index].timeRuleSetting);
+                this.form.classType=this.classTimeData[index].timeRuleSetting[0].timeType;
+                this.form.classDay=this.classTimeData[index].timeRuleSetting[0].timeDay;
+                let timeRule=this.classTimeData[index].timeRuleSetting[0].timeLesson.split(",");
+                let timeLesson=[];
+                // console.log(this.subOption);
+                for(let i=0;i<this.subOption.length;i++){
+                    for(let j=0;j<timeRule.length;j++){
+                        if(Number(timeRule[j])===this.subOption[i].key){
+                            timeLesson.push(this.subOption[i].value);
                         }
                     }
-                    console.log(this.classTimeValue);
-                    this.classEditTimeValue=this.classTimeValue;
-                }else{
-                    this.timeType="";
-                    this.timeDay="";
-                    this.timeLesson=[];
                 }
+                // console.log(timeLesson);
+                this.form.classTimeValue=timeLesson;
             },
             //保存编辑时间规则弹框
             handleOkClaTime(){
-                this.classTimeRegularVisit=false;
-                let list=[...this.classEditTimeValue];
-                let chooseValue=[];
-                list.forEach(item=>{
-                    // console.log(item);
-                    let num=-1;
-                    switch (item) {
-                        case "morning1":num=1;break;
-                        case "morning2":num=2;break;
-                        case "morning3":num=3;break;
-                        case "morning4":num=4;break;
-                        case "afternoon1":num=5;break;
-                        case "afternoon2":num=6;break;
-                        case "afternoon3":num=7;break;
-                        case "afternoon4":num=8;break;
-                    }
-                    chooseValue.push(num);
-                })
-                console.log(chooseValue);
-                if(this.classTimeData[this.editclassIndex].timeRuleSetting){
-                    this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeDay=this.classEditDay;
-                    this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeType=this.classEditType;
-                    this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeLesson=chooseValue.toString();
-                    console.log(this.classTimeData[this.editclassIndex].timeRuleSetting[0]);
+                if(this.form.classTimeValue==[] || this.form.classType=="" ||this.form.classDay==""){
+                    message.error("输入内容存在空值，请检查！");
                 }else{
-                    let pushData={
-                        timeDay:this.classEditDay,
-                        timeType:this.classEditType,
-                        timeLesson:chooseValue.toString()
+                    this.classTimeRegularVisit=false;
+                    let keyDatas=[];
+                    for(let i=0;i<this.subOption.length;i++){
+                        for(let j=0;j<this.form.classTimeValue.length;j++){
+                            if(this.form.classTimeValue[j]===this.subOption[i].value){
+                                keyDatas.push(this.subOption[i].key);
+                            }
+                        }
                     }
-                    console.log(pushData);
-                    this.classTimeData[this.editclassIndex].timeRuleSetting=[pushData];
+                    console.log(this.classTimeData[this.editclassIndex].timeRuleSetting)
+                    if(this.classTimeData[this.editclassIndex].timeRuleSetting==null){
+                        let pushData={
+                            timeDay:this.form.classDay,
+                            timeType:this.form.classType,
+                            timeLesson:keyDatas.toString()
+                        }
+                        console.log(pushData);
+                        this.classTimeData[this.editclassIndex].timeRuleSetting=[];
+                        this.classTimeData[this.editclassIndex].timeRuleSetting.push(pushData);
+                    }else{
+                        this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeDay=this.form.classDay;
+                        this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeType=this.form.classType;
+                        this.classTimeData[this.editclassIndex].timeRuleSetting[0].timeLesson=keyDatas.toString();
+                    }
+                    console.log(this.classTimeData[this.editclassIndex].timeRuleSetting);
+                    this.form.classDay="";
+                    this.form.classType="";
+                    this.form.classTimeValue=[];
                 }
             },
             //取消编辑时间规则弹框
             handleCancelClaTime(){
                 this.classTimeRegularVisit=false;
+                this.form.classDay="";
+                this.form.classType="";
+                this.form.classTimeValue=[];
             },
             //修改学科
             changeClassSub(info,index){
@@ -1360,25 +1305,19 @@
                 console.log(info);
             },
             //添加班级时间规则(添加一项）
-            addClassTimeRegular(){
-                this.classTimeData.unshift({
-                    id:"",
-                    class:"",
-                    classId:"",
-                    className:"",
-                    classSubjectId:"",
-                    classSubjectName:"",
-                    gradeId:this.gradeId,
-                    gradeName:this.gradeName,
-                    time1:"",
-                    timeRuleSetting:[],
-                })
+            async addClassTimeRegular(){
                 let addData={
                     planId:this.planId,
                     ruleType:"3",
                 }
-                this.saveSubTime(addData);
-                this.classTimeRule();
+                let {data}=await this.$api.schedule.adminClass.addRuleSetting(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.success("新建班级时间规则成功！");
+                    this.classTimeRule();
+                }else{
+                    message.error("新建班级时间规则失败！");
+                }
             },
             //修改班级
              changeClass(info,index){
@@ -1388,8 +1327,11 @@
             },
             //班级信息查看
             async searchClassInfo(){
-                let {data:{result,success}}=await this.$api.schedule.adminClass.getClassSetting({planId:this.planId,gradeId:this.gradeId});
-                // console.log(result);
+                console.log(this.gradeId);
+                let {data:{result,success}}=await this.$api.schedule.adminClass.getClassSetting({
+                    planId:this.planId,
+                    gradeId:this.gradeId});
+                console.log(result);
                for(let i in result){
                    let addData={
                        gradeClass:result[i].gradeName+result[i].className,
@@ -1399,24 +1341,8 @@
                }
                 console.log(this.classData);
             },
-            //改变类型
-            changeClassType(info){
-                this.classEditType=info;
-                console.log(this.classEditType)
-            },
-            //选择星期几
-            changeClassDay(info){
-                this.classEditDay=info;
-                console.log(this.classEditDay);
-            },
-            //修改班级课程节
-            changeClassTime(info){
-                console.log(info);
-                this.classEditTimeValue=info;
-                console.log(this.classEditTimeValue);
-            },
             //班级时间规则保存
-            classTimeSave(index){
+            async classTimeSave(index){
                 let addData={
                     id:this.classTimeData[index].id,
                     planId:this.planId,
@@ -1430,8 +1356,14 @@
                     }]
                 }
                 console.log(addData);
-                this.saveSubTime(addData);
-                this.classTimeRule();
+                let {data}=await this.$api.schedule.adminClass.addRuleSetting(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.success("保存成功！");
+                    this.classTimeRule();
+                }else{
+                    message.error("保存失败！")
+                }
             },
             //========================================================
             //禁止相邻规则查看
@@ -1439,7 +1371,7 @@
             //禁止相邻规则查看
             async banNearRule(){
               let {data:{result,success}}=await this.$api.schedule.adminClass.searchBanRule({planId:this.planId});
-              console.log(result);
+              // console.log(result);
               this.banData=result;
               // console.log(this.banData);
             },
@@ -1462,16 +1394,18 @@
                 this.banData[index].subChildIdTwo=info;
             },
             //添加禁止相邻科目(添加一项)
-            addBanRegular(){
-                this.banData.unshift({
-                    continuityNum:"",
-                    subChildIdOne:"",
-                    subChildIdTwo:"",
-                })
+            async addBanRegular(){
                 let addData={
                     planId:this.planId,
                 }
-                this.saveBanData(addData);
+                let {data}=await this.$api.schedule.adminClass.addBanRule(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.success("新建禁止相邻科目成功!");
+                    this.banNearRule();
+                }else{
+                    message.error("新建禁止相邻科目失败!");
+                }
             },
             //删除禁止相邻科目
             async banTimeDelete(id){
@@ -1486,7 +1420,7 @@
                }
             },
             //保存禁止相邻科目
-            banTimeSave(index){
+            async banTimeSave(index){
                 let addData={
                     id:this.banData[index].id,
                     planId:this.planId,
@@ -1494,25 +1428,22 @@
                     subChildIdOne:this.banData[index].subChildIdOne,
                     subChildIdTwo:this.banData[index].subChildIdTwo,
                 }
-                this.saveBanData(addData);
-            },
-            //获取保存接口
-            async saveBanData(addData){
-              let {data}=await this.$api.schedule.adminClass.addBanRule(addData);
-              console.log(data);
-              if(data&&data.success){
-                  message.info("保存成功");
-                  this.banNearRule();
-              }else{
-                  message.info("保存失败");
-              }
+                let {data}=await this.$api.schedule.adminClass.addBanRule(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.info("保存成功");
+                    this.banNearRule();
+                }else{
+                    message.info("保存失败");
+                }
             },
             //===============================================
             //单双周课程规则
             //=======================================================
             //查看单双周课程规则
             async singDoubleRule(){
-                let {data:{result,success}}=await this.$api.schedule.adminClass.searchLessonRule({planId:"934e3a63aadc47d398da0d395ad41420"});
+                let {data:{result,success}}=await this.$api.schedule.adminClass.searchLessonRule({
+                    planId:this.planId});
                 // console.log(result);
                 this.weekData=result;
                 console.log(this.weekData);
@@ -1536,32 +1467,32 @@
                 console.log(info);
             },
             //添加单双周课程(添加一项)
-            addWeekRegular(){
-                this.weekData.unshift({
-                    perWeekLessonNum:null,
-                    singleWeekSubId:"",
-                    singleWeekSubName:"",
-                    doubleWeekSubId:"",
-                    doubleWeekSubName:"",
-                })
+            async addWeekRegular(){
                 let addData={
                     planId:this.planId,
                 }
-                this.saveSingleDouble(addData);
+                let {data}=await this.$api.schedule.adminClass.addLessonRule(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.success("新建单双周课程规则成功!");
+                    this.singDoubleRule();
+                }else{
+                    message.error("新建单双周课程规则失败!");
+                }
             },
             //删除单双周课程
             async weekTimeDelete(id){
-                let {data}=await this.$api.schedule.adminClass. deleteLessonRule({ids:[id]});
+                let {data}=await this.$api.schedule.adminClass.deleteLessonRule({ids:[id]});
                 console.log(data);
                 if(data&&data.success){
-                    message.info("删除成功");
+                    message.success("删除成功");
                     this.singDoubleRule();
                 }else{
-                    message.info("删除失败");
+                    message.error("删除失败");
                 }
             },
             //保存单双周课程
-            weekTimeSave(index){
+            async weekTimeSave(index){
                 let addData={
                     id:this.weekData[index].id,
                     planId:this.planId,
@@ -1569,34 +1500,29 @@
                     singleWeekSubId: this.weekData[index].singleWeekSubId,
                     doubleWeekSubId: this.weekData[index].doubleWeekSubId,
                 }
-                this.saveSingleDouble(addData);
-                this.singDoubleRule();
-            },
-            //获取保存课程接口
-            async saveSingleDouble(addData){
-              let {data}=await this.$api.schedule.adminClass.addLessonRule(addData);
-              console.log(data);
-              if(data&&data.success){
-                  message.info("保存成功");
-                  this.singDoubleRule();
-              }else{
-                  message.info("保存失败");
-              }
+                let {data}=await this.$api.schedule.adminClass.addLessonRule(addData);
+                console.log(data);
+                if(data&&data.success){
+                    message.success("保存成功");
+                    this.singDoubleRule();
+                }else{
+                    message.error("保存失败");
+                }
             },
             //课时设置
             timesSetting(){
                 if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`);
                 }
             },
             //课节设置
             oncesSetting(){
                 if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`);
                 }
             },
             //学科设置
@@ -1623,9 +1549,17 @@
                     this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
                 }
             },
+            //开始排课
+            startArray(){
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
+            },
             //下一步
             Next(){
-               this.aloClass();
+                if(this.classType==2){
+                    this.aloClass();
+                }else{
+                    this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`);
+                }
             },
             async aloClass(){
                 let addData={
@@ -1639,14 +1573,17 @@
               if(data&&data.success){
                   this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
               }else{
-                  message.info("行政班排课失败！");
+                  message.info(data.message);
               }
             },
             //返回
             back(){
                 this.$router.go(-1)
             },
-
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
+            },
         }
     };
 </script>

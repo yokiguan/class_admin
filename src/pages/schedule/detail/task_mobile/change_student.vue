@@ -3,9 +3,10 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">学生调班</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrayTask">走班排课任务</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">学生调班</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="box">
@@ -19,12 +20,10 @@
                 <a-row>
                     <a-input-search placeholder="请输入学生姓名"  v-model="studentName" @search="onSearch" style="margin-top: 20px"/>
                 </a-row>
-                <div style="width: 100%; height: 1px;
-            margin-top: 10px;
-            border-top: solid black 1px;"></div>
+                <div style="width: 100%; height: 1px;margin-top: 10px;border-top: solid black 1px;"></div>
                 <a-tree v-model="checkedKeys"
                         :tree-data="treeData"
-                        @check="onCheck"
+                        @select="onCheck"
                         style="font-size: 1.3em;"/>
             </a-card>
             <div class="right">
@@ -90,7 +89,8 @@
                 <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
                 <a-button key="back" @click="handleCancel">取消</a-button>
             </template>
-            <a-table :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+            <a-table :rowKey="'classId'"
+                    :row-selection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
                      :selectedRows="selectedRows"
                      :columns="columns_class"
                      :data-source="classData"
@@ -166,7 +166,7 @@
                 planId:"",
                 scheduleTaskId:"",
                 studentName:"",
-                scheduleStuId:"",
+                scheduleStuId:[],
                 visible: false,
                 loading: false,
                 checkedKeys:[],
@@ -213,9 +213,14 @@
                 console.log( this.scheduleTaskId);
                 let queryStuString = (window.location.hash || " ").split(/[?&]/)[3];
                 let StuId = (queryStuString || " ").split('=')[1];
-                this.scheduleStuId= StuId;
+                this.scheduleStuId.push( StuId);
                 console.log( queryStuString);
                 console.log( this.scheduleStuId);
+                if(this.scheduleStuId[0]!==undefined){
+                    this.checkedKeys=this.scheduleStuId;
+                    console.log(this.checkedKeys);
+                    this.onCheck(this.scheduleStuId);
+                }
                 if (planId) {
                     //获取单个选课计划的信息
                     let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
@@ -251,14 +256,16 @@
                 let {data:{result,success}}=await this.$api.schedule.classTask.getStudent({planId:this.planId,name:value.toString()});
                 console.log(result);
                 let stuId=result[0].schWxUserEntity.wxUid;
+                console.log(stuId.split())
                 this.checkedKeys=stuId.split();
                 // console.log(this.stuId);
                 // console.log();
                 this.onCheck();
             },
             //选择学生
-            onCheck() {
-                // console.log('onCheck', checkedKeys);
+            onCheck(checkedKeys) {
+                console.log('onCheck', checkedKeys);
+                this.checkedKeys=checkedKeys;
                 this.stuId=this.checkedKeys.toString();
                 console.log(this.stuId);
                 this.studentInfo();
@@ -376,6 +383,14 @@
             back(){
                 this.$router.go(-1)
             },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
+            },
+            //走班排课任务
+            arrayTask(){
+                this.$router.push(`/schedule/detail/task_mobile/index?planId=${this.planId}`)
+            }
         },
     };
 </script>

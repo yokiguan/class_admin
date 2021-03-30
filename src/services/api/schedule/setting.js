@@ -12,10 +12,9 @@ const setting={
             'Content-Type': 'multipart/form-data'});
     },
     //选课设置清空(或许不需要)
-    /* settingdelete(params){
-         return axios.get(`${baseUrl}/settingdeleteData.json`,params, {
-             'Content-Type': 'multipart/form-data'});
-     },*/
+    settingdelete(params){
+         return axios.get(`${baseUrl}/deleteSettingData.json`,{params});
+     },
     //选课设置查看（单个）(已调）
     settingGet(params){
         return axios.get(`${baseUrl}/getSettingData.json`,{params},);

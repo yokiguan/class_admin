@@ -268,6 +268,7 @@
       clear(){
           this.form.gradeId="";
           this.form.teacherName="";
+          this.allTeacher();
       },
       //获取所属课程信息
       async getCourseInfo(editId){
@@ -402,6 +403,7 @@
       //编辑信息的保存
       async handleOk(){
         let pushData=[];
+        console.log(this.form.course);
         console.log(this.editText);
         console.log(this.dataSource[this.editText]);
         let allData=this.dataSource[this.editText].subjectTeacherDtos;
@@ -423,16 +425,23 @@
           }
         }
         console.log(pushData);
+        let selectData=[];
+        if(pushData.length==0){
+          selectData=this.form.toString();
+        }else{
+          selectData=pushData;
+        }
+        console.log(selectData);
         this.editVisit=false;
         let addData={};
-        for(let i in pushData){
+        for(let i in selectData){
           console.log(this.dataSource[this.editText].teacherId)
-          console.log(pushData[i])
+          console.log(selectData[i])
           console.log(this.chooseCourse);
            addData={
             teacherId:this.dataSource[this.editText].teacherId,
             gradeSubjectDtoList:[{
-              gradeId:pushData[i].toString(),
+              gradeId:selectData[i].toString(),
               subIds:this.chooseCourse,
             }]
           }
@@ -441,7 +450,7 @@
         let {data}=await this.$api.basic.teacher.saveTeacherInfo(addData);
         console.log(data);
         if(data&&data.success){
-          message.info("修改老师成功");
+          message.success("修改老师成功");
           this.form.course=[];
           if(this.form.gradeId!=undefined){
               if(this.form.teacherName!=undefined){
@@ -453,7 +462,7 @@
             this.allTeacher();
           }
         }else{
-          message.info("授课班级为空！");
+          message.success("授课班级为空！");
         }
       },
       //编辑信息的取消

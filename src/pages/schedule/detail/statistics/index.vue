@@ -3,9 +3,9 @@
       <div class="result1">
           <a-breadcrumb>
               <a-breadcrumb-item>首页</a-breadcrumb-item>
-              <a-breadcrumb-item>排课计划</a-breadcrumb-item>
-              <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
-              <a-breadcrumb-item><router-link to="#">选课统计</router-link></a-breadcrumb-item>
+              <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+              <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+              <a-breadcrumb-item><a href="#">选课统计</a></a-breadcrumb-item>
           </a-breadcrumb>
       </div>
       <div>
@@ -310,8 +310,8 @@
                 if (this.form.startChooseTime == null || this.form.endChooseTime == null) {
                     message.warning("请检查输入信息是否为空！")
                 } else {
-                    let timeLimit = this.form.startChooseTime + "——" + this.form.endChooseTime
-                    let addData = {id, timeLimit}
+                    let timeLimit = this.form.startChooseTime + "—" + this.form.endChooseTime
+                    let addData = {planId:id, timeLimit}
                     let {data} = await this.$api.schedule.statics.alterTime(addData);
                     console.log(data)
                     if(data&&data.success){
@@ -341,6 +341,10 @@
             //返回按钮
             back(){
                 this.$router.go(-1)
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
             }
         }
     };

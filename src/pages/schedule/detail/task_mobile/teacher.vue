@@ -3,9 +3,10 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">走班排课任务</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">老师查看</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrayTask">走班排课任务</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">老师查看</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="box">
@@ -19,7 +20,7 @@
                 <div>
                     <a-tree v-model="checkedKeys"
                             :tree-data="treeData"
-                            @check="onCheck"
+                            @select="onCheck"
                             style="font-size: 1.3em;"/>
                 </div>
             </a-card>
@@ -85,6 +86,7 @@
                         width: 110px" @click="subjectLook">按科目查看</button></a-col>
                     </a-row>
                     <a-table v-if="showTable"
+                             :rowKey="'activity'"
                             :columns="columns"
                             :data-source="tableData"
                             :pagination="false"
@@ -108,8 +110,8 @@
                      :bordered="true"
                      @change="handleTableChange"
                     style="margin-top: 20px">
-                <template slot="operation" slot-scope="text,record">
-                    <a-button type="primary" @click="lookInfo(record.id)">查看</a-button>
+                <template slot="operation" slot-scope="text,record,index">
+                    <a-button type="primary" @click="lookInfo(index)">查看</a-button>
                 </template>
             </a-table>
         </a-modal>
@@ -121,41 +123,76 @@
         {
             align: "center",
             title: " ",
-            dataIndex: 'key',
-            customRender: function(t, r, index) {
-                return parseInt(index) + 1
-            }
+            dataIndex: 'activity',
+            width:"3.4%"
         },
         {
-            title: '一',
+            title: '星期一',
             dataIndex: 'one',
             align: "center",
-            width:"19%",
+            width: "13.8%"
         },
         {
-            title: '二',
+            title: '星期二',
             dataIndex: 'two',
             align: "center",
-            width:"19%",
+            width: "13.8%"
         },
         {
-            title: '三',
+            title: '星期三',
             dataIndex: 'three',
             align: "center",
-            width:"19%",
+            width: "13.8%"
         },
         {
-            title: '四',
+            title: '星期四',
             dataIndex: 'four',
             align: "center",
-            width:"19%",
+            width: "13.8%"
         },
         {
-            title: '五',
+            title: '星期五',
             dataIndex: 'five',
             align: "center",
-            width:"19%",
+            width: "13.8%"
+        },{
+            title: '星期六',
+            dataIndex: 'six',
+            align: "center",
+            width: "13.8%"
+        },{
+            title: '星期日',
+            dataIndex: 'seven',
+            align: "center",
+            width: "13.8%"
         },
+    ];
+    const activity = [
+        {
+            name: "早读",
+            options: [0, 1, 2],
+            value: "morningread"
+        },
+        {
+            name: "上午",
+            options: [0, 1, 2, 3, 4],
+            value: "morning"
+        },
+        {
+            name: "中午",
+            options: [0, 1, 2],
+            value: "noon"
+        },
+        {
+            name: "下午",
+            options: [0, 1, 2, 3, 4],
+            value: "afternoon"
+        },
+        {
+            name: "晚自习",
+            options: [0, 1, 2, 3, 4],
+            value: "evening"
+        }
     ];
     const stuColumns=[
         {
@@ -202,8 +239,10 @@
                 allData:[],
                 gradeId:"",
                 contrastModal:false,
+                activity,
                 loading:false,
                 teacherTotal:0,     //教师数据总数
+                currId:"",
                 pagination:{
                     total:0,    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
                     pageSize:20,    //默认每页显示的数据总数
@@ -236,6 +275,7 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name;
                 this.gradeId=result.gradeId;
+                this.currId=result.currId;
                 console.log(this.gradeId);
             }
             this.treeTeacher();
@@ -245,32 +285,30 @@
                 this.checkedKeys=[];
                 console.log('onCheck', checkedKeys);
                 this.checkedKeys=checkedKeys;
-                this.teacherInfo();
+                this.modalInfo(this.currId);
+
             },
             //获取左侧的教室树
             async treeTeacher(){
                 console.log(this.gradeId);
                 //根据年级信息调用接口
-                let {data}=await this.$api.schedule.classTask.searchTeacher({gradeId:this.gradeId});
+                let {data}=await this.$api.schedule.classTask.searchTeacher({planId:this.planId});
                 console.log(data);
                 let addData=[];
                 if(data.success==true){
                     this.treeData=[];
-                    let allData=data.result[0].gradeDtos;
+                    let allData=data.result;
                     console.log(allData);
                     for(let i=0;i<allData.length;i++){
-                        if(allData[i].teachers){
-                            let teachers=allData[i].teachers;
-                            for(let j=0;j<teachers.length;j++){
-                                let pushData={
-                                    teacherId:teachers[j].teacherId,
-                                    teacherName:teachers[j].teacherName,
-                                }
-                                addData.push(pushData);
+                        if(allData[i].schWxUserEntity){
+                            let teachers=allData[i].schWxUserEntity;
+                            console.log(teachers);
+                            let pushData={
+                                teacherId:teachers.wxUid,
+                                teacherName:teachers.userName,
                             }
+                            addData.push(pushData);
                         }
-
-
                     }
                     console.log(addData);
                     // for(let i=0;i<allData.length;i++){
@@ -293,6 +331,24 @@
                     }
                 }
             },
+            //获取课表模板相关信息
+            async modalInfo(currId) {
+                // console.log(currId);
+                let {data}=await this.$api.basic.template.fetchTemplate({id:currId})
+                console.log(data.result);
+                let activities = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    for (let i = 1; i <= data.result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                    }
+                });
+                this.tableData = activities;
+                this.teacherInfo();
+            },
             //教师课表查看
             async teacherInfo() {
                 //
@@ -304,62 +360,80 @@
                 console.log(data);
                 console.log(data.success);
                 if(data.success==false){
-                    message.info(data.code);
-                }else{
-                    this.showTable=true;
-                    this.allData=data.result.teacherCurriDtos;
+                    message.info(data.message);
+                }else {
+                    this.showTable = true;
+                    this.allData = data.result.teacherCurriDtos;
                     console.log(this.allData);
-                    let dataSource=[];
-                    for(let i=0;i<this.allData.length;i++){
-                        let position=eval(this.allData[i].position);
-                        const getInfo=(dataItem,sourceItem={})=>{
-                            if(!sourceItem) sourceItem={};
-                            let content = dataItem.subChildName +dataItem.classNumId+"_"+data.result.teacherName+'(' +  dataItem.classroomName + ')'+"共"+dataItem.classStuNum+"人";;
-                            const column=eval(dataItem.position)[1];
+                    let dataSource = [];
+                    for (let i = 0; i < this.allData.length; i++) {
+                        let position = eval(this.allData[i].position);
+                        const getInfo = (dataItem, sourceItem = {}) => {
+                            if (!sourceItem) sourceItem = {};
+                            let content = dataItem.subChildName + dataItem.classNumId + "_" + data.result.teacherName + '(' + dataItem.classroomName + ')' + "共" + dataItem.classStuNum + "人";
+                            ;
+                            const column = eval(dataItem.position)[1];
                             switch (column) {
+                                case 0:
+                                    sourceItem.one = sourceItem.one ? sourceItem.one + "\n" + content : content;
+                                    break;
                                 case 1:
-                                    sourceItem.one=sourceItem.one ?sourceItem.one+"\n"+content:content;
+                                    sourceItem.two = sourceItem.two ? sourceItem.two + ',\n' + content : content;
                                     break;
                                 case 2:
-                                    sourceItem.two=sourceItem.two ?sourceItem.two+',\n'+content:content;
+                                    sourceItem.three = sourceItem.three ? sourceItem.three + ',\n' + content : content;
                                     break;
                                 case 3:
-                                    sourceItem.three=sourceItem.three ?sourceItem.three+',\n'+content:content;
+                                    sourceItem.four = sourceItem.four ? sourceItem.four + ',\n' + content : content;
                                     break;
                                 case 4:
-                                    sourceItem.four=sourceItem.four ?sourceItem.four+',\n'+content:content;
+                                    sourceItem.five = sourceItem.five ? sourceItem.five + ',\n' + content : content;
                                     break;
                                 case 5:
-                                    sourceItem.five=sourceItem.five ?sourceItem.five+',\n'+content:content;
-                                    break;
+                                    if (sourceItem.six) {
+                                        sourceItem.six = sourceItem.six ? sourceItem.six + ',\n' + content : content;
+                                        break;
+                                    }
+                                case 6:
+                                    if (sourceItem.seven) {
+                                        sourceItem.seven = sourceItem.seven ? sourceItem.seven + ',\n' + content : content;
+                                        break;
+                                    }
                             }
                             return sourceItem
                         };
-                        dataSource[position[0]-1]=getInfo(this.allData[i],dataSource[position[0]-1]);
+                        dataSource[position[0]] = getInfo(this.allData[i], dataSource[position[0]]);
                     }
-                    // console.log(dataSource);
-                    this.tableData=dataSource;
-                    // console.log(this.tableData);
-                    for(let i=0;i<this.tableData.length;i++){
+                    console.log(dataSource);
+                    for (let i = 0; i < this.tableData.length; i++) {
                         // console.log(i,this.tableData[i]);
-                        if(this.tableData[i]===undefined){
+                        console.log(dataSource[i]);
+                        if (dataSource[i] == undefined) {
                             // console.log(i);
-                            let pushData={
-                                one:"",
-                                two:"",
-                                three:"",
-                                four:"",
-                                five:"",
+                            let pushData = {
+                                one: "",
+                                two: "",
+                                three: "",
+                                four: "",
+                                five: "",
+                                six: "",
+                                seven: "",
                             }
-                            this.tableData[i]=pushData;
-                            // this.tableData[i].one="";
+                            dataSource[i] = pushData;
                         }
                     }
-                    // 编号
-                    for(let i=0;i<this.tableData.length;i++){
-                        this.tableData[i].key=i+1;
+                    console.log(dataSource);
+                    for (let i = 0; i < this.tableData.length; i++) {
+                        this.tableData[i].one = dataSource[i].one;
+                        this.tableData[i].two = dataSource[i].two;
+                        this.tableData[i].three = dataSource[i].three;
+                        this.tableData[i].four = dataSource[i].four;
+                        this.tableData[i].five = dataSource[i].five;
+                        this.tableData[i].six = dataSource[i].six;
+                        this.tableData[i].seven = dataSource[i].seven;
                     }
                     console.log(this.tableData);
+                    this.$set(this.tableData);
                 }
             },
             //查看学生冲突
@@ -381,6 +455,7 @@
                     // console.log(information);
                     let pushData={
                         id:addData[i].id,
+                        stuId:addData[i].schWxUserEntity.wxUid,
                         studentName:addData[i].schWxUserEntity.userName,
                         course:course,
                         information:information,
@@ -395,7 +470,9 @@
             //学生冲突详细信息查看
             lookInfo(id){
                 console.log(id);
-                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}&stuId=${id}`);
+                console.log(this.stuTableData[id].stuId);
+                let stuId=this.stuTableData[id].stuId
+                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}&stuId=${stuId}`);
             },
             //表格监听
             async handleTableChange(pagination) {
@@ -444,6 +521,14 @@
             back(){
                 this.$router.go(-1)
             },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
+            },
+            //走班排课任务
+            arrayTask(){
+                this.$router.push(`/schedule/detail/task_mobile/index?planId=${this.planId}`)
+            }
         },
     };
 </script>
@@ -489,7 +574,7 @@
         padding: 20px 25px;
         border-radius: 10px;
         text-align: center;
-        height: 670px;
+        min-height: 670px;
         margin-top: -35px;
         width: 100%;
         background-color: #fff;

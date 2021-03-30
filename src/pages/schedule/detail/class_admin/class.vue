@@ -3,9 +3,10 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">班级设置</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item>行政班排课</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">班级设置</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -25,11 +26,12 @@
         <!-- /result -->
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting" :disabled="choose">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px;background-color:#b9b9b9" @click="classSetting">班级设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting" disabled>规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray" disabled>开始排课</a-button></a-col>
             </a-row>
             <a-table :rowKey="'classId'" :columns="columns" :dataSource="data" :pagination='false' bordered>
                 <div slot="subjectTeacherList" slot-scope="text, record,index1">
@@ -41,6 +43,9 @@
                         <template slot="class_day" slot-scope="text, record,index2">
                             <a-input :value="text" style="float: left;width: 200px" disabled/>
                             <a-icon type="edit"  style="color: #00ccff;font-size: 25px;font-weight: bold; float:right" @click="edit(index1,index2)"/>
+                        </template>
+                        <template  slot="blank" slot-scope="text,record">
+                            <a-icon type="close" style="font-weight: bolder;font-size: 30px;color: #0099ff" @click="delet(record.scheduleTeacherClassId)"/>
                         </template>
                     </a-table>
                 </div>
@@ -110,6 +115,12 @@
             align:'center',
             scopedSlots:{customRender:'class_day'}
         },
+        {
+            title: '  ',
+            dataIndex: 'blank',
+            align:'center',
+            scopedSlots: { customRender: 'blank' },
+        },
     ];
     export default {
         data() {
@@ -136,6 +147,7 @@
                 classType:"",
                 teacherName:"",
                 subId:"",
+                choose:false,
             };
         },
         async created() {
@@ -161,6 +173,9 @@
                     this.gradeName=result.gradeName;
                     this.gradeId=result.gradeId;
                     this.classType=result.type;
+                    if(this.classType==2){
+                        this.choose=true;
+                    }
                 }
                 this.classSettingInfo();
             },
@@ -267,20 +282,31 @@
             handleCancelTeacher(){
                 this.editTeacherVisit=false;
             },
+            //删除老师
+            async delet(id){
+                console.log(id);
+                let {data}=await this.$api.schedule.adminClass.deleteCoursesetting({ids:[id]});
+                if(data&&data.success){
+                    console.log(data);
+                    message.success("删除成功！");
+                }else{
+                    message.error(data.message);
+                }
+            },
             //课时设置
             timesSetting(){
                 if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`);
                 }
             },
             //课节设置
             oncesSetting(){
                 if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`);
                 }
             },
             //学科设置
@@ -307,32 +333,41 @@
                     this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
                 }
             },
+            //开始排课
+            startArray(){
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
+            },
             //下一步
             Next(){
-                console.log(this.data);
+                let flag=1;
+                loop0:
                 for(let i in this.data){
+                    console.log(this.data[i]);
                     let subjectTeacherList=this.data[i].subjectTeacherList;
-                    console.log(subjectTeacherList);
-                    for(let j in subjectTeacherList){
+                    for(let j=0;j<subjectTeacherList.length;j++){
                         console.log(subjectTeacherList[j].scheduleTeacherClassId);
-                        console.log();
-                        if(subjectTeacherList[j].teacherName==undefined){
-                            // message.warning(this.data[i].gradeName+this.data[i].className+subjectTeacherList[j].subName+"任课教师为空，请检查！");
+                        if(subjectTeacherList[j].scheduleTeacherClassId===undefined){
                             message.warning("存在任课教师为空，请检查！");
-                        }else{
-                            if(this.classType==2){
-                                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
-                            }else{
-                                this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
-                            }
+                            flag=0;
+                            break loop0;
                         }
                     }
                 }
-
+                if(flag===1){
+                    if(this.classType==2){
+                        this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                    }else{
+                        this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
+                    }
+                }
             },
             //返回
             back(){
                 this.$router.go(-1)
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
             },
             //保存接口
             async saveData(index1,index2){

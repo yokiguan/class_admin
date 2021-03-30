@@ -3,8 +3,9 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><router-link to="/schedule/detail/class_admin">排课计划</router-link></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item>行政班排课</a-breadcrumb-item>
                 <a-breadcrumb-item><a href="#">课节设置</a></a-breadcrumb-item></a-breadcrumb>
         </div>
         <div class="content">
@@ -23,11 +24,12 @@
         <!-- /result -->
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting" :disabled="choose">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px;background-color:#b9b9b9" @click="oncesSetting" >课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" disabled >学科设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting" disabled>班级设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting" disabled>规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray" disabled>开始排课</a-button></a-col>
             </a-row>
             <a-row class="buttons-sub">
                 <a-col :span="3"><a-button type="danger" style="color:white;width: 100%;height: 30px;" @click="diasbleBtn">禁选</a-button></a-col>
@@ -113,6 +115,7 @@
                 scheduleTaskId:"",
                 getZouBanData:[],
                 classType:"",
+                choose:false,
             };
         },
         async created() {
@@ -138,39 +141,46 @@
                     this.planData = result.name;
                     this.classType=result.type;
                     console.log(this.classType);
+                    if(this.classType==2){
+                        this.choose=true;
+                    }
                 }
             },
             async lookZouBan(){
                 //课节设置查看
-                let {data:{result,success}}=await this.$api.schedule.adminClass.getLesson({planId:this.planId})
+                let {data:{result,success}}=await this.$api.schedule.adminClass.getLesson({
+                    planId:this.planId,
+                    scheduleTaskId:this.scheduleTaskId})
                 console.log(result);
                 this.currId=result.currId;
                 this.settingLessonInfo=result.xzbSettingLessonInfo;
                 console.log(this.settingLessonInfo);
                 this.modalInfo(this.currId);
                 // console.log(result.type);
-                if(result.type==2){
-                }
                 if(this.settingLessonInfo==undefined){
                     //走班课数据获取
-                    let {data:{result,success}}=await this.$api.schedule.adminClass.searchLocation({
+                    let {data}=await this.$api.schedule.adminClass.searchLocation({
                         planId:this.planId,
                         scheduleTaskId:this.scheduleTaskId,
                     })
                     // console.log(result);
-                    this.getZouBanData=eval(result.zouBan);
-                    this.zouBanInfoShow();
+                    if(data.success){
+                        this.getZouBanData=eval(data.result.zouBan);
+                        this.zouBanInfoShow();
+                    }
                 }else{
                     this.getZouBanData=eval(this.settingLessonInfo.zouBan);
+                    console.log(this.getZouBanData);
                     //字符串转化为数组
                     this.priority=eval(this.settingLessonInfo.priority);
                     this.disable=eval(this.settingLessonInfo.disable);
                     // console.log(this.priority);
                     // console.log(this.priority.length);
-                    // console.log(this.disable);
+                    console.log(this.disable);
                     // console.log(this.disable.length);
                 }
                 console.log(this.getZouBanData);
+
             },
             //获取课表模板相关信息
             async modalInfo(currId) {
@@ -221,7 +231,10 @@
                     getBColumn=this.getZouBanData[j][1];
                     // console.log(getBRow);
                     // console.log(getBColumn);
-                    this.tableData[getBRow].rowList[getBColumn].defaultCheck = 4;
+                    if(this.tableData[getBRow].rowList[getBColumn]){
+                        this.tableData[getBRow].rowList[getBColumn].defaultCheck = 4;
+                    }
+
                 }
                 // this.zouBanData.push([getBRow,getBColumn]);
                 this.zouBanData=this.getZouBanData;
@@ -261,14 +274,9 @@
                         this.disableData.push([cellRow,cellColumn]);
                     }
                     this.setStore(this.tableData);
-                    //如果禁选，则存入disableData
-                    // if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 1){
-                    //     this.disableData.push([cellRow,cellColumn])
-                    //     console.log(this.disableData);
-                    // }
                     console.log(this.disableData);
                 }
-
+                this.cellCheck=[];
             },
             //设置普通按钮方法
             normalBtn(){
@@ -282,33 +290,33 @@
                     console.log(this.cellCheck[i][1])
                     if(this.tableData[cellRow].rowList[cellColumn].defaultCheck === 0){
                         // 修改颜色为白色
-                        this.tableData[cellRow].rowList[cellColumn].defaultCheck = -1
+                        this.tableData[cellRow].rowList[cellColumn].defaultCheck = -1;
+                        for(let j in this.disableData){
+                            // console.log(this.disableData);
+                            let row=this.disableData[j][0];
+                            let col=this.disableData[j][1];
+                            // console.log(row);
+                            // console.log(col);
+                            if(cellRow==row &&cellColumn==col){
+                                this.disableData.splice(j,1);
+                            }
+                        }
+                        console.log(this.disableData);
+                        for(let k in this.priorityData){
+                            console.log(this.priorityData);
+                            let row=this.priorityData[k][0];
+                            let col=this.priorityData[k][1];
+                            console.log(row);
+                            console.log(col);
+                            if(this.defaultRow==row &&this.defaultColumn==col){
+                                this.priorityData.splice(k,1);
+                            }
+                        }
+                        console.log(this.disableData);
                     }
                 }
                 this.setStore(this.tableData);
-                console.log(this.disableData);
-                for(let i in this.disableData){
-                    // console.log(this.disableData);
-                    let row=this.disableData[i][0];
-                    let col=this.disableData[i][1];
-                    // console.log(row);
-                    // console.log(col);
-                    if(cellRow==row &&cellColumn==col){
-                        this.disableData.splice(i,1);
-                    }
-                }
-                console.log(this.disableData);
-                for(let i in this.priorityData){
-                    console.log(this.priorityData);
-                    let row=this.priorityData[i][0];
-                    let col=this.priorityData[i][1];
-                    console.log(row);
-                    console.log(col);
-                    if(this.defaultRow==row &&this.defaultColumn==col){
-                        this.priorityData.splice(i,1);
-                    }
-                }
-                console.log(this.disableData);
+                this.cellCheck=[];
             },
             //设置优先按钮方法
             priorityBtn(){
@@ -381,33 +389,33 @@
                 console.log(this.priorityData);
                 let getBRow=0;
                 let getBColumn=0;
-                for (let j in this.getZouBanData){
-                    // console.log(this.getZouBanData[j]);
-                    getBRow=this.getZouBanData[j][0];
-                    getBColumn=this.getZouBanData[j][1];
-                    // console.log(getBRow);
-                    // console.log(getBColumn);
-                    this.tableData[getBRow-1].rowList[getBColumn-1].defaultCheck = 4;
+                console.log(this.getZouBanData);
+                for (let k=0;k<this.getZouBanData.length;k++) {
+                    console.log(this.getZouBanData[k]);
+                    getBRow=this.getZouBanData[k][0];
+                    getBColumn=this.getZouBanData[k][1];
+                    console.log(getBRow);
+                    console.log(getBColumn);
+                    this.tableData[getBRow].rowList[getBColumn].defaultCheck = 4;
                 }
-                // this.zouBanData.push([getBRow,getBColumn]);
+                this.zouBanData.push([getBRow,getBColumn]);
                 this.zouBanData=this.getZouBanData;
                 console.log(this.zouBanData);
-
             },
             //课时设置
             timesSetting(){
                 if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`);
                 }
             },
             //课节设置
             oncesSetting(){
                 if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`);
                 }
             },
             //学科设置
@@ -433,6 +441,10 @@
                 }else{
                     this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
                 }
+            },
+            //开始排课
+            startArray(){
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
             },
             //下一步
             Next(){
@@ -460,6 +472,10 @@
             //返回
             back(){
                 this.$router.go(-1);
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
             },
         }
     };

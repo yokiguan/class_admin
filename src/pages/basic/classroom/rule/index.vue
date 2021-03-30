@@ -8,9 +8,9 @@
                 <a-breadcrumb-item><router-link to="#">规则设置</router-link></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
-        <a-card class="right">
-            <a-card class="location_content" v-if="showcomLocation">
-                <a-row style="height: 40px;width:100%;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black;margin-left: -35px;margin-top: -30px"><span style="float: left;padding: 10px;">场地规则</span></a-row>
+        <div class="right">
+            <div class="location_content" v-if="showcomLocation">
+                <a-row style="height: 40px;width:100%;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black;"><span style="float: left;padding: 10px;">场地规则</span></a-row>
                 <a-form :modal="form" :label-col="{ span: 3}" :wrapper-col="{ span:8}" style="margin-top: 20px">
                     <a-form-item label="选择课表模板" ref="modal" prop="modal">
                         <a-select v-model="form.modal" placeholder="请选择课表模板" @change="handleSelectChange">
@@ -20,12 +20,10 @@
                         </a-select>
                     </a-form-item>
                 </a-form>
-            </a-card>
-            <a-card class="curriculum_content" v-if="showcomCurriculum">
+            </div>
+            <div class="curriculum_content" v-if="showcomCurriculum">
                 <a-row style="height: 40px;width: 100%;background-color:#6Db5a7;color: white;border-radius: 5px;border:1px solid black">
-                    <a-col>
-                        <span style="float: left;padding: 10px;">课表</span>
-                    </a-col>
+                    <a-col><span style="float: left;padding: 10px;">课表</span></a-col>
                 </a-row>
                 <a-row class="buttons-sub">
                     <a-button type="danger" style="color:white;width: 100px;height: 40px;float:left" @click="diasbleBtn">禁选</a-button>
@@ -34,7 +32,7 @@
                     <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white" @click="saveData">保存</a-button>
                     <a-button style="background-color:#1abc9c;width: 100px;height: 40px;color:white;margin-left: 20px" @click="reSet">重置</a-button>
                 </a-row>
-                <div class="class-table">
+                <a-card class="class-table">
                     <div class="table-header"><!-- 表头 -->
                         <div class="table-header_one"></div><!-- 左上角 -->
                         <div class="table-header_other" v-for="(item, index) in tableHeader">{{item}}</div>
@@ -48,7 +46,7 @@
                                  @click="getColumnRow(rowIndex,columnIndex)"></div>
                         </div><!-- 11个数据  -->
                     </div>
-                </div>
+                </a-card>
                 <a-modal :visible='saveVisit'
                          :closable="false">
                     <template slot="footer">
@@ -61,8 +59,8 @@
                         </a-form-model-item>
                     </a-form-model>
                 </a-modal>
-            </a-card>
-        </a-card>
+            </div>
+        </div>
     </div>
 </template>
 <script>

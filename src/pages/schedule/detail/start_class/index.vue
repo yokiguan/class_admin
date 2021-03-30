@@ -28,7 +28,7 @@
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="placeSetting">教室设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="courseSetting">课程设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray">开始排课</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px;background-color:#b9b9b9" @click="startArray">开始排课</a-button></a-col>
             </a-row>
             <a-row style="margin-top: 50px;margin-left: 100px">
                 <a-form-model :model="form" ref="ruleForm" :label-col="{ span:2}" :wrapper-col="{ span: 18}">
@@ -42,11 +42,13 @@
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue"
     export default {
         data() {
             return {
                 planId:"",
                 planData:"",
+                type:"",
                 form:{
                 },
             };
@@ -64,6 +66,8 @@
                     //获取单个选课计划的信息
                     let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                     this.planData = result.name
+                    this.type=result.type;
+                    console.log(this.type);
                 }
             },
             //课时设置
@@ -97,7 +101,15 @@
                 let {data}=await this.$api.schedule.arrangeClass.updateSchedule({planId:this.planId,taskName:this.form.task})
                 console.log(data);
                 if(data&&data.success){
-                    this.$router.push(`/schedule/detail/task_mobile/index?planId=${this.planId}`)
+                    if(this.type===1){
+                        this.$router.push(`/schedule/detail/task_admin/index?planId=${this.planId}`)
+                    }else{
+                        this.$router.push(`/schedule/detail/task_mobile/index?planId=${this.planId}`)
+
+                    }
+
+                }else{
+                    message.error(data.message);
                 }
             },
         }

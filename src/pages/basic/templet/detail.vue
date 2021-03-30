@@ -35,8 +35,7 @@
               </a-form-model-item>
             </a-col>
             <a-col span="4">
-              <a-form-model-item
-                      label="假期"
+              <a-form-model-item label="假期"
                       prop="restday"
                       :labelCol="{ span: 10 }"
                       :wrapperCol="{ span: 14 }">
@@ -426,7 +425,7 @@
         });
       },
       async saveInfo(){
-        if(this.form.workday+this.form.restday==7){
+        if(Number(this.form.workday)+Number(this.form.restday)==7){
           if(this.$router.history.current.query.id==undefined){
             let query={...this.form,timeSetting:this.timeQuery};
             let {data}=await this.$api.basic.template.saveTemplate(query);
@@ -440,7 +439,7 @@
             this.$router.push("/basic/template/admin");
           }
         }else{
-          message.info("工作日+假期之和不等于7，请重新选择")
+           message.info("工作日+假期之和不等于7，请重新选择")
         }
       },
       clearInfo() {

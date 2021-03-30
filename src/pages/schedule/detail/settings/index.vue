@@ -4,7 +4,7 @@
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
                 <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
-                <a-breadcrumb-item @click="classDetail">排课详情</a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
                 <a-breadcrumb-item><a href="#">选课设置</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
@@ -22,7 +22,8 @@
                                    format="YYYY-MM-DD HH:mm:ss"
                                    placeholder="开始时间"
                                    @openChange="handleStartOpenChange"
-                                   valueFormat="YYYY-MM-DD HH:mm:ss"/>
+                                   valueFormat="YYYY-MM-DD HH:mm:ss"
+                                    style="width:400px"/>
                 </a-form-item>
                 <a-form-model-item label="选课结束时间">
                     <a-date-picker v-model="endValue"
@@ -32,7 +33,8 @@
                             placeholder="结束时间"
                             :open="endOpen"
                             @openChange="handleEndOpenChange"
-                            valueFormat="YYYY-MM-DD HH:mm:ss"/>
+                            valueFormat="YYYY-MM-DD HH:mm:ss"
+                                   style="width:400px"/>
                 </a-form-model-item>
             </a-form-model>
             <a-table :rowKey="'id'" :columns="columns" :dataSource="dataSource" :pagination='false'>
@@ -71,7 +73,7 @@
                     </a-table>
                 </div>
                 <template  slot="regular" slot-scope="text,record,index3">
-                    <a-select placeholder="请选择覆盖科目" style="width: 150px" v-model="text" @change="handleChange($event,index3)">
+                    <a-select placeholder="请选择覆盖科目" style="width: 150px" :default-value="text" @change="handleChange($event,record.id)">
                         <a-select-option value="2">2</a-select-option>
                         <a-select-option value="3">3</a-select-option>
                         <a-select-option value="4">4</a-select-option>
@@ -271,18 +273,27 @@
                 }else{
                     this.dataSource =data.result[0].setInfo;
                     this.form.explanation=data.result[0].tips;
-                    this.timeLimit=data.result[0].timeLimit;
-                    this.startValue=this.timeLimit.split(" - ")[0];
-                    this.endValue=this.timeLimit.split(" - ")[1];
+                    if(data.result[0].timeLimit){
+                        this.timeLimit=data.result[0].timeLimit;
+                        this.startValue=this.timeLimit.split(" - ")[0];
+                        this.endValue=this.timeLimit.split(" - ")[1];
+                    }else{
+                        this.startValue="";
+                        this.endValue="";
+                    }
                     // this.form.selectType=data.result[0].selectType;
                     // // this.form.selectType=this.form.selectType;
                     if(data.result[0].selectType==0){
                         this.form.selectType="按老师选择";
                         this.changeColumns=columnsSubjectsTeacher;
-                    }else{
+                    }else if(data.result[0].selectType==1){
                         this.form.selectType="不按老师选择";
                         this.changeColumns=columnsSubjects;
+                    }else{
+                        this.form.selectType="";
+                        this.changeColumns=columnsSubjects;
                     }
+
                 }
                 console.log(data.result[0].setInfo);
             },
@@ -398,8 +409,13 @@
             handleChange($event,index){
                 console.log(index);
                 console.log($event);
-                this.dataSource[index].coverRule=$event;
-                console.log(this.dataSource[index].coverRule);
+                this.dataSource.map(item=>{
+                    if(item.id=index){
+                        return item.coverRule=$event;
+                    }
+                })
+
+                console.log(this.dataSource);
             },
             //保存
             async saveAll(){
@@ -471,23 +487,20 @@
                     console.log(data);
                     if(data&&data.success){
                         message.success("保存成功");
-                        this.classDetail();
+                        this.chooseClassSettingInfo();
+                        this.$router.go(-1)
                     }else{
                         message.error("保存失败！");
                     }
                 }
             },
             //清空
-            Clear(){
-                for(let i=0;i<this.dataSource.length;i++){
-                    for(let j=0;j<this.dataSource[i].subChildIds.length;j++){
-                        this.dataSource[i].subChildIds[j].isable="";
-                        for(let k=0;k<this.dataSource[i].subChildIds[j].teacherIds.length;k++){
-                            this.dataSource[i].subChildIds[j].teacherIds[k]={};
-                        }
-                    }
+            async Clear(){
+                let {data}=await this.$api.schedule.setting.settingdelete({planId:this.planId});
+                console.log(data);
+                if(data&&data.success){
+                    this.chooseClassSettingInfo();
                 }
-                this.form.explanation="";
             },
             //返回
             back(){
@@ -508,7 +521,7 @@
                 this.dataSource[index1].subChildIds[index2].teacherIds= dataSource
             },
             //排课详情查看
-            classDetail(){
+            arrangeClass(){
                 this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
             }
         },

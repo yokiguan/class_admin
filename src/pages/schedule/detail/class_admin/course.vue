@@ -3,9 +3,10 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">行政班排课</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">学科设置</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item>行政班排课</a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">学科设置</a></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -24,11 +25,12 @@
         </div>
         <a-card class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="timesSetting" :disabled="choose">课时设置</a-button></a-col>
                 <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" >课节设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" >学科设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting">班级设置</a-button></a-col>
-                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting">规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px;background-color:#b9b9b9" @click="subjectSetting" >学科设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting" disabled>班级设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting" disabled>规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray" disabled>开始排课</a-button></a-col>
             </a-row>
             <a-table :rowKey="'subId'"
                     :columns="columns"
@@ -46,11 +48,11 @@
                 <a-input slot="lessonDaily" slot-scope="text, record,index" v-model="text" @blur="lessonDailyChange(index,text)"/>
                 <a-input slot="lessonMorning" slot-scope="text, record,index" v-model="text" @blur="lessonMorningChange(index,text)"/>
                 <a-input slot="lessonAfternoon" slot-scope="text, record,index" v-model="text" @blur="lessonAfternoonChange(index,text)"/>
-                <template slot="action" slot-scope="text, record">
+                <template slot="action" slot-scope="text, record,index">
                     <a-popconfirm
                             v-if="dataSource.length"
-                            title="确认删除?"
-                            @confirm="() => onDelete(record.id)">
+                            title="确认删除?若删除，后续相关内容也将删除！"
+                            @confirm="() => onDelete(index)">
                         <a href="javascript:;">删除</a>
                     </a-popconfirm>
                 </template>
@@ -107,7 +109,7 @@
             <div></div>
             <a-form-model  style="margin-top: 30px;" :model="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 18}">
                 <a-form-model-item label="类型" ref="type" props="type">
-                    <a-select placeholder="小于/大于/等于" :default-value="type" @change="changType">
+                    <a-select placeholder="小于/大于/等于" v-model="form.type" @change="changType">
                         <a-select-option value="小于">小于</a-select-option>
                         <a-select-option value="大于">大于</a-select-option>
                         <a-select-option value="等于">等于</a-select-option>
@@ -115,7 +117,7 @@
                     </a-select>
                 </a-form-model-item>
                 <a-form-model-item label="天数" ref="days" props="days">
-                    <a-input placeholder="请输入上课天数" :default-value="days"/>
+                    <a-input placeholder="请输入上课天数" v-model="form.days"/>
                 </a-form-model-item>
             </a-form-model>
         </a-modal>
@@ -213,8 +215,10 @@
                 scheduleTaskId:"",
                 classType:"",
                 gradeId:"",
+                choose:false,
                 form:{
                     value:[],
+                    type:"",
                 },
             };
         },
@@ -242,6 +246,9 @@
                     this.classType=result.type;
                     this.gradeId=result.gradeId;
                     console.log(this.classType);
+                    if(this.classType==2){
+                        this.choose=true;
+                    }
                 }
             },
             //每周课节数设置
@@ -286,8 +293,9 @@
             },
             //改变类型
             changType(info){
-                console.log(info);
+                // console.log(info);
                 this.chooseType=info;
+                // console.log(this.chooseType);
             },
             //学科设置查看
             async subjectInfo(){
@@ -297,14 +305,19 @@
                 // console.log(this.dataSource);
             },
             //删除行数据
-            async onDelete(ids){
-                let {data}=await this.$api.schedule.adminClass.deleteCourseSetting({ids:[ids]});
+            async onDelete(index){
+                let allData={
+                    planId:this.planId,
+                    id:this.dataSource[index].id,
+                    subId:this.dataSource[index].subId
+                }
+                let {data}=await this.$api.schedule.adminClass.deleteCourseSetting(allData);
                 console.log(data);
                 if(data&&data.success){
                     message.info("删除成功");
                     this.subjectInfo();
                 }else{
-                    message.info("删除失败");
+                    message.info(data.message);
                 }
             },
             //编辑上课天数
@@ -313,10 +326,10 @@
                 // console.log(this.dataSource[index]);
                 this.editIndex=index;
                 console.log(index);
-                this.type=this.dataSource[index].type;
-                this.days=value;
-                console.log(this.type);
-                console.log(this.days);
+                this.form.type=this.dataSource[index].type;
+                this.form.days=value;
+                console.log(this.form.type);
+                console.log(this.form.days);
                 this.settingLessonDays=true;
             },
             //添加课程方法
@@ -373,10 +386,15 @@
             },
             //保存上课天数
             handleOk(){
+                // console.log(this.form.type);
+                // console.log(this.form.days);
+                // console.log(this.dataSource[this.editIndex]);
               this.settingLessonDays =false;
-              this.dataSource[this.editIndex].type=this.form.type;
+              this.dataSource[this.editIndex].type=this.chooseType;
               this.dataSource[this.editIndex].dayNum=this.form.days;
               this.saveData(this.editIndex);
+              this.form.type="";
+              this.form.days="";
             },
             //保存添加
             async handleOkAdd(){
@@ -447,17 +465,17 @@
             //课时设置
             timesSetting(){
                 if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`);
                 }
             },
             //课节设置
             oncesSetting(){
                 if(this.classType==2){
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`)
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                 }else{
-                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`);
                 }
             },
             //学科设置
@@ -484,28 +502,44 @@
                     this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
                 }
             },
+            //开始排课
+            startArray(){
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
+            },
             //下一步
             Next(){
                 console.log(this.dataSource);
+                let flag=1;
+                loop0:
                 for(let i=0;i<this.dataSource.length;i++){
-                    if(this.dataSource[i].lessonWeekly){
-                        if(this.dataSource[i].lessonWeekly==0){
-                            message.warning(this.dataSource[i].subName+"课节数为0，请输入大于0的课节数");
-                        }else{
-                            if(this.classType==2){
-                                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
-                            }else{
-                                this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`);
-                            }
-                        }
+                    console.log(this.dataSource[i].lessonWeekly);
+                    if(this.dataSource[i].lessonWeekly===0){
+                        flag=0;
+                        console.log(flag);
+                        message.warning("课节数为0，请输入大于0的课节数");
+                        break loop0;
+                    }else if(this.dataSource[i].lessonWeekly===""){
+                        flag=0;
+                        console.log(flag);
+                        message.warning("课节数为0，请输入大于0的课节数");
+                        break loop0;
+                    }
+                }
+                if(flag===1){
+                    if(this.classType==2){
+                        this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
                     }else{
-                        message.warning(this.dataSource[i].subName+"课节数为空，请输入课节数");
+                        this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`);
                     }
                 }
             },
             //返回
             back(){
                 this.$router.go(-1)
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
             },
         }
     };

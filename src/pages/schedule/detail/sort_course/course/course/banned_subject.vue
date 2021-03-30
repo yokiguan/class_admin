@@ -3,10 +3,11 @@
         <div class="result">
             <a-breadcrumb>
                 <a-breadcrumb-item>首页</a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">排课计划</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">选课排课</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">课程设置</a></a-breadcrumb-item>
-                <a-breadcrumb-item><a href="">禁止科目相邻</a></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item>选课排课</a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="settingCourse">课程设置</span></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="#">互斥设置</router-link></a-breadcrumb-item>
             </a-breadcrumb>
         </div>
         <div class="content">
@@ -70,24 +71,6 @@
                 <a-icon type="plus" />
                 <span>添加一项</span>
             </div>
-            <!--            选择课程-->
-            <a-modal  title="选择课程"
-                      :visible="chooseCourseModal"
-                      :closable="false">
-                <template slot="footer">
-                    <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
-                    <a-button key="back" @click="handleCancel">取消</a-button>
-                </template>
-                <a-form-model :model="form" :rules="rules">
-                    <a-form-model-item>
-                        <a-checkbox-group v-model="form.course">
-                            <a-checkbox v-for="(course,index) in this.course" :value="course.subName" @change="onChange(course.id,course.subName)">
-                                {{course.subName}}
-                            </a-checkbox>
-                        </a-checkbox-group>
-                    </a-form-model-item>
-                </a-form-model>
-            </a-modal>
         </a-card>
         <button style="background-color: #00ccff;
                         color: white;
@@ -98,9 +81,28 @@
                         margin-top:100px;
                         margin-bottom: 20px;
                         width: 100px" @click="Next">下一步</button>
+        <!--            选择课程-->
+        <a-modal  title="选择课程"
+                  :visible="chooseCourseModal"
+                  :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
+            </template>
+            <a-form-model :model="form" :rules="rules">
+                <a-form-model-item>
+                    <a-checkbox-group v-model="form.course">
+                        <a-checkbox v-for="(course,index) in this.course" :value="course.value" @change="onChange(course.value,course.label)">
+                            {{course.label}}
+                        </a-checkbox>
+                    </a-checkbox-group>
+                </a-form-model-item>
+            </a-form-model>
+        </a-modal>
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue"
     const columns = [
         {
             title: ' ',
@@ -146,7 +148,7 @@
                 loading: false,
                 planData:"",
                 planId:"",
-                course:"",
+                course:[],
                 chooseCourseId:-1,
                 form:{},
                 rules:{},
@@ -162,27 +164,36 @@
                 let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
                 this.planData = result.name
             }
-            //获取课程接口
-            let { data } = await this.$api.basic.subject.fetchMainList();
-            // console.log(data);
-            this.course=data.rows;
-            // console.log( 'this.course',this.course);
+            this.courseInfo();
             this.lookContrast();
         },
         methods: {
             computedSubName(subId){
-                let filterCourse = this.course.filter(item => item.id === subId)
+                let filterCourse = this.course.filter(item => item.value === subId)
                 console.log(filterCourse);
                 if(filterCourse.length > 0){
-                    return filterCourse[0].subName
+                    return filterCourse[0].label
                 }
+            },
+            //课程查看
+            async courseInfo(){
+                let { data } = await this.$api.basic.subject.fetchMainList();
+                for(let i=0;i<data.rows.length;i++){
+                    let pushData={
+                        disabled:false,
+                        value:data.rows[i].id,
+                        label:data.rows[i].subName
+                    }
+                    this.course.push(pushData);
+                }
+                console.log(this.course);
             },
             //获取禁止相邻规则信息
             async lookContrast(){
                 let {data}=await this.$api.schedule.arrangeClass.banGetting({planId:this.planId,ruleType:"2"})
                 console.log(data);
                 this.dataSource=data.rows
-                // console.log(this.dataSource);
+                console.log(this.dataSource);
             },
             //修改类型
             handleSelectChange($event,index){
@@ -229,13 +240,10 @@
             },
             //删除课程
             handleClose(id,removeTag){
-                console.log(removeTagId);
                 let deleId=-1;
                 deleId=this.dataSource.findIndex(item=>item.id==id);
-                // console.log(deleId);
-                // console.log(removeTag);
                 let course=[];
-                for(let i=0;i<this.dataSource[deleId].course.length;i++){
+                for(let i in this.dataSource[deleId].course){
                     if(this.dataSource[deleId].course[i].subName!==removeTag){
                         course=[...course,this.dataSource[deleId].course[i]]
                     }
@@ -291,7 +299,12 @@
                 console.log('newData',newData);
                 let {data}=await this.$api.schedule.arrangeClass.banAdding(newData);
                 console.log(data);
-                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
+                if(data&&data.success){
+                    this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`)
+                }else{
+                    message.error("保存失败！");
+                }
+
             },
             //添加一项规则
             AddContent(){
@@ -312,14 +325,22 @@
                 if(data&&data.success){
                     //获取互斥规则信息
                     this.lookContrast();
-                    message.info('删除成功');
+                    message.success('删除成功');
                 }else{
-                    message.info('删除失败');
+                    message.error('删除失败');
                 }
             },
             //返回
             back(){
                 this.$router.go(-1)
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
+            //课程设置查看
+            settingCourse(){
+                this.$router.push(`/schedule/detail/sort_course/course/index?planId=${this.planId}`);
             },
         }
     };

@@ -33,7 +33,7 @@
                             cancelText="取消"
                             okText="确定"
                             @confirm="() => handleDeletePlan(item.planId)">
-                  <a >删除</a>
+                <span>删除</span>
               </a-popconfirm>
             </a-card>
           </template>
@@ -181,12 +181,14 @@
       },
       async handleDeletePlan(value){
         // 删除排课计划
-        let {data} = this.$api.schedule.plan.deleteSchedulePlan({ids:[value]});
-        if(data&&data.success){
+        let {data} =await this.$api.schedule.plan.deleteSchedulePlan({ids:[value]});
+        console.log(data);
+        if(data&&data.success==true){
           message.success("删除成功！");
           this.initSearch();
+        }else{
+          message.error("删除失败！");
         }
-        message.error("删除失败！");
       },
       //新增排课计划
       addNew(){
