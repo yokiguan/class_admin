@@ -60,14 +60,14 @@
           </a-select>
         </a-form-model-item>
         <a-form-model-item label="类型" ref="type" prop="type">
-          <a-radio-group v-model="form.type">
+          <a-radio-group v-model="form.type"  @change="changePlace">
             <a-radio value="专业教学场地">专业教学场地</a-radio>
             <a-radio value="公共教学场地">公共教学场地</a-radio>
             <a-radio value="行政班教室">行政班教室</a-radio>
           </a-radio-group>
         </a-form-model-item>
         <a-form-model-item label="容纳人数" ref="capacity" prop="capacity">
-          <a-input v-model="form.capacity" placeholder="请输入你想要新增的场地容量"></a-input>
+          <a-input v-model="form.capacity" placeholder="请输入你想要新增的场地容量" :disabled="capDis"/>
         </a-form-model-item>
         <a-form-item label="状态" ref="status" prop="status">
           <a-switch v-model="form.status"/>
@@ -164,6 +164,7 @@
         dataSource: [],
         editText:-1,
         changeTitle:'新增教室',
+        capDis:false,
         formItemLayout: {
           labelCol: { span: 6 },
           wrapperCol: { span: 14 }
@@ -252,6 +253,15 @@
         this.form.floor="";
         this.form.capacity="";
         this.form.type="";
+      },
+      //选择教室类型
+      changePlace(e){
+        console.log(e.target.value);
+        if(e.target.value=="行政班教室"){
+          this.capDis=true;
+        }else{
+          this.capDis=false;
+        }
       },
       //保存弹窗
       async handleOk() {

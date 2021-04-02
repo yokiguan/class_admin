@@ -114,24 +114,6 @@
           status:true,
         },
         rules:{
-          name:[
-            {
-              required:true,
-              message:"请输入教学楼名称！",
-              trigger:"blur"
-            }
-          ],
-          floor:[
-            {
-              required:true,
-              message:"请输入楼层！",
-              trigger:"blur"
-            },
-            {
-              type:'number',
-              message: "请输入数字"
-            }
-          ]
         }
       }
     },
@@ -151,8 +133,8 @@
       async handleOk() {
         console.log(this.form.name);
         console.log(this.changeTitle);
-        if(this.form.floor=="" ||this.form.name==""){
-          message.warning("保存失败,请检查输入数据是否有空");
+        if(this.form.floor=="" ||this.form.name=="" ||this.form.floor==0){
+          message.warning("保存失败,请检查输入数据是否有空或者0");
         }else{
           if(this.changeTitle=="新增教学楼"){
             let noHave = true;

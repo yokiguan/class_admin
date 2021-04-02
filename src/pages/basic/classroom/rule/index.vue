@@ -123,13 +123,6 @@
                     ruleName:undefined,
                 },
                 rules:{
-                    ruleName:[
-                        {
-                            required:true,
-                            message:"请输入规则名称",
-                            trigger:"blur"
-                        }
-                    ]
                 },
             };
         },
@@ -334,40 +327,43 @@
                console.log(this.disableData);
                 //保存场地规则
                 let addData={};
-                if(this.ruleId==""){
-                    addData={
-                        classroomIds: [this.classRoomId],
-                        classroomRuleEntity:{
-                            name:this.form.ruleName,
-                            currId:this.form.modal,
-                            number:1,
-                            ruleInfo:JSON.stringify(this.disableData),
+                if(this.form.ruleName==undefined){
+                    message.error("规则名称为空,请输入规则名称！");
+                }else {
+                    if(this.ruleId==""){
+                        addData={
+                            classroomIds: [this.classRoomId],
+                            classroomRuleEntity:{
+                                name:this.form.ruleName,
+                                currId:this.form.modal,
+                                number:1,
+                                ruleInfo:JSON.stringify(this.disableData),
+                            }
+                        }
+                    }else{
+                        addData={
+                            classroomIds:[this.classRoomId],
+                            classroomRuleEntity:{
+                                ruleId:this.ruleId,
+                                name:this.form.ruleName,
+                                currId:this.form.modal,
+                                number:1,
+                                ruleInfo:JSON.stringify(this.disableData),
+                            }
                         }
                     }
-                }else{
-                    addData={
-                        classroomIds:[this.classRoomId],
-                        classroomRuleEntity:{
-                            ruleId:this.ruleId,
-                            name:this.form.ruleName,
-                            currId:this.form.modal,
-                            number:1,
-                            ruleInfo:JSON.stringify(this.disableData),
-                        }
+                    console.log(addData);
+                    let {data}=await this.$api.basic.classroom.saveRule(addData);
+                    console.log(data);
+                    this.saveVisit = false;
+                    if(data&&data.success){
+                        message.success("保存成功");
+                        this.reguleName=this.form.ruleName;
+                        this.form.ruleName=="";
+                        this.placeInfo(this.form.modal);
+                    }else{
+                        message.error("保存失败！");
                     }
-                }
-                console.log(addData);
-                let {data}=await this.$api.basic.classroom.saveRule(addData);
-                console.log(data);
-                this.saveVisit = false;
-                if(data&&data.success){
-                    message.success("保存成功");
-                    this.reguleName=this.form.ruleName;
-                    this.form.ruleName=="";
-                    this.placeInfo(this.form.modal);
-                }else{
-                    message.error("保存失败！");
-
                 }
             },
             //取消

@@ -85,64 +85,24 @@
         <a-button @click="goBackAdmin" style="margin-left: 8px">返回</a-button>
       </a-row>
       <!--    节次时间段设置-->
-      <a-modal
-              :visible="timeModal"
+      <a-modal :visible="timeModal"
+               :closable="false"
               title="节次时间设置"
               @ok="handleOkTime"
               @cancel="handleCancelTime">
         <a-table :columns="timeColumns"
                 :dataSource="timeData"
-                rowKey="value"
+                :rowKey="'activity'"
                 :pagination="false">
-        <span slot="time" slot-scope="time,record">
-          <a-time-picker v-model="time[0]" format="HH:mm" /> -
-          <a-time-picker v-model="time[1]"
-                  @change="changeTime(record)"
-                  format="HH:mm"/>
-        </span>
+        <template slot="time" slot-scope="time,record,index">
+            <a-time-picker v-if="startTime!==null" :default-value="startTime" format="HH:mm" @click="changeStartTime(index)"/>——
+            <a-time-picker v-if="endTime!==null" :default-value="endTime" @change="changeTime(index)" format="HH:mm"/>
+        </template>
         </a-table>
       </a-modal>
-      <!--    公共时间段设置-->
-      <!--    <a-modal-->
-      <!--            :visible="publicModal"-->
-      <!--            title="公共时段设置"-->
-      <!--            :closable="false">-->
-      <!--      <a-form-model ref="publicForm" :rules="publicRules" :model="public" :label-col="{span:5}" :wrapper-col="{span:15}">-->
-      <!--        <a-form-model-item label="时间段位置" prop="addTimeLocation" ref="addTimeLocation">-->
-      <!--          <a-input v-model="public.addTimeLocation" placeholder="早读1之后"/>-->
-      <!--        </a-form-model-item>-->
-      <!--        <a-row>-->
-      <!--          <a-col>-->
-      <!--            <a-form-model-item label="时间段名称" prop="addTimeName" ref="addTimeName">-->
-      <!--              <a-input v-model="public.addTimeName" placeholder="早饭"/>-->
-      <!--            </a-form-model-item>-->
-      <!--          </a-col>-->
-      <!--          <a-col><a style="color:blue;float: right;margin-top: -60px;font-size: 1.1em;margin-right: 20px" @click="addTime">添加</a>-->
-      <!--          </a-col>-->
-      <!--        </a-row>-->
-      <!--      </a-form-model>-->
-      <!--      <standard-table-->
-      <!--              :Key="'no'"-->
-      <!--              :columns="publicColumns"-->
-      <!--              :data-source="publicData"-->
-      <!--              :selectedRows="selectedRows"-->
-      <!--              @change="onchange"></standard-table>-->
-      <!--      <template slot="footer">-->
-      <!--        <a-button key="submit" type="primary" :loading="loading" @click="handlePublicok">-->
-      <!--          保存-->
-      <!--        </a-button>-->
-      <!--        <a-button key="back" @click="handlePublicCancel">-->
-      <!--          取消-->
-      <!--        </a-button>-->
-      <!--        <a-button key="delete" @click="handlePublicDelete" slot="overlay">-->
-      <!--          删除-->
-      <!--        </a-button>-->
-      <!--      </template>-->
-      <!--    </a-modal>-->
     </a-card>
   </div>
 </template>
-
 <script>
   import moment from "moment";
   import {message} from "ant-design-vue"
@@ -181,7 +141,6 @@
       dataIndex: "sunday"
     }
   ];
-
   const activity = [
     {
       name: "早读",
@@ -255,11 +214,14 @@
         dataSource: [],
         selectedRowKeys: [],
         selectedRows: [],
+        startTime:null,
+        endTime:null,
         activity,
         publicColumns,
         publicData,
         publicModal: false,
         timeModal: false,
+        getTimeDatas:{},
         form: {
           templateName: undefined,
           workday: undefined,
@@ -348,7 +310,8 @@
             }
           ]
         },
-        loading:false
+        loading:false,
+        platHour:{},
       };
     },
     created() {
@@ -356,6 +319,7 @@
       console.log(this.$router.history.current.query.id);
     },
     methods: {
+      moment,
       //获取当前信息
       async lookInfo(){
         let queryString=(window.location.hash || " ").split('?')[1]
@@ -363,6 +327,8 @@
         if(id) {
           let {data} = await this.$api.basic.template.fetchTemplate({id});
           console.log(data.result);
+          this.getTimeDatas=data.result.timeSetting;
+          console.log(this.getTimeDatas);
           let activities = [];
           let timeDatas = [];
           let list = [...this.activity];
@@ -372,15 +338,38 @@
                 activity: item.name + i,
                 value: item.value + i
               });
+              // console.log(item.value+i);
               timeDatas.push({
                 activity: item.name + i,
                 value: item.value + i,
-                time: [moment(undefined), moment(undefined)]
+                time: {
+                  startTime:this.getTimeDatas[item.value+i].split("-")[0],
+                  endTime:this.getTimeDatas[item.value+i].split("-")[1],
+                },
               });
+              console.log(this.getTimeDatas);
+              console.log(timeDatas);
             }
           });
           this.dataSource = activities;
           this.timeData = timeDatas;
+          console.log(this.timeData);
+          for(let i in this.timeData){
+            console.log(this.timeData[i].time);
+            this.platHour=this.timeData[i].time;
+            // this.startTime=moment(this.timeData[i].time.startTime,"HH:mm");
+            // this.endTime=moment(this.timeData[i].time.endTime,"HH:mm");
+            this.startTime=this.timeData[i].time.startTime;
+            this.endTime=this.timeData[i].time.endTime;
+            console.log(this.startTime);
+            console.log(this.endTime);
+            // this.startTime=this.timeData[i].time.startTime;
+            // this.endTime=this.timeData[i].time.endTime;
+            // this.startTime=this.startTime.format("HH:mm");
+            // console.log(typeof this.timeData[i].time.startTime);
+            // console.log(typeof this.startTime);
+            // console.log(this.timeData[i].time.endTime);
+          }
           this.form.templateName=data.result.templateName;
           this.form.workday=data.result.workday;
           this.form.restday=data.result.restday;
@@ -395,8 +384,14 @@
         this.selectedRowKeys = selectedRowKeys
         this.selectedRows = selectedRows
       },
-      changeTime(record) {
-        console.log(this.timeData,record);
+      changeTime(index,time) {
+        console.log("设置结束时间",index);
+        // console.log("设置结束时间",time._d);
+      },
+      changeStartTime(index,time,timeString){
+        console.log("index",index);
+        console.log("time",time);
+        console.log("timeString",timeString);
       },
       setInfo() {
         this.$refs.ruleForm.validate(valid => {
@@ -433,7 +428,9 @@
             this.$router.push("/basic/template/admin");
             this.$refs.ruleForm.resetFields();
           }else{
+            console.log(this.timeQuery);
             let query={id:this.$router.history.current.query.id,...this.form,timeSetting:this.timeQuery};
+            console.log(query);
             let {data}=await this.$api.basic.template.saveTemplate(query);
             console.log(data.result);
             this.$router.push("/basic/template/admin");
@@ -461,11 +458,11 @@
         this.timeModal = true;
       },
       handleOkTime() {
-
         this.timeModal = false;
         this.timeData.forEach(item=>{
+          console.log(item);
           let time=[]
-          item.time.forEach(t=>time.push(t.format('hh:mm')))
+          item.time.forEach(t=>time.push(t.format('HH:mm')))
           this.timeQuery[item.value]=time.join('-')
         })
         console.log(this.timeQuery);

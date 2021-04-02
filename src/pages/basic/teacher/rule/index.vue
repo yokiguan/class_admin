@@ -134,13 +134,6 @@
                 ruleId:"",
                 ruleInfo: "",
                 rules:{
-                    ruleName:[
-                        {
-                            required:true,
-                            message:"请输入规则名称",
-                            trigger:"blur"
-                        }
-                    ]
                 }
             };
         },
@@ -379,7 +372,7 @@
             },
             //打开输入规则弹框
             saveData(){
-                if(this.reguleName!=""){
+                if(this.reguleName!==""){
                     this.form.ruleName=this.reguleName;
                 }
                 this.saveVisit=true;
@@ -391,43 +384,47 @@
             //保存场地规则
             async handleOk(){
                 let addData={};
-                if(this.ruleId==""){
-                    addData={
-                        teacherIds:[this.getTeacherId],
-                        teacherRuleEntity:{
-                            currId:this.form.modal,
-                            name:this.form.ruleName,
-                            ruleInfo:{
-                                disable: JSON.stringify(this.disableData),
-                                priority:JSON.stringify(this.priorityData),
+                if(this.form.ruleName==undefined){
+                    message.error("规则名称为空，请输入！");
+                }else{
+                    if(this.ruleId==""){
+                        addData={
+                            teacherIds:[this.getTeacherId],
+                            teacherRuleEntity:{
+                                currId:this.form.modal,
+                                name:this.form.ruleName,
+                                ruleInfo:{
+                                    disable: JSON.stringify(this.disableData),
+                                    priority:JSON.stringify(this.priorityData),
+                                }
+                            }
+                        }
+                    }else{
+                        addData={
+                            teacherIds:[this.getTeacherId],
+                            teacherRuleEntity:{
+                                ruleId:this.ruleId,
+                                currId:this.form.modal,
+                                name:this.form.ruleName,
+                                ruleInfo:{
+                                    disable: JSON.stringify(this.disableData),
+                                    priority:JSON.stringify(this.priorityData),
+                                }
                             }
                         }
                     }
-                }else{
-                    addData={
-                        teacherIds:[this.getTeacherId],
-                        teacherRuleEntity:{
-                            ruleId:this.ruleId,
-                            currId:this.form.modal,
-                            name:this.form.ruleName,
-                            ruleInfo:{
-                                disable: JSON.stringify(this.disableData),
-                                priority:JSON.stringify(this.priorityData),
-                            }
-                        }
+                    console.log(addData);
+                    let {data}=await this.$api.basic.teacher.saveRule(addData);
+                    console.log(data);
+                    if(data&&data.success){
+                        message.success("保存成功！");
+                        this.saveVisit=false;
+                        this.teacherRuleInfo(this.form.modal);
+                        this.initData();
+                        this.form.ruleName="";
+                    }else{
+                        message.error("保存失败！");
                     }
-                }
-                console.log(addData);
-                let {data}=await this.$api.basic.teacher.saveRule(addData);
-                console.log(data);
-                if(data&&data.success){
-                    message.success("保存成功！");
-                    this.saveVisit=false;
-                    this.teacherRuleInfo(this.form.modal);
-                    this.initData();
-                    this.form.ruleName="";
-                }else{
-                    message.error("保存失败！");
                 }
             },
             //关闭规则弹框
