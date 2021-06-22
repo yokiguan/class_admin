@@ -1,268 +1,286 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item>行政班排课</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="#">课时设置</router-link></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高一2019-2020第一学期排课计划</span></a-col>
-                <a-col>
-                    <button style="background-color: blue;
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
+                <a-col><button style="background-color: blue;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 100px"
-                    >返回</button>
-                </a-col>
+                        width: 100px" @click="back">返回</button></a-col>
             </a-row>
         </div>
-        <!-- /result -->
-
         <div class="table-bg">
             <a-row class="buttons">
-                <a-col :span="3">
-                    <a-button>课时设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button >课节设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>教师设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>课程设置</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button>开始排课</a-button>
-                </a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px;background-color:#b9b9b9" @click="timesSetting">课时设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="oncesSetting" disabled >课节设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="subjectSetting" disabled>学科设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="classSetting" disabled>班级设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="ruleSetting" disabled>规则设置</a-button></a-col>
+                <a-col :span="3"><a-button style="width: 100px;height: 40px" @click="startArray" disabled>开始排课</a-button></a-col>
             </a-row>
-            <a-row class="buttons-sub">
-                <a-col :span="3">
-                    <a-button type="danger" style="color:white;
-                              width: 100px;
-                                height: 30px;">禁选</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button style="background-color:grey;
-                      width: 100px;
-                        height: 30px;color:white">普通</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button type="primary" style="color:white;
-                              width: 100px;
-                              height: 30px;">优先</a-button>
-                </a-col>
-                <a-col :span="3">
-                    <a-button
-                            style="background-color:#0099cc;
-                              width: 100px;
-                              height: 30px;color:white">走班课</a-button>
-                </a-col>
+            <a-row class="form" style="margin-left: -150px;margin-top:60px">
+                <a-form-model :modal="form" :label-col="{ span: 5 }" :wrapper-col="{ span: 8}" >
+                    <a-form-model-item label="选择课表模板" ref="modalId" prop="modalId">
+                        <a-select @change="handleSelectChange" :default-value="modalInfo[0]" v-model="form.modalId">
+                            <a-select-option v-for="(modalName,index) in modalInfo" :key="index" :value="modalName.id">
+                                {{modalName.templateName}}
+                            </a-select-option>
+                        </a-select>
+                    </a-form-model-item>
+                </a-form-model>
             </a-row>
-            <a-table id="Table"
+            <a-table
+                    :rowKey="`activity`"
                     :columns="columns"
-                    :data-source="tableData"
+                    :data-source="dataSource"
                     :pagination="false"
-                    :bordered="true">
+                    :bordered="true"
+                    style="margin-top: 10px;
+                    margin-left: 50px">
             </a-table>
-            <router-link to="/schedule/detail/sort_course/place">
-                <button style="background-color:#00ccff;
+            <button style="background-color: #00ccff;
                         color: white;
                         height: 40px;
                         border: none;
                         border-radius: 5px;
                         margin-top: 50px;
-                        width: 150px">
-                    下一步</button>
-            </router-link>
+                        width: 150px" @click="Next">下一步</button>
         </div>
     </div>
 </template>
 <script>
-    // eslint-disable-next-line no-unused-vars
-    import { Table } from 'antd';
-    const renderContext=(value,row,index)=>{
-        const obj={
-            children: value,
-            attrs:{},
-        };
-        if(index===3||index===6){
-            obj.attrs.colSpan=0;
-        }
-        return obj;
-    };
+    import moment from "moment";
+    import {message} from "ant-design-vue";
+    import plan from "../../../../services/api/schedule/plan";
     const columns = [
         {
-            align: "center",
-            title: " ",
-            dataIndex: 'key',
-            customRender: (text, row, index) => {
-                if (index === 3 || index === 6) {
-                    return {
-                        children: text,
-                        attrs: {
-                            colSpan: 8,
-                        },
-                    };
-                } else {
-                    return text;
-                }
-            },
+            title: "",
+            dataIndex: "activity",
+            align:'center',
         },
         {
-            title: '星期一',
-            dataIndex: 'one',
-            key:'one',
-            customRender:renderContext,
+            title: "星期一",
+            dataIndex: "monday",
+            align:'center',
         },
         {
-            title: '星期二',
-            dataIndex: 'two',
-            key:'two',
-            customRender:renderContext,
+            title: "星期二",
+            dataIndex: "tuesday",
+            align:'center',
         },
         {
-            title: '星期三',
-            dataIndex: 'three',
-            key:'three',
-            customRender:renderContext,
+            title: "星期三",
+            dataIndex: "wednesday",
+            align:'center',
         },
         {
-            title: '星期四',
-            dataIndex: 'four',
-            key: 'four',
-            customRender:renderContext,
+            title: "星期四",
+            dataIndex: "thursday",
+            align:'center',
         },
         {
-            title: '星期五',
-            dataIndex: 'five',
-            key: 'five',
-            customRender:renderContext,
+            title: "星期五",
+            dataIndex: "friday",
+            align:'center',
         },
         {
-            title: '星期六',
-            dataIndex: 'six',
-            key:'six',
-            customRender:renderContext,
+            title: "星期六",
+            dataIndex: "saturday",
+            align:'center',
         },
         {
-            title: '星期日',
-            dataIndex: 'seven',
-            key:'seven',
-            customRender:renderContext,
-        },
+            title: "星期日",
+            dataIndex: "sunday",
+            align:'center',
+        }
     ];
-    const tableData=[
+    const activity = [
         {
-            key: '早读1',
+            name: "早读",
+            options: [0, 1, 2],
+            value: "morningread"
         },
         {
-            key: '上午1',
+            name: "上午",
+            options: [0, 1, 2, 3, 4],
+            value: "morning"
         },
         {
-            key: '上午2',
-        },{
-            key: '课间操10：00-10:30',
+            name: "中午",
+            options: [0, 1, 2],
+            value: "noon"
         },
         {
-            key: '上午3',
+            name: "下午",
+            options: [0, 1, 2, 3, 4],
+            value: "afternoon"
         },
         {
-            key: '上午4',
-        },{
-            key: '午休12：30-1:30',
-        },
-        {
-            key: '下午1',
-        },
-        {
-            key: '下午2',
-        },
-        {
-            key: '下午3',
-        },
-        {
-            key: '下午4',
-        },
-        {
-            key: '晚自习1',
-        },
+            name: "晚自习",
+            options: [0, 1, 2, 3, 4],
+            value: "evening"
+        }
     ];
-    // eslint-disable-next-line no-unused-vars
-    const column4 = [
-        {
-            title: '课节',
-            dataIndex: 'times',
-            key: 'times',
-        },
-        {
-            title: '最大使用数',
-            dataIndex: 'number',
-            key: 'number',
-            scopedSlots: { customRender: 'buildingType' }
-        },
-        {
-            title: '操作',
-            dataIndex: 'opt',
-            key: 'opt',
-            scopedSlots: { customRender: 'action' }
-        },
-    ];
-
-    // eslint-disable-next-line no-unused-vars
-    const tableData4= [
-        {
-            times: '周一上午第一节',
-            number: '1',
-            opt: '删除',
-        },
-        {
-            scopedSlots: { customRender: 'add' }
-        },]
     export default {
         data() {
             return {
-                column4,
-                tableData4,
                 columns,
-                tableData,
-                visible: false,
-                loading: false
+                dataSource:[],
+                activity,
+                timeData:[],
+                planData:"",
+                planId:"",
+                currId:"",
+                modalInfo:[],
+                modalName:"",
+                modalIds:[],
+                form:{
+                    modalId:" ",
+                },
+                modalId:"",
             };
         },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            //获取课表模板信息
+            let {data}=await this.$api.basic.template.fetchList()
+            this.modalInfo=data.rows;
+            console.log(this.modalInfo);
+            for(var i=0;i<this.modalInfo.length;i++){
+                this.modalIds.push(this.modalInfo[i].id);
+            }
+            console.log(this.modalIds);
+            this.lookInfo();
+        },
         methods: {
-            maxTime: function () {
-                this.visible = true;
+            //课时设置查看
+            async lookInfo(){
+                let {data:{result,success}}=await this.$api.schedule.arrangeClass.timeLookInfo({planId:this.planId});
+                console.log(result);
+                this.modalId=result.currId;
+                console.log(this.modalId);
+                this.modalInformation();
             },
-            change: function () {
-                this.visible = true;
+            //获取课表模板相关信息
+            async modalInformation() {
+                let {data:{result,success}}=await this.$api.basic.template.fetchTemplate({id:this.modalId});
+                console.log(result);
+                this.currId=this.modalId;
+                // console.log(this.currId);
+                let activities = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    for (let i = 1; i <= result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                    }
+                });
+                this.dataSource= activities;
+                this.form.modalId=result.templateName;
+                // console.log(this.tableData)
             },
-            closed: function () {
-                this.visible = false
-                this.loading = false
+            //模板选择
+            async handleSelectChange(id) {
+                let {data}=await this.$api.basic.template.fetchTemplate({id:this.form.modalId})
+                // console.log(data.result);
+                this.currId=this.form.modalId;
+                console.log(this.currId);
+                let activities = [];
+                let list = [...this.activity];
+                list.forEach(item => {
+                    console.log(item.value);
+                    for (let i = 1; i <= data.result[item.value]; i++) {
+                        activities.push({
+                            activity: item.name + i,
+                            value: item.value + i
+                        });
+                    }
+                });
+                this.dataSource = activities;
             },
-            handleSubmit: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
-                setTimeout(() => {
-                    that.dataSource.push(
-                        {
-                            avatar:
-                                "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
-                            content: "最大课时数设置",
-                        }
-                    ),
-                        that.visible = false
-                    that.loading = false
-                }, 2000)
+            //课时设置
+            timesSetting(){
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/index?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`);
+                }
             },
-            changeSituation: function(key, index){
-                console.log(key, index)
+            //课节设置
+            oncesSetting(){
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`);
+                }
             },
-            delSituation: function(key, index){
-                console.log(key, index)
-                this.tableData[key].situation.pop(index)
+            //学科设置
+            subjectSetting(){
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/course?planId=${this.planId}`);
+                }
+            },
+            //班级设置
+            classSetting(){
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/class?planId=${this.planId}`);
+                }
+            },
+            //规则设置
+            ruleSetting(){
+                if(this.classType==2){
+                    this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}&scheduleTaskId=${this.scheduleTaskId}`)
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/rule?planId=${this.planId}`);
+                }
+            },
+            //开始排课
+            startArray(){
+                this.$router.push(`/schedule/detail/start_class?planId=${this.planId}`)
+            },
+            //返回
+            back(){
+                this.$router.go(-1)
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`);
+            },
+            //保存并跳转至下一步
+            async Next(planId,currId){
+                console.log(this.form.modalId);
+                if(this.form.modalId==" "){
+                    message.info("请选择课表模板！");
+                }else{
+                    this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}`);
+                    //保存课表模板
+                    let {data}=await this.$api.schedule.arrangeClass.saveCoursetime({planId:this.planId,currId:this.currId})
+                }
             }
         }
     };
@@ -271,26 +289,22 @@
 <style lang="less" scoped>
     .result{
         width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
+        width: 100%;
         height: 300px;
         background-color: white;
         height: 100px;
         margin: 0px 0px 20px 0px;
         padding: 20px 25px;
         vertical-align: top;
-        border-radius: 5px;
-    }
-    .result-left{
-        width: 50%;
-    }
-    .link-font-color{
-        color: #0000ff;
-    }
-    .info{
-        height: 50px;
-        width: 100%;
-        margin: 0px 0px 10px 0px;
-        padding: 10px 5px;
-        background-color: white;
         border-radius: 5px;
     }
     .table-bg{
@@ -308,75 +322,10 @@
         background-color:#e4e4e4;
         color:black;
     }
-    .buttons-sub{
-        margin:5px 5px 20px 5px;
-        padding:2px 4px;
-    }
     .time1{
         width: 100%;
         height: 30px;
         padding-top:5px;
         background-color: #d9d9d9;
-    }
-    .ant-table-tbody > tr:first-child > td,
-    .ant-table-tbody > tr:last-child > td{
-        background: #f00;
-    }
-    .ant-table-tbody > tr:first-child > td:first-child,
-    .ant-table-tbody > tr:last-child > td:first-child {
-        background: none;
-    }
-    .ant-table-tbody > tr:nth-child(2) > td,
-    .ant-table-tbody > tr:nth-child(3) > td {
-        background: #1abc9c;
-    }
-    .ant-table-tbody > tr:nth-child(2) > td:first-child,
-    .ant-table-tbody > tr:nth-child(3) > td:first-child {
-        background: none;
-    }
-    /deep/#Table{
-        .ant-table-tbody > tr:first-child > td{
-            background: #f00;
-        }
-        .ant-table-tbody > tr:first-child > td:first-child,
-        .ant-table-tbody > tr:first-child > td:nth-child(7),
-        .ant-table-tbody > tr:first-child > td:nth-child(8){
-            background: none;
-        }
-        .ant-table-tbody > tr:nth-child(2) > td,
-        .ant-table-tbody > tr:nth-child(3) > td ,
-        .ant-table-tbody > tr:nth-child(9) > td,
-        .ant-table-tbody > tr:nth-child(10) > td {
-            background: #0099cc;
-        }
-        .ant-table-tbody > tr:nth-child(2) > td:nth-child(2),
-        .ant-table-tbody > tr:nth-child(2) > td:nth-child(3),
-        .ant-table-tbody > tr:nth-child(2) > td:nth-child(7),
-        .ant-table-tbody > tr:nth-child(2) > td:nth-child(8),
-        .ant-table-tbody > tr:nth-child(3) >td:nth-child(2),
-        .ant-table-tbody > tr:nth-child(3) >td:nth-child(3),
-        .ant-table-tbody > tr:nth-child(3) >td:nth-child(7),
-        .ant-table-tbody > tr:nth-child(3) >td:nth-child(8),
-        .ant-table-tbody > tr:nth-child(3) >td:first-child,
-        .ant-table-tbody > tr:nth-child(2) >td:first-child,
-        .ant-table-tbody > tr:nth-child(9) > td:nth-child(2),
-        .ant-table-tbody > tr:nth-child(9) > td:nth-child(3),
-        .ant-table-tbody > tr:nth-child(9) > td:nth-child(7),
-        .ant-table-tbody > tr:nth-child(9) > td:nth-child(8),
-        .ant-table-tbody > tr:nth-child(10) >td:nth-child(2),
-        .ant-table-tbody > tr:nth-child(10) >td:nth-child(3),
-        .ant-table-tbody > tr:nth-child(10) >td:nth-child(7),
-        .ant-table-tbody > tr:nth-child(10) >td:nth-child(8),
-        .ant-table-tbody > tr:nth-child(10) >td:first-child,
-        .ant-table-tbody > tr:nth-child(9) >td:first-child{
-            background: none;
-        }
-        .ant-table-thead >tr >th{
-            background-color: #f4f4f4;
-        }
-        .ant-table-tbody > tr:nth-child(4) > td,
-        .ant-table-tbody > tr:nth-child(7) > td {
-            background-color: #f4f4f4;
-        }
     }
 </style>

@@ -1,4 +1,8 @@
 import basic from './basic'
-export default {    
-    basic
+import schedule from './schedule'
+import studentChooseCourse from './studentChooseCourse'
+export default {
+    basic,
+    schedule,
+    studentChooseCourse
 }

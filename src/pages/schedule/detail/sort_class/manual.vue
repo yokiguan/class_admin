@@ -1,48 +1,63 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item>排课计划</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/detail">排课详情</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/detail/sort_class">选课分班</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="#">手动分班</router-link></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
-                <a-col :span="12">
-                    <span style="font-size:1.5em">高一2019-2020第一学期排课计划 -手动分班</span>
-                    <!-- <br>
-                    <span style="margin-left:2em">未分班人数<font style="color:red">100</font>人</span> -->
-                </a-col>
-                <a-col :span="12">
-                    <a-row>
-                        <a-col :span="6"><a-button>返回</a-button></a-col>
-                    </a-row>
-                </a-col>
+                <a-col :span="18"><span style="font-size:1.5em">{{this.planData}} -手动分班</span></a-col>
+                <a-col><button style="width: 100px;height: 40px;background-color: blue;color: white;border-radius: 5px;border: none" @click="back">返回</button></a-col>
             </a-row>
         </div>
         <div class="table-bg">
             <a-table
+                    :key="'key'"
                     :columns="columns"
                     :data-source="tableData"
                     :pagination="false"
                     :bordered="true">
-                <div
-                        slot="situation"
-                        slot-scope="data"
-                >
+                <div slot="situation" slot-scope="data">
                     <div v-for="(item, index) in data" :key="index" class="situation">
                         <div class="situation-header">
                             {{item.class}}{{item.teacher}}（共有学生{{item.all}}人）
                             <span style="color:red;float:right">删除</span>
                             <span style="color:blue;float:right;margin-right:1em;" @click="change">修改</span>
                         </div>
-                        <div class="situation-body">
-                            <a-button v-for="(stu, sindex) in item.students" :key="sindex"
-                                >
-                                {{stu}}
 
-                            </a-button>
+                            <template v-for="(tag, index) in tags">
+                                <a-tooltip v-if="tag.length > 20" :key="tag" :title="tag">
+                                    <a-tag :key="tag" :closable="index !== 0" @close="() => handleClose(tag)">
+                                        {{ `${tag.slice(0, 20)}...` }}
+                                    </a-tag>
+                                </a-tooltip>
+                                <a-tag v-else :key="tag" :closable="index !== 0" @close="() => handleClose(tag)">
+                                    {{ tag }}
+                                </a-tag>
+                            </template>
+                            <a-input
+                                    v-if="inputVisible"
+                                    ref="input"
+                                    type="text"
+                                    size="small"
+                                    :style="{ width: '78px' }"
+                                    :value="inputValue"
+                                    @change="handleInputChange"
+                                    @blur="handleInputConfirm"
+                                    @keyup.enter="handleInputConfirm"/>
+                            <a-tag v-else style="background: #fff; borderStyle: dashed;" @click="showInput">
+                                <a-icon type="plus" />
+                            </a-tag>
+                        <div class="situation-body">
+                            <a-button v-for="(stu, sindex) in item.students" :key="sindex">{{stu}}</a-button>
                         </div>
                     </div>
-                    <a-button icon="plus"
-                              style="background-color: #169bd5;color:white;" @click="add">
-                        添加班级
-                    </a-button>
+                    <a-button icon="plus" style="background-color: #169bd5;color:white;" @click="add">添加班级</a-button>
                 </div>
             </a-table>
             <create-modal
@@ -77,80 +92,53 @@
             </create-modal>
             <div style="margin: 20px 0px 20px 40%">
                 <a-button type="primary" style="margin-right:40px">保存</a-button>
-                <a-button type="primary">返回</a-button>
+                <a-button type="primary" >返回</a-button>
             </div>
         </div>
     </div>
 </template>
 <script>
-    // import echarts from 'echarts'
-
     import CreateModal from "../../../../components/modal/CreateModal";
-
     const columns = [
         { title: '学科',
-            dataIndex: 'subject',
-            key: 'subject'
+            dataIndex: 'scheduleTeacherClassEntities.className',
         },
         {
             title: '未分班学生',
-            dataIndex: 'unsorted',
-            key: 'unsorted',
+            dataIndex: 'unscheduledStudentEntities.schWxUserEntity.userName',
         },
         {
             title: '分班情况',
             dataIndex: 'situation',
-            key: 'situation',
             scopedSlots: { customRender: 'situation' }
-        },
-    ];
-
-    let tableData = [
-        {
-            key: 0,
-            subject: '高一语文',
-            unsorted: 10,
-            situation:[
-                {
-                    class:"语文一班",
-                    teacher:"张开源老师",
-                    all:100,
-                    students:[
-                        "张三","里斯","王麻子"," ... ","+"
-                    ]},
-                {
-                    class:"语文二班",
-                    teacher:"张源老师",
-                    all:100,
-                    students:[
-                        "张三","里斯","王麻子"," ... ","+"
-                    ]}
-            ]
-        },
-        {
-            key: 1,
-            subject: '高一语文',
-            unsorted: 10,
-        },
-        {
-            key: 2,
-            subject: '高一语文',
-            unsorted: 10,
-        },
-        {
-            key: 3,
-            subject: '高一语文',
-            unsorted: 10,
         },
     ];
     export default {
         components: {CreateModal},
         data() {
             return {
-                tableData,
+                tableData:[],
                 columns,
+                loading:false,
                 visible: false,
+                planData:"",
+                tags: ['Unremovable', 'Tag 2', 'Tag 3Tag 3Tag 3Tag 3Tag 3Tag 3Tag 3'],
+                inputVisible: false,
+                inputValue: '',
             };
+        },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name
+            }
+            //获取手动分班学生信息
+            let {data}=await this.$api.schedule.sortClass.classGetManual({planId})
+            console.log(data)
         },
         methods: {
             add: function () {
@@ -164,19 +152,16 @@
                 this.loading = false
             },
             handleSubmit: function () {
-                const that = this
-                console.log(that.$refs.createForm)
-                that.loading = true
+                console.log(this.$refs.createForm)
+                this.loading = true
                 setTimeout(() => {
-                    that.dataSource.push(
+                    this.dataSource.push(
                         {
-                            avatar:
-                                "https://gw.alipayobjects.com/zos/rmsportal/WdGqmHpayyMjiEhcKoVE.png",
                             content: "班级名称：请输入/任课教师：张凯元",
                         }
                     ),
-                        that.visible = false
-                    that.loading = false
+                        this.visible = false
+                    this.loading = false
                 }, 2000)
             },
             changeMax: function (key, val) {
@@ -190,13 +175,56 @@
             },
             editInfo: function (key) {
                 console.log(key)
-            }
+            },
+            back(){
+              this.$router.go(-1)
+            },
+            form(){},
+            handleSelectChange(){},
+            handleClose(removedTag) {
+                const tags = this.tags.filter(tag => tag !== removedTag);
+                console.log(tags);
+                this.tags = tags;
+            },
+            showInput() {
+                this.inputVisible = true;
+                this.$nextTick(function() {
+                    this.$refs.input.focus();
+                });
+            },
+            handleInputChange(e) {
+                this.inputValue = e.target.value;
+            },
+
+            handleInputConfirm() {
+                const inputValue = this.inputValue;
+                let tags = this.tags;
+                if (inputValue && tags.indexOf(inputValue) === -1) {
+                    tags = [...tags, inputValue];
+                }
+                console.log(tags);
+                Object.assign(this, {
+                    tags,
+                    inputVisible: false,
+                    inputValue: '',
+                });
+            },
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;

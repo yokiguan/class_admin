@@ -4,6 +4,7 @@ const {getThemeColors, modifyVars} = require('./src/utils/themeUtil')
 const {resolveCss} = require('./src/utils/theme-color-replacer-extend')
 
 module.exports = {
+  lintOnSave:false,
   pluginOptions: {
     'style-resources-loader': {
       preProcessor: 'less',
@@ -24,12 +25,12 @@ module.exports = {
     host:'localhost',
     port:8080,
     proxy: {
-      '/api': {
+      '/': {
         target: 'https://zbpk.tgk12.cn',
         ws: true,
         changeOrigin: true,
         pathRewrite: {
-          '^/api': ''
+          '^/': '/'
         }
       },
     }

@@ -1,9 +1,16 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">走班排课任务</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
-                <a-col :span="17"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
                 <a-col>
                     <button style="background-color: #19b294;
                         color: white;
@@ -11,126 +18,211 @@
                         border: none;
                         border-radius: 5px;
                         float: right;
-                        width: 150px"
-                    >返回</button>
+                        width: 150px" @click="back">返回</button>
                 </a-col>
             </a-row>
         </div>
-        <div class="table-bg">
-            <a-table
+        <a-card class="table-bg">
+            <a-table :rowKey="'id'"
                     :columns="columns"
                     :data-source="tableData"
-                    :pagination="false"
-                    :bordered="true"
-            style="margin-top: 20px;width:1200px;height: 700px">
-                <div slot="option" style="color: blue" >
+                    :pagination="pagination"
+                     @change="handleTableChange"
+                    :bordered="true" style="margin-top: 20px;width:1200px;height: 700px">
+                <div slot="option" style="color: blue"  slot-scope="text,record">
                     <a-row>
-                            <a-col :span="2">
-                                 <span>
-                                    <router-link to="/schedule/detail/task_mobile/all">
-                                   查看
-                                    </router-link>
-                                 </span>
-                            </a-col>
-                            <a-col :span="4">
-                                <span >删除</span>
-                            </a-col>
-                            <a-col :span="4">
-                                <span>继续排课</span>
-                            </a-col>
-                            <a-col :span=" 4">
-                                <span>手动调整</span>
-                            </a-col>
-                            <a-col :span="4">
-                                <span>学生调班</span>
-                            </a-col>
-                            <a-col>
-                                <span>
-                                    <router-link to="">
-                                        发布结果
-                                    </router-link></span>
-                            </a-col>
-                        </a-row>
+                       <span style="float:left "  @click="onClickLook(record.id)">查看</span>
+                        <span>
+                             <a-popconfirm v-if="tableData.length"
+                                           title="确认删除?"
+                                           cancelText="取消"
+                                           okText="确定"
+                                           @confirm="() => delet(record.id)">
+                            <span>删除</span>
+                        </a-popconfirm>
+                        </span>
+
+<!--                       <span style="margin-left:0px "  @click="delet(record.id)">删除</span>-->
+                       <span style="margin-left: 50px " @click="integrate(record.id)">手动调整</span>
+                       <span @click="changeClass(record.id)" style="margin-left: 50px ">学生调班</span>
+                       <span style="margin-left: 50px " @click="publishChoose(record.id)">发布结果</span>
+                        <span style="margin-left: 50px " @click="conArrClass(record.id)">继续排课</span>
+                    </a-row>
                 </div>
             </a-table>
-
-        </div>
+        </a-card>
+        <a-spin tip="Loading..." v-if="showPublic">
+            <div class="spin-content">
+                正在发布，请稍等......
+            </div>
+        </a-spin>
     </div>
 </template>
 <script>
+    import {message} from "ant-design-vue"
     const columns = [
         {
             align: "center",
             title: " ",
-            dataIndex: 'key',
-            width:'5%'
+            dataIndex: 'id',
+            width:'5%',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
         },
         {
             title: '任务名称',
-            dataIndex: 'task',
-            key:'task',
+            dataIndex: 'taskName',
             align:'center',
             width:'15%'
         },
         {
             title: '创建时间',
-            dataIndex: 'time',
-            key:'time',
+            dataIndex: 'scheduleCreated',
             align:'center',
             width:'15%'
         },
         {
             title: '状态',
-            dataIndex: 'situation',
-            key:'situation',
+            dataIndex: 'scheduleStatus',
             align:'center',
             width:'15%'
         },
         {
             title: '操作',
             dataIndex: 'opt',
-            key: 'opt',
             align:'center',
             scopedSlots: { customRender: 'option' },
             width:'50%'
         },
     ];
-    const tableData=[
-        {
-            key: '1',
-            task:'1234',
-            time:'2020/04/12 14：00:00',
-            situation:'已结束'
-        },
-        {
-            key: '2',
-        },
-        {
-            key: '3',
-        },{
-            key: '4',
-        },
-        {
-            key: '5',
-        },
-    ];
     export default {
-
         data() {
             return {
                 columns,
-                tableData,
+                tableData:[],
                 visible: false,
-                loading: false
+                loading: false,
+                planId:"",
+                planData:"",
+                classType:"",
+                showPublic:false,
+                pagination:{
+                    total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
+                    pageSize:20,    //默认每页显示的条数
+                    showSizeChanger:true,
+                    onShowSizeChange:(current,pageSize)=>{
+                        this.pageSize=pageSize;
+                    },
+                    showTotal:total=>`共有${total}条数据`,            //分页中显示的数据总数
+                },
+                queryParam:{
+                    page:1,//第几页
+                    size:20,   //每页中显示的数据条数
+                },
             };
         },
-        methods: {
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name;
+                console.log(result);
+                this.classType=result.type;
+            }
+            this.lookInfo();
+        },
+        methods:{
+            //走班排课查看
+            async lookInfo(){
+                 let {data}=await this.$api.schedule.classTask.getScheduleTask({planId:this.planId});
+                 console.log(data);
+                 this.tableData=data.rows;
+                 console.log(this.tableData);
+                const pagination={...this.pagination};
+                pagination.total=data.total;
+                this.pagination=pagination;
+            },
+            //监听表格
+            async handleTableChange(pagination) {
+                this.pagination.current = pagination.current;
+                this.pagination.pageSize = pagination.pageSize;
+                this.queryParam.page = pagination.current;
+                this.queryParam.size = pagination.pageSize;
+                console.log(this.pagination.current);
+                console.log(this.pagination.pageSize);
+                this.lookInfo();
+            },
+            //查看
+            onClickLook(id){
+                this.$router.push(`/schedule/detail/task_mobile/all?planId=${this.planId}&scheduleTaskId=${id}`);
+            },
+            //删除
+            async delet(id){
+                // console.log();
+                let {data}=await this.$api.schedule.classTask.deletScheduleTask({ids:[id]});
+                console.log(data);
+                this.lookInfo();
+                console.log(this.tableData);
+            },
+            //继续排课
+            async conArrClass(id){
+              let {data}=await this.$api.schedule.classTask.continue({planId:this.planId,id:id});
+              console.log(data);
+              if(data&&data.success){
+                  this.$router.push(`/schedule/detail/class_admin/time?planId=${this.planId}&scheduleTaskId=${id}`);
+              }else{
+                  message.info("排课已结束，无行政班排课！");
+              }
+            },
+            //手动调整
+            integrate(id){
+                this.$router.push(`/schedule/detail/task_mobile/integrate?planId=${this.planId}&scheduleTaskId=${id}`)
+            },
+            //学生调班
+            changeClass(id){
+                this.$router.push(`/schedule/detail/task_mobile/change_student?planId=${this.planId}&scheduleTaskId=${id}`)
+            },
+            //发布选课
+            async publishChoose(id){
+                this.showPublic=true;
+                let {data}=await this.$api.schedule.classTask.publishResult({planId:this.planId,scheduleTaskId:id});
+                console.log(data);
+                if(data&&data.success){
+                    this.showPublic=false;
+                    alert("发布选课成功");
+                }else{
+                    this.showPublic=false;
+                    message.error("排课未完成，不能发布，请继续排课！");
+                }
+            },
+            //返回
+            back(){
+                this.$router.go(-1)
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
         }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;
@@ -139,9 +231,6 @@
         padding: 20px 25px;
         vertical-align: top;
         border-radius: 5px;
-    }
-    .result-left{
-        width: 50%;
     }
     .link-font-color{
         color: #0000ff;
@@ -160,7 +249,6 @@
         padding: 20px 25px;
         border-radius: 5px;
         text-align: center;
-        height: 1000px;
         width: 100%;
     }
 </style>

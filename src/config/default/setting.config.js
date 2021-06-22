@@ -11,7 +11,7 @@ module.exports = {
   weekMode: false,                      //色弱模式，true:开启，false:不开启
   multiPage: false,                     //多页签模式，true:开启，false:不开启
   hideSetting: false,                   //隐藏设置抽屉，true:隐藏，false:不隐藏
-  systemName: '课表管理系统',         //系统名称
+  systemName: '走班排课系统',         //系统名称
   copyright: '2018 GSC antd vue',    //copyright
   animate: {                            //动画设置
     name: 'bounce',                     //动画效果，支持的动画效果可参考 ./animate.config.js

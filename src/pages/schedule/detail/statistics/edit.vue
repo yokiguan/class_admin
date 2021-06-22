@@ -1,117 +1,340 @@
 <template>
     <div>
-        <!-- result -->
         <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="staticClass">选课统计</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">修改选课结果</a></a-breadcrumb-item>
+            </a-breadcrumb>
+        </div>
+        <div class="content">
             <a-row>
                 <a-col :span="12">
-                    <a-space>
-                        <span style="font-size:1.5em">高一2019-2020第一学期选课结果</span>
-                        <br>
-                        <span class="link-font-color" style="margin-left:2em">选课时间：2020/03/01 ——2020/03/15</span>
+                        <span style="font-size:1.5em">{{this.planData}}</span>
+                        <span class="link-font-color" style="margin-left:2em">选课时间：{{this.result.timeLimit}}</span>
                         <span class="link-font-color" style="margin-left:2em">选课中</span>
-                    </a-space>
                 </a-col>
                 <a-col :span="12">
                     <a-row>
-                        <a-col :span="6"><a-button type="primary"><router-link to="/schedule/detail/sort_class/auto">修改选课时间</router-link></a-button></a-col>
-                        <a-col :span="6"><a-button type="primary">修改选课结果</a-button></a-col>
-                        <a-col :span="6"><a-button type="danger">清空</a-button></a-col>
-                        <a-col :span="6"><a-button>返回</a-button></a-col>
+                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: #1abc9c;color: white" @click="changeTime">修改选课时间</a-button></a-col>
+<!--                        <a-col :span="6"><a-button style="width: 150px;height: 50px;background-color: red;color: white" @click="Clear">清空</a-button></a-col>-->
+                        <a-col :span="6" ><a-button style="width: 150px;height: 50px;background-color: blue;color: white" @click="back" >返回</a-button></a-col>
                     </a-row>
                 </a-col>
             </a-row>
         </div>
-        <div class="info link-font-color">已有900人选课 （共1000人）<font style="color:red">100人未选</font></div>
-        <!-- /result -->
+        <!--       修改选课时间弹窗-->
+        <a-modal
+                title="修改选课时间"
+                :visible="changeChooseTimeModal"
+                :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOk">保存</a-button>
+                <a-button key="back" @click="handleCancel">取消</a-button>
+            </template>
+            <div class="chooseData">
+                <a-form-model layout="horizontal" ref="ruleForm" :model="form" :rules="rules"
+                              :label-col="{span:6}" :wrapper-col="{span:15}">
+                    <a-form-model-item label="选课开始时间：" prop="startChooseTime" ref="startChooseTime">
+                        <a-date-picker v-model="form.startChooseTime"
+                                       :disabled-date="disabledStartDate"
+                                       show-time
+                                       format="YYYY-MM-DD"
+                                       placeholder="设置开始选课时间"
+                                       @openChange="handleStartOpenChange"
+                                       valueFormat="YYYY-MM-DD"/>
+                    </a-form-model-item>
+                    <a-form-model-item label="选课结束时间：" prop="endChooseTime" ref="endChooseTime">
+                        <a-date-picker v-model="form.endChooseTime"
+                                       :disabled-date="disabledEndDate"
+                                       show-time
+                                       format="YYYY-MM-DD"
+                                       placeholder="设置选课结束时间"
+                                       :open="endOpen"
+                                       @openChange="handleEndOpenChange"
+                                       valueFormat="YYYY-MM-DD"/>
+                    </a-form-model-item>
+                </a-form-model>
+            </div>
+        </a-modal>
+        <div class="info link-font-color">
+            已有{{this.chooseCourseData.isChoosen}}人选课 （共{{this.chooseCourseData.total}}人）<font style="color:red">{{this.chooseCourseData.notChoosen}}人未选</font></div>
         <div class="table-bg">
             <!-- statistics -->
             <!-- table -->
             <a-table
+                    :rowKey="'subChildId'"
                     :columns="columns"
-                    :data-source="classData"
+                    :data-source="dataSource"
                     :bordered = "true"
-                    :pagination = "false"
-            >
+                    :pagination = "false">
+                <span slot="operation" slot-scope="text,record" @click="addStudent(record.subChildId)">添加</span>
+                <div slot="studentInfoDtoList" slot-scope="text,record,index">
+                    <template v-for="(tag) in text"  >
+                        <a-tag  closable @close="handleClose(tag)">
+                        {{ tag.stuName}}
+                    </a-tag>
+                    </template>
+                </div>
             </a-table>
             <!-- table -->
             <!-- statistics -->
         </div>
+        <a-modal
+                :visible='addVisit'
+                width="600px"
+                :closable="false">
+            <template slot="footer">
+                <a-button key="Save" type="primary" :loading="loading" @click="handleOkTeacher">保存</a-button>
+                <a-button key="back" @click="handleCancelTeacher">取消</a-button>
+            </template>
+            <a-form-model :model="form" :rules="rules" :label-col="{span:5}" :wrapper-col="{span:12}" style="">
+                <a-form-model-item label="未选课人员：" prop="unStudent" ref="unStudent">
+                    <a-checkbox-group v-model="form.unStudent">
+                        <a-checkbox v-for="(unChoosePerson,index) in this.unChooseNums"  @change="onChange" :value="unChoosePerson.stuId">
+                           {{unChoosePerson.stuName}}
+                        </a-checkbox>
+                    </a-checkbox-group>
+                </a-form-model-item>
+            </a-form-model>
+        </a-modal>
     </div>
 </template>
 <script>
-    // import echarts from 'echarts'
-    import Templet from "../../../basic/templet/index";
-    const columns = [
+    import {message} from "ant-design-vue"
+    import moment from "moment";
+    const columns = [{
+        title: '',
+        dataIndex: 'subChildId',
+        align:'center',
+        customRender: function(t, r, index) {
+            return parseInt(index) + 1
+        }
+    },
         {
             title: '课程',
-            dataIndex: 'name',
-            key: 'name',
+            dataIndex: 'subName',
+            align:'center',
         },
         {
             title: '已选人数',
-            key: 'key',
-            dataIndex: 'count'
+            dataIndex: 'stuNumber',
+            align:'center',
         },
         {
             title: '课程组合',
-            dataIndex: 'group',
-            key: 'group',
+            dataIndex: 'studentInfoDtoList',
+            align:'center',
+            scopedSlots: {customRender: 'studentInfoDtoList'}
         },
         {
             title: '操作',
-            dataIndex: 'add',
-            key: 'add',
+            dataIndex: 'operation',
+            align:'center',
+            scopedSlots:{customRender:'operation'},
         },
     ]
-
-    const classData = [
-        {
-            name: '政治学修',
-            count: 600,
-            group:`周翔 X  张敏钰 X  张凌玮 X  许家锘 X  徐弘达 X  徐鼎钦 X  肖若渝 X  吴静希 X  翁柳琪 X  王永畅 X
-    王鑫 X  汪宗远 X  唐翊轩 X  石达媛 X  刘善茹 X  刘铭 X  刘骞 X  廖俪淇 X  李敬轩 X  黄梓晴 X  黄奕钧 X  黄乐贤 X
-    // 黄凯莹 X  黄河清 X  杜蔚婷 X  池绮欣 X  池菲杨 X  蔡莹璎 X  蔡昊霖 X  钟锶琪 X  郑英东 X  郑阳 X  詹妍琦 X  詹钧豪 X
-    杨榕 X  冼君浩 X  危滨莎 X  王子琳X  万靖雯 X  陶鑫 X  邱伟杰 X  彭瀛浩 X  潘浩焯 X  莫昊阳 X  罗铭泽 X  刘企峰 X  刘曼丹 X
-    林梓墉 X  林青云 X  梁嘉琪 X  李泉德 X  李朗鸣 X  李凯熙 X`,
-            add:'添加'
-        },
-        {
-            name: '政治选修',
-            count: 200,
-            group:`周翔 X  张敏钰 X  张凌玮 X  许家锘 X  徐弘达 X  徐鼎钦 X  肖若渝 X  吴静希 X  翁柳琪 X  王永畅 X
-    王鑫 X  汪宗远 X  唐翊轩 X  石达媛 X  刘善茹 X  刘铭 X  刘骞 X  廖俪淇 X  李敬轩 X  黄梓晴 X  黄奕钧 X  黄乐贤 X
-    黄凯莹 X  黄河清 X  杜蔚婷 X  池绮欣 X  池菲杨 X  蔡莹璎 X  蔡昊霖 X  钟锶琪 X  郑英东 X  郑阳 X  詹妍琦 X  詹钧豪 X
-    杨榕 X  冼君浩 X  危滨莎 X  王子琳 X  万靖雯 X  陶鑫 X  邱伟杰 X  彭瀛浩 X  潘浩焯 X  莫昊阳 X  罗铭泽 X  刘企峰 X  刘曼丹 X
-    林梓墉 X  林青云 X  梁嘉琪 X  李泉德 X  李朗鸣 X  李凯熙 X`,
-            add:'添加'
-        },
-        {
-            name: '物理学修',
-            count: 100,
-            group:`周翔 X  张敏钰 X  张凌玮 X  许家锘 X  徐弘达 X  徐鼎钦 X  肖若渝 X  吴静希 X  翁柳琪 X  王永畅 X
-    王鑫 X  汪宗远 X  唐翊轩 X  石达媛 X  刘善茹 X  刘铭 X  刘骞 X  廖俪淇 X  李敬轩 X  黄梓晴 X  黄奕钧 X  黄乐贤 X
-    黄凯莹 X  黄河清 X  杜蔚婷 X  池绮欣 X  池菲杨 X  蔡莹璎 X  蔡昊霖 X  钟锶琪 X  郑英东 X  郑阳 X  詹妍琦 X  詹钧豪 X
-    杨榕 X  冼君浩 X  危滨莎 X  王子琳 X  万靖雯 X  陶鑫 X  邱伟杰 X  彭瀛浩 X  潘浩焯 X  莫昊阳 X  罗铭泽 X  刘企峰 X  刘曼丹 X
-    林梓墉 X  林青云 X  梁嘉琪 X  李泉德 X  李朗鸣 X  李凯熙 X`,
-            add:'添加'
-        },
-    ];
-
     export default {
-        // eslint-disable-next-line vue/no-unused-components
-        components: {Templet},
         data() {
             return {
-                classData,
+                size : "small",
+                dataSource:[],
                 columns,
+                visible:false,
+                addVisit:false,
+                planId:"",
+                changeChooseTimeModal:false,
+                chooseCourseData:"",
+                planData:" ",
+                loading:false,
+                endOpen:false,
+                form:{
+                    startChooseTime:null,
+                    endChooseTime:null,
+                    unStudent:null,
+                },
+                rules:{
+                    startChooseTime:[
+                        {
+                            required:true,
+                            message:"请选择开始选课时间",
+                            trigger:"change",
+                        }
+                    ],
+                    endChooseTime:[
+                        {
+                            required:true,
+                            message:"请选择选课结束时间",
+                            trigger:"change",
+                        }
+                    ]
+                },
+                tags:[],
+                inputVisible: false,
+                inputValue: '',
+                planId:"",
+                activeIndex:"",
+                subChildId: null,
+                editText:-1,
+                unChooseNums:[],
+                result:[],
             };
         },
-
+    async created(){
+        this.lookInfo();
+        this.chooseCourseInfo();
+        this.staticResult();
+    },
+        methods: {
+            //指定排课计划信息查看
+            async lookInfo(){
+                this.planId = window.location.href.split('?')[1].split('=')[1];
+                if(this.planId) {
+                    let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId: this.planId});
+                    console.log(result);
+                    this.result = result;
+                    this.planData = result.name
+                    console.log(this.result);
+                    this.form.startChooseTime=this.result.timeLimit.split(" - ")[0];
+                    this.form.endChooseTime=this.result.timeLimit.split(" - ")[1];
+                }
+            },
+            //选课结果详细信息查看
+            async chooseCourseInfo(){
+                //选课结果详情查看
+                let {data}=await this.$api.schedule.statics.getResult({planId:this.planId});
+                console.log(data.result)
+                this.dataSource=data.result;
+                console.log(this.dataSource);
+                for(var i=0;i<this.dataSource.length;i++){
+                    this.tags.push(this.dataSource[i].studentInfoDtoList)
+                }
+                console.log(this.tags);
+            },
+            //统计选课结果
+            async staticResult(){
+                //统计选课人数以及课程被选情况
+                let {data:chooseCourse}=await this.$api.schedule.statics.getStudentSelectNum({planId:this.planId});
+                this.chooseCourseData=chooseCourse.result;
+                console.log(this.chooseCourseData);
+            },
+            onChange(checkedValues) {
+                console.log('checked = ', checkedValues);
+            },
+            changeTime(){
+                this.changeChooseTimeModal=true;
+            },
+            disabledStartDate(startValue){
+                const endValue=this.form.startChooseTime
+                if(!startValue||!endValue){
+                    return false;
+                }
+                return startValue.valueOf()>endValue.valueOf();
+            },
+            disabledEndDate(endValue){
+                const startValue=this.form.startChooseTime;
+                if(!endValue||!startValue){
+                    return false;
+                }
+                return startValue.valueOf()>=endValue.valueOf();
+            },
+            handleStartOpenChange(open){
+                if(!open){
+                    this.endOpen=true;
+                }
+            },
+            handleEndOpenChange(open){
+                this.endOpen=open;
+            },
+            //获取未选课学生的信息
+            async addStudent(id){
+                this.addVisit=true;
+                this.editText=this.dataSource.findIndex(item=>item.subChildId==id);
+                for(let i=0;i<this.dataSource.length;i++){
+                    this.subId=this.dataSource[this.editText].subChildId;
+                }
+                console.log(this.subId)
+                let {data}=await this.$api.schedule.statics.alterResultButtonFind({planId:this.planId,subId:this.subId});
+                this.unChooseNums=data.result;
+                console.log( this.unChooseNums);
+            },
+            async handleOk(id) {
+                id = this.planId;
+                //保存选课时间
+                //修改选课时间alterTime
+                console.log(this.form.startChooseTime);
+                if (this.form.startChooseTime == null || this.form.endChooseTime == null) {
+                    message.warning("请检查输入信息是否为空！")
+                } else {
+                    let timeLimit = this.form.startChooseTime + "—" + this.form.endChooseTime
+                    let addData = {planId:id, timeLimit}
+                    let {data} = await this.$api.schedule.statics.alterTime(addData);
+                    console.log(data)
+                    if(data&&data.success){
+                        message.success("保存成功！");
+                        this.chooseCourseInfo();
+                        this.changeChooseTimeModal=false;
+                    }
+                    else{
+                        message.error(data.message);
+                    }
+                }
+            },
+            ////将未选课的学生添加进已选课程中
+            async handleOkTeacher(){
+                let {data:saveData}=await this.$api.schedule.statics.alterResultButtonResult({planId:this.planId,subId:this.subId,stuIdList:this.form.unStudent})
+                console.log(saveData);
+                this.changeChooseTimeModal=false;
+                this.addVisit = false;
+                //刷新界面
+                // //选课结果详情查看
+               this.chooseCourseInfo();
+            },
+            handleCancel() {
+                this.changeChooseTimeModal=false;
+            },
+            handleCancelTeacher(){
+                this.addVisit = false;
+            },
+            back(){
+                this.$router.go(-1)
+            },
+            // Clear(){
+            //     this. classData=[]
+            // },
+            //删除已选课的学生
+            async handleClose(removedTag) {
+               let mineIds = []
+                mineIds.push(removedTag.id)
+                console.log(mineIds)
+                let {data} = await this.$api.schedule.statics.delResult({ids:mineIds});
+               this.chooseCourseInfo();
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
+            staticClass(){
+                this.$router.push(`/schedule/detail/statistics?planId=${this.planId}`)
+            }
+        }
     };
 </script>
 
 <style lang="less" scoped>
     .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
         width: 100%;
         height: 300px;
         background-color: white;
@@ -135,10 +358,9 @@
         background-color: white;
         border-radius: 5px;
     }
-
     .table-bg{
         background-color: white;
-        margin: 0px 0px 20px 3px;
+        margin: 0px 0px 20px 0px;
         padding: 20px 25px;
         border-radius: 5px;
     }

@@ -25,7 +25,7 @@
       :pagination="pagination"
       :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: updateSelect}"
     >
-    <template slot="operation" slot-scope="text, record">
+    <template slot="operation" slot-scope="text,record">
           <a @click="edit(text,record)">编辑</a>
           <a-divider type="vertical"/>
           <a @click="deleteItem(text,record)">删除</a>
@@ -59,7 +59,7 @@ export default {
         }
       })
       console.log(selectedRowKeys,selectedRows,this.needTotalList);
-      
+
       this.$emit('change', selectedRowKeys, selectedRows)
     },
     clearSelect () {

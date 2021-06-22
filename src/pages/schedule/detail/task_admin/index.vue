@@ -1,266 +1,240 @@
 <template>
-    <EasyScrollbar :barOption="myBarOption">
-        <div id="wrapper" style="width: 600px">
-            <div style="width: 1800px">
-                <div class="left">
-                    <a-row class="left_title">
-                        <a-col :span="3"><a-icon type="reload" style="font-size: 1.5em;
-                    font-weight: bold"/></a-col>
-                        <a-col :span="12"><span style="font-size: 1.2em">刷新菜单</span></a-col>
-                        <a-col><span style="font-size: 1.2em">全部展开</span></a-col>
-                    </a-row>
-                    <div style="width: 100%; height: 1px;
-            margin-top: 10px;
-            border-top: solid black 1px;"></div>
-                    <div>
-                        <a-tree
-                                :tree-data="treeData"
-                                :default-expanded-keys="['0-0-0', '0-0-1']"
-                                :default-selected-keys="['0-0-0', '0-0-1']"
-                                :default-checked-keys="['0-0-0', '0-0-1']"
-                                :replace-fields="replaceFields"
-                                @select="onSelect"
-                                @check="onCheck"
-                                checkable
-                                style="font-size: 1.3em;"
-                        />
-                    </div>
-                </div>
-                <div class="right">
-                    <div class="title">
-                        <a-row>
-                            <a-col :span="18"><span style="font-size:1.5em">高二2019-2020第一学期排课计划</span></a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        float: right;
-                        width: 150px">删除已发布课表</button>
-                            </a-col>
-                            <a-col>
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        float: right;
-                        width: 150px">返回</button>
-                            </a-col>
-                        </a-row>
-                        <a-row style="margin-top: 20px">
-                            <a-col :span="5"><span style="font-size: 1.2em ">高二2019-2020第一学期排课计划A</span></a-col>
-                            <a-col :span="3">
-                                <button @click="maxTime" style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px">查看学生冲突</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <router-link to="/schedule/detail/sort_course/place">
-                                    <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px">手动调课</button>
-                                </router-link>
-                            </a-col>
-                            <a-col>
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 150px">学生调班</button>
-                            </a-col>
-                        </a-row>
-                        <a-row>
-                            <a-col><span style="font-size: 1.2em ">结果：无冲突</span></a-col>
-                        </a-row>
-                    </div>
-                    <div class="table-bg">
-                        <a-row class="buttons">
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 110px">按老师查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 110px">按场地查看</button>
-                            </a-col>
-                            <a-col :span="3">
-                                <button style="background-color: #19b294;
-                        color: white;
-                        height: 40px;
-                        border: none;
-                        border-radius: 5px;
-                        width: 110px">按科目查看</button>
-                            </a-col>
-                        </a-row>
-                        <a-table
-                                :columns="columns"
-                                :data-source="tableData"
-                                :pagination="false"
-                                :bordered="true"
-                                style="margin-top: 20px;width:75%;height:100% ">
-                        </a-table>
-                    </div>
-                </div>
-            </div>
+    <div>
+        <div class="result">
+            <a-breadcrumb>
+                <a-breadcrumb-item>首页</a-breadcrumb-item>
+                <a-breadcrumb-item><router-link to="/schedule/template">排课计划</router-link></a-breadcrumb-item>
+                <a-breadcrumb-item><span @click="arrangeClass">排课详情</span></a-breadcrumb-item>
+                <a-breadcrumb-item><a href="#">行政班排课任务</a></a-breadcrumb-item>
+            </a-breadcrumb>
         </div>
-    </EasyScrollbar>
-
+        <div class="content">
+            <a-row>
+                <a-col :span="17"><span style="font-size:1.5em">{{this.planData}}</span></a-col>
+                <a-col>
+                    <button style="background-color: #19b294;
+                        color: white;
+                        height: 40px;
+                        border: none;
+                        border-radius: 5px;
+                        float: right;
+                        width: 150px" @click="back">返回</button>
+                </a-col>
+            </a-row>
+        </div>
+        <a-card class="table-bg">
+            <a-table :rowKey="'id'"
+                    :columns="columns"
+                    :data-source="tableData"
+                    :pagination="pagination"
+                     @change="handleTableChange"
+                    :bordered="true" style="margin-top: 20px;width:1200px;height: 700px">
+                <div slot="option" style="color: blue"  slot-scope="text,record">
+                    <a-row>
+                       <span style="float:left "  @click="onClickLook(record.id)">查看</span>
+                        <span>
+                             <a-popconfirm v-if="tableData.length"
+                                           title="确认删除?"
+                                           cancelText="取消"
+                                           okText="确定"
+                                           @confirm="() => delet(record.id)">
+                            <span>删除</span>
+                        </a-popconfirm>
+                        </span>
+                       <span style="margin-left: 50px " @click="publishChoose(record.id)">发布结果</span>
+                    </a-row>
+                </div>
+            </a-table>
+        </a-card>
+        <a-spin tip="Loading..." v-if="showPublic">
+            <div class="spin-content">
+                正在发布，请稍等......
+            </div>
+        </a-spin>
+    </div>
 </template>
 <script>
+    import {message} from "ant-design-vue"
     const columns = [
         {
             align: "center",
             title: " ",
-            dataIndex: 'num',
-            width:'7%',
+            dataIndex: 'id',
+            customRender: function(t, r, index) {
+                return parseInt(index) + 1
+            }
         },
         {
-            title: '一',
-            dataIndex: 'one',
-            key:'one',
-            align: "center",
-            width:'16.6%',
+            title: '任务名称',
+            dataIndex: 'taskName',
+            align:'center',
         },
         {
-            title: '二',
-            dataIndex: 'two',
-            key:'two',
-            align: "center",
-            width:'16.6%',
+            title: '创建时间',
+            dataIndex: 'scheduleCreated',
+            align:'center',
         },
         {
-            title: '三',
-            dataIndex: 'three',
-            key:'three',
-            align: "center",
-            width:'16.6%',
+            title: '状态',
+            dataIndex: 'scheduleStatus',
+            align:'center',
         },
         {
-            title: '四',
-            dataIndex: 'four',
-            key: 'four',
-            align: "center",
-            width:'16.6%',
-        },
-        {
-            title: '五',
-            dataIndex: 'five',
-            key: 'five',
-            align: "center",
-            width:'16.6%',
-        },
-    ];
-    const tableData=[
-        {
-            num: '1',
-        },
-        {
-            num: '2',
-            one:'刘娟*_2018级高二1班 尹健*_2018级高二6班 罗梦*_2018级高二8班 罗洪*_2018级高二9班',
-            two:'刘娟*_2018级高二1班 尹健*_2018级高二6班 罗梦*_2018级高二8班 罗洪*_2018级高二9班',
-        },
-        {
-            num: '3',
-            three:'刘娟*_2018级高二1班 尹健*_2018级高二6班 罗梦*_2018级高二8班 罗洪*_2018级高二9班'
-        },{
-            num: '4',
-        },{
-            num:'5'
-        }
-    ];
-    const treeData = [
-        {
-            name: '高二行政班课',
-            key: '0-0',
-            child: [
-                { name: '语文', key: '0-0-0'},
-                { name: '数学', key: '0-0-1' },
-                { name: '班会', key: '0-0-2' },
-                { name: '信息技术', key: '0-0-3' },
-            ],
+            title: '操作',
+            dataIndex: 'opt',
+            align:'center',
+            scopedSlots: { customRender: 'option' },
         },
     ];
     export default {
         data() {
             return {
-                treeData,
                 columns,
-                tableData,
-                myBarOption:{
-                    barColor:'block'
+                tableData:[],
+                visible: false,
+                loading: false,
+                planId:"",
+                planData:"",
+                classType:"",
+                showPublic:false,
+                pagination:{
+                    total:0,                    //默认的总数据条数，在后台获取列表成功之后对其进行赋值
+                    pageSize:20,    //默认每页显示的条数
+                    showSizeChanger:true,
+                    onShowSizeChange:(current,pageSize)=>{
+                        this.pageSize=pageSize;
+                    },
+                    showTotal:total=>`共有${total}条数据`,            //分页中显示的数据总数
                 },
-                disabled: false,
-                replaceFields: {
-                    children: 'child',
-                    title: 'name',
+                queryParam:{
+                    page:1,//第几页
+                    size:20,   //每页中显示的数据条数
                 },
             };
         },
-        methods: {
-            handleDisabledChange(disabled) {
-                this.disabled = disabled;
-            },
-            onSelect(selectedKeys, info) {
-                console.log('selected', selectedKeys, info);
-            },
-            onCheck(checkedKeys, info) {
-                console.log('onCheck', checkedKeys, info);
-            },
+        async created() {
+            let queryString = (window.location.hash || " ").split('?')[1]
+            let planId = (queryString || " ").split('=')[1]
+            this.planId = planId;
+            if (planId) {
+                //获取单个选课计划的信息
+                let {data: {result, success}} = await this.$api.schedule.plan.schedulegetInfo({planId})
+                this.planData = result.name;
+                console.log(result);
+                this.classType=result.type;
+            }
+            this.lookInfo();
         },
+        methods:{
+            //走班排课查看
+            async lookInfo(){
+                 let {data}=await this.$api.schedule.classTask.getScheduleTask({planId:this.planId});
+                 console.log(data);
+                 this.tableData=data.rows;
+                 console.log(this.tableData);
+                const pagination={...this.pagination};
+                pagination.total=data.total;
+                this.pagination=pagination;
+            },
+            //监听表格
+            async handleTableChange(pagination) {
+                this.pagination.current = pagination.current;
+                this.pagination.pageSize = pagination.pageSize;
+                this.queryParam.page = pagination.current;
+                this.queryParam.size = pagination.pageSize;
+                console.log(this.pagination.current);
+                console.log(this.pagination.pageSize);
+                this.lookInfo();
+            },
+            //查看
+            onClickLook(id){
+                this.$router.push(`/schedule/detail/task_admin/class?planId=${this.planId}&scheduleTaskId=${id}`);
+            },
+            //删除
+            async delet(id){
+                // console.log();
+                let {data}=await this.$api.schedule.classTask.deletScheduleTask({ids:[id]});
+                console.log(data);
+                if(data&&data.success){
+                    message.success("删除成功！");
+                }else{
+                    message.success("删除失败！");
+                }
+                this.lookInfo();
+                console.log(this.tableData);
+            },
+            //继续排课
+            async conArrClass(id){
+              let {data}=await this.$api.schedule.classTask.continue({planId:this.planId,id:id});
+              console.log(data);
+              if(data&&data.success){
+                  message.info("继续调课成功！");
+              }else{
+                  message.info("排课已结束，无行政班排课！");
+              }
+            },
+            //发布选课
+            async publishChoose(id){
+                this.showPublic=true;
+                let {data}=await this.$api.schedule.classTask.publishResult({planId:this.planId,scheduleTaskId:id});
+                console.log(data);
+                if(data&&data.success){
+                    alert("发布选课成功");
+                    this.showPublic=true;
+                }else{
+                    message.error(data.message);
+                }
+            },
+            //返回
+            back(){
+                this.$router.go(-1)
+            },
+            //排课详情查看
+            arrangeClass(){
+                this.$router.push(`/schedule/detail/index?planId=${this.planId}`)
+            },
+        }
     };
 </script>
 
 <style lang="less" scoped>
-    .left{
-        width: 300px;
-        height: 900px;
+    .result{
+        width: 100%;
+        background-color: white;
+        height:50px;
+        margin: 20px 0px 10px 0px;
+        padding-left: 25px;
+        padding-top: 15px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .content{
+        width: 100%;
+        height: 300px;
+        background-color: white;
+        height: 150px;
+        margin: 0px 0px 20px 0px;
+        padding: 20px 25px;
+        vertical-align: top;
+        border-radius: 5px;
+    }
+    .link-font-color{
+        color: #0000ff;
+    }
+    .info{
+        height: 50px;
+        width: 100%;
+        margin: 0px 0px 10px 0px;
+        padding: 10px 5px;
+        background-color: white;
+        border-radius: 5px;
+    }
+    .table-bg{
         background-color: white;
         margin: 0px 0px 20px 0px;
         padding: 20px 25px;
-        border-radius: 10px;
-    }
-    .right{
         border-radius: 5px;
-        margin-top: -935px;
-        margin-left: 320px;
-        height:900px;
-    }
-    .title{
-        width: 100%;
-        background-color: #fff;
-        height: 170px;
-        padding: 20px 25px;
-        border-radius: 10px;
-        margin-bottom: 50px;
-    }
-    .table-bg{
-        padding: 20px 25px;
-        border-radius: 10px;
         text-align: center;
-        height: 700px;
-        margin-top: -35px;
         width: 100%;
-        background-color: #fff;
-    }
-    .a-table .cell {
-        white-space: pre-line;
     }
 </style>
-

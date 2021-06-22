@@ -1,10 +1,10 @@
 <template>
-  <page-toggle-transition :animate="animate.name" :direction="animate.direction">
+  <div class="animate__animated animate__fadeInRight">
     <keep-alive v-if="multiPage">
       <router-view />
     </keep-alive>
     <router-view v-else />
-  </page-toggle-transition>
+  </div>
 </template>
 
 <script>
